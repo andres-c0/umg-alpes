@@ -1,7 +1,26 @@
-Web.config
+# Visual Studio
 .vs/
 bin/
 obj/
+
+# User specific files
 *.user
 *.suo
+*.userosscache
+*.sln.docstates
+
+# Nuget
 packages/
+
+# Build logs
+*.log
+
+# IIS Express
+/.vs/config/
+
+# Local database files
+*.mdf
+*.ldf
+
+# Credentials
+Web.config
