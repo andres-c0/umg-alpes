@@ -187,8 +187,11 @@
     <Compile Include="App_Start\BundleConfig.vb" />
     <Compile Include="App_Start\FilterConfig.vb" />
     <Compile Include="App_Start\RouteConfig.vb" />
+    <Compile Include="Controllers\ClienteController.vb" />
     <Compile Include="Controllers\PruebaController.vb" />
+    <Compile Include="Datos\ClienteDatos.vb" />
     <Compile Include="Datos\ConexionOracle.vb" />
+    <Compile Include="Entidades\Cliente.vb" />
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -208,6 +211,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
+    <Compile Include="Servicios\ClienteServicio.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -286,6 +290,8 @@
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
     <Content Include="Views\Prueba\Conexion.vbhtml" />
+    <Content Include="Views\Cliente\Index.vbhtml" />
+    <Content Include="Views\Cliente\Create.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
@@ -314,9 +320,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Entidades\" />
     <Folder Include="Models\" />
-    <Folder Include="Servicios\" />
     <Folder Include="ViewModels\" />
   </ItemGroup>
   <PropertyGroup>
