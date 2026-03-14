@@ -21,6 +21,3 @@ packages/
 # Local database files
 *.mdf
 *.ldf
-
-# Credentials
-Web.config
