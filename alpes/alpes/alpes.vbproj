@@ -187,11 +187,47 @@
     <Compile Include="App_Start\BundleConfig.vb" />
     <Compile Include="App_Start\FilterConfig.vb" />
     <Compile Include="App_Start\RouteConfig.vb" />
+    <Compile Include="Controllers\CampanaMarketingController.vb" />
     <Compile Include="Controllers\ClienteController.vb" />
+    <Compile Include="Controllers\CuponController.vb" />
+    <Compile Include="Controllers\EstadoEnvioController.vb" />
+    <Compile Include="Controllers\PoliticaEnvioController.vb" />
+    <Compile Include="Controllers\PromocionController.vb" />
+    <Compile Include="Controllers\PromocionProductoController.vb" />
     <Compile Include="Controllers\PruebaController.vb" />
+    <Compile Include="Controllers\ReglaEnvioGratisController.vb" />
+    <Compile Include="Controllers\ReglaPromocionController.vb" />
+    <Compile Include="Controllers\TarifaEnvioController.vb" />
+    <Compile Include="Controllers\TipoEntregaController.vb" />
+    <Compile Include="Controllers\TipoPromocionController.vb" />
+    <Compile Include="Controllers\ZonaEnvioController.vb" />
+    <Compile Include="Datos\CampanaMarketingDatos.vb" />
     <Compile Include="Datos\ClienteDatos.vb" />
     <Compile Include="Datos\ConexionOracle.vb" />
+    <Compile Include="Datos\CuponDatos.vb" />
+    <Compile Include="Datos\EstadoEnvioDatos.vb" />
+    <Compile Include="Datos\PoliticaEnvioDatos.vb" />
+    <Compile Include="Datos\PromocionDatos.vb" />
+    <Compile Include="Datos\PromocionProductoDatos.vb" />
+    <Compile Include="Datos\ReglaEnvioGratisDatos.vb" />
+    <Compile Include="Datos\ReglaPromocionDatos.vb" />
+    <Compile Include="Datos\TarifaEnvioDatos.vb" />
+    <Compile Include="Datos\TipoEntregaDatos.vb" />
+    <Compile Include="Datos\TipoPromocionDatos.vb" />
+    <Compile Include="Datos\ZonaEnvioDatos.vb" />
+    <Compile Include="Entidades\CampanaMarketing.vb" />
     <Compile Include="Entidades\Cliente.vb" />
+    <Compile Include="Entidades\Cupon.vb" />
+    <Compile Include="Entidades\EstadoEnvio.vb" />
+    <Compile Include="Entidades\PoliticaEnvio.vb" />
+    <Compile Include="Entidades\Promocion.vb" />
+    <Compile Include="Entidades\PromocionProducto.vb" />
+    <Compile Include="Entidades\ReglaEnvioGratis.vb" />
+    <Compile Include="Entidades\ReglaPromocion.vb" />
+    <Compile Include="Entidades\TarifaEnvio.vb" />
+    <Compile Include="Entidades\TipoEntrega.vb" />
+    <Compile Include="Entidades\TipoPromocion.vb" />
+    <Compile Include="Entidades\ZonaEnvio.vb" />
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -211,7 +247,19 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
+    <Compile Include="Servicios\CampanaMarketingServicio.vb" />
     <Compile Include="Servicios\ClienteServicio.vb" />
+    <Compile Include="Servicios\CuponServicio.vb" />
+    <Compile Include="Servicios\EstadoEnvioServicio.vb" />
+    <Compile Include="Servicios\PoliticaEnvioServicio.vb" />
+    <Compile Include="Servicios\PromocionProductoServicio.vb" />
+    <Compile Include="Servicios\PromocionServicio.vb" />
+    <Compile Include="Servicios\ReglaEnvioGratisServicio.vb" />
+    <Compile Include="Servicios\ReglaPromocionServicio.vb" />
+    <Compile Include="Servicios\TarifaEnvioServicio.vb" />
+    <Compile Include="Servicios\TipoEntregaServicio.vb" />
+    <Compile Include="Servicios\TipoPromocionServicio.vb" />
+    <Compile Include="Servicios\ZonaEnvioServicio.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
