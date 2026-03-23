@@ -52,6 +52,9 @@
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.23.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>..\packages\Oracle.ManagedDataAccess.23.26.100\lib\net472\Oracle.ManagedDataAccess.dll</HintPath>
     </Reference>
@@ -152,11 +155,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
-      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="System" />
     <Import Include="System.Collections" />
@@ -201,32 +199,170 @@
     <Compile Include="Controllers\TipoEntregaController.vb" />
     <Compile Include="Controllers\TipoPromocionController.vb" />
     <Compile Include="Controllers\ZonaEnvioController.vb" />
+    <Compile Include="Datos\AbastecimientoDatos.vb" />
     <Compile Include="Datos\CampanaMarketingDatos.vb" />
+    <Compile Include="Datos\CargoDatos.vb" />
+    <Compile Include="Datos\CarritoDatos.vb" />
+    <Compile Include="Datos\CarritoDetalleDatos.vb" />
+    <Compile Include="Datos\CategoriaDatos.vb" />
     <Compile Include="Datos\ClienteDatos.vb" />
+    <Compile Include="Datos\CondicionPagoDatos.vb" />
     <Compile Include="Datos\ConexionOracle.vb" />
+    <Compile Include="Datos\Consumo_Materia_PrimaDatos.vb" />
+    <Compile Include="Datos\ContratoProveedorDatos.vb" />
+    <Compile Include="Datos\Control_CalidadDatos.vb" />
+    <Compile Include="Datos\CuentaPagarProveedorDatos.vb" />
+    <Compile Include="Datos\cuotas_pagodatos.vb" />
     <Compile Include="Datos\CuponDatos.vb" />
+    <Compile Include="Datos\DepartamentoDatos.vb" />
+    <Compile Include="Datos\DevolucionDatos.vb" />
+    <Compile Include="Datos\EmpleadoDatos.vb" />
+    <Compile Include="Datos\EnvioDatos.vb" />
     <Compile Include="Datos\EstadoEnvioDatos.vb" />
+    <Compile Include="Datos\EstadoOrdenCompraDatos.vb" />
+    <Compile Include="Datos\EstadoProduccionDatos.vb" />
+    <Compile Include="Datos\Estado_ordendatos.vb" />
+    <Compile Include="Datos\EvaluacionDatos.vb" />
+    <Compile Include="Datos\ExpedienteEmpleadoDatos.vb" />
+    <Compile Include="Datos\ExpedienteProveedorDatos.vb" />
+    <Compile Include="Datos\FacturaDatos.vb" />
+    <Compile Include="Datos\FacturaDetalleDatos.vb" />
+    <Compile Include="Datos\FaqDatos.vb" />
+    <Compile Include="Datos\HerramientaDatos.vb" />
+    <Compile Include="Datos\HistorialCompraDatos.vb" />
+    <Compile Include="Datos\HistorialLaboralDatos.vb" />
+    <Compile Include="Datos\HistorialPrecioMPProveedorDatos.vb" />
+    <Compile Include="Datos\HistorialPromocionDatos.vb" />
+    <Compile Include="Datos\Historial_cambiodatos.vb" />
+    <Compile Include="Datos\IncidenteLaboralDatos.vb" />
+    <Compile Include="Datos\InventarioProductoDatos.vb" />
+    <Compile Include="Datos\Inventario_Materia_PrimaDatos.vb" />
+    <Compile Include="Datos\ListaDeseosDatos.vb" />
+    <Compile Include="Datos\Lista_MaterialesDatos.vb" />
+    <Compile Include="Datos\Lista_Materiales_DetalleDatos.vb" />
+    <Compile Include="Datos\Mantenimiento_HerramientaDatos.vb" />
+    <Compile Include="Datos\Materia_PrimaDatos.vb" />
+    <Compile Include="Datos\Metodo_de_pagodatos.vb" />
+    <Compile Include="Datos\MovimientoInventarioDatos.vb" />
+    <Compile Include="Datos\Movimiento_Materia_PrimaDatos.vb" />
+    <Compile Include="Datos\NominaDatos.vb" />
+    <Compile Include="Datos\NominaDetalleDatos.vb" />
+    <Compile Include="Datos\OrdenCompraDatos.vb" />
+    <Compile Include="Datos\OrdenCompraDetalleDatos.vb" />
+    <Compile Include="Datos\Orden_ProduccionDatos.vb" />
+    <Compile Include="Datos\Orden_Produccion_TareaDatos.vb" />
+    <Compile Include="Datos\Orden_Ventadatos.vb" />
+    <Compile Include="Datos\Orden_Venta_detalledatos.vb" />
+    <Compile Include="Datos\pagodatos.vb" />
+    <Compile Include="Datos\PagoProveedorDatos.vb" />
+    <Compile Include="Datos\Permisodatos.vb" />
+    <Compile Include="Datos\PlanProduccionDatos.vb" />
     <Compile Include="Datos\PoliticaEnvioDatos.vb" />
+    <Compile Include="Datos\PrecioHistoricoDatos.vb" />
+    <Compile Include="Datos\PreferenciaClienteDatos.vb" />
+    <Compile Include="Datos\Produccion_ResultadoDatos.vb" />
+    <Compile Include="Datos\ProductoDatos.vb" />
     <Compile Include="Datos\PromocionDatos.vb" />
     <Compile Include="Datos\PromocionProductoDatos.vb" />
+    <Compile Include="Datos\ProveedorDatos.vb" />
+    <Compile Include="Datos\RecepcionMaterialDatos.vb" />
     <Compile Include="Datos\ReglaEnvioGratisDatos.vb" />
     <Compile Include="Datos\ReglaPromocionDatos.vb" />
+    <Compile Include="Datos\ResenaComentarioDatos.vb" />
+    <Compile Include="Datos\Roldatos.vb" />
+    <Compile Include="Datos\RolEmpleadoDatos.vb" />
+    <Compile Include="Datos\Rol_permisodatos.vb" />
+    <Compile Include="Datos\RutaEntregaDatos.vb" />
+    <Compile Include="Datos\SeguimientoEnvioDatos.vb" />
+    <Compile Include="Datos\Sesiondatos.vb" />
     <Compile Include="Datos\TarifaEnvioDatos.vb" />
     <Compile Include="Datos\TipoEntregaDatos.vb" />
     <Compile Include="Datos\TipoPromocionDatos.vb" />
+    <Compile Include="Datos\UnidadMedidaDatos.vb" />
+    <Compile Include="Datos\Usuariodatos.vb" />
+    <Compile Include="Datos\VehiculoDatos.vb" />
     <Compile Include="Datos\ZonaEnvioDatos.vb" />
+    <Compile Include="Entidades\Abastecimiento.vb" />
     <Compile Include="Entidades\CampanaMarketing.vb" />
+    <Compile Include="Entidades\Cargo.vb" />
+    <Compile Include="Entidades\Carrito.vb" />
+    <Compile Include="Entidades\CarritoDetalle.vb" />
+    <Compile Include="Entidades\Categoria.vb" />
     <Compile Include="Entidades\Cliente.vb" />
+    <Compile Include="Entidades\CondicionPago.vb" />
+    <Compile Include="Entidades\Consumo_Materia_Prima.vb" />
+    <Compile Include="Entidades\ContratoProveedor.vb" />
+    <Compile Include="Entidades\Control_Calidad.vb" />
+    <Compile Include="Entidades\CuentaPagarProveedor.vb" />
+    <Compile Include="Entidades\cuotas_pagoentidad.vb" />
     <Compile Include="Entidades\Cupon.vb" />
+    <Compile Include="Entidades\Departemenento.vb" />
+    <Compile Include="Entidades\Devolucion.vb" />
+    <Compile Include="Entidades\Empleado.vb" />
+    <Compile Include="Entidades\Envio.vb" />
     <Compile Include="Entidades\EstadoEnvio.vb" />
+    <Compile Include="Entidades\EstadoOrdenCompra.vb" />
+    <Compile Include="Entidades\EstadoProduccion.vb" />
+    <Compile Include="Entidades\Estado_ordenentidad.vb" />
+    <Compile Include="Entidades\Evaluacion.vb" />
+    <Compile Include="Entidades\ExpedienteEmpleado.vb" />
+    <Compile Include="Entidades\ExpedienteProveedor.vb" />
+    <Compile Include="Entidades\Factura.vb" />
+    <Compile Include="Entidades\FacturaDetalle.vb" />
+    <Compile Include="Entidades\Faq.vb" />
+    <Compile Include="Entidades\Herramienta.vb" />
+    <Compile Include="Entidades\HistorialCompra.vb" />
+    <Compile Include="Entidades\HistorialLaboral.vb" />
+    <Compile Include="Entidades\HistorialPrecioMateriaPrimaProveedor.vb" />
+    <Compile Include="Entidades\HistorialPromocion.vb" />
+    <Compile Include="Entidades\Historial_cambio_entidad.vb" />
+    <Compile Include="Entidades\IncidenteLaboral.vb" />
+    <Compile Include="Entidades\InventarioProducto.vb" />
+    <Compile Include="Entidades\Inventario_Materia_Prima.vb" />
+    <Compile Include="Entidades\ListaDeseos.vb" />
+    <Compile Include="Entidades\Lista_Materiales.vb" />
+    <Compile Include="Entidades\Lista_Materiales_Detalle.vb" />
+    <Compile Include="Entidades\Mantenimiento_Herramienta.vb" />
+    <Compile Include="Entidades\Materia_Prima.vb" />
+    <Compile Include="Entidades\Metodo_de_pagoentidad.vb" />
+    <Compile Include="Entidades\MovimientoInventario.vb" />
+    <Compile Include="Entidades\Movimiento_Materia_Prima.vb" />
+    <Compile Include="Entidades\Nomina.vb" />
+    <Compile Include="Entidades\NominaDetalle.vb" />
+    <Compile Include="Entidades\OrdenCompra.vb" />
+    <Compile Include="Entidades\OrdenCompraDetalle.vb" />
+    <Compile Include="Entidades\Orden_Produccion.vb" />
+    <Compile Include="Entidades\Orden_Produccion_Tarea.vb" />
+    <Compile Include="Entidades\Orden_Ventaentidad.vb" />
+    <Compile Include="Entidades\Orden_Venta_detalleentidad.vb" />
+    <Compile Include="Entidades\pagoentidad.vb" />
+    <Compile Include="Entidades\PagoProveedor.vb" />
+    <Compile Include="Entidades\Permisoentidad.vb" />
+    <Compile Include="Entidades\PlanProduccion.vb" />
     <Compile Include="Entidades\PoliticaEnvio.vb" />
+    <Compile Include="Entidades\PrecioHistorico.vb" />
+    <Compile Include="Entidades\PreferenciaCliente.vb" />
+    <Compile Include="Entidades\Produccion_Resultado.vb" />
+    <Compile Include="Entidades\Producto.vb" />
     <Compile Include="Entidades\Promocion.vb" />
     <Compile Include="Entidades\PromocionProducto.vb" />
+    <Compile Include="Entidades\Proveedor.vb" />
+    <Compile Include="Entidades\RecepcionMaterial.vb" />
     <Compile Include="Entidades\ReglaEnvioGratis.vb" />
     <Compile Include="Entidades\ReglaPromocion.vb" />
+    <Compile Include="Entidades\ResenaComentario.vb" />
+    <Compile Include="Entidades\RolEmpleado.vb" />
+    <Compile Include="Entidades\Rolentidad.vb" />
+    <Compile Include="Entidades\Rol_permisoentidad.vb" />
+    <Compile Include="Entidades\RutaEntrega.vb" />
+    <Compile Include="Entidades\SeguimientoEnvio.vb" />
+    <Compile Include="Entidades\Sesionentidad.vb" />
     <Compile Include="Entidades\TarifaEnvio.vb" />
     <Compile Include="Entidades\TipoEntrega.vb" />
     <Compile Include="Entidades\TipoPromocion.vb" />
+    <Compile Include="Entidades\UnidadMedida.vb" />
+    <Compile Include="Entidades\Usuarioentidad.vb" />
+    <Compile Include="Entidades\Vehiculo.vb" />
     <Compile Include="Entidades\ZonaEnvio.vb" />
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>
@@ -399,16 +535,16 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
   </Target> -->
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+  </Target>
 </Project>
