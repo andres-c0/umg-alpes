@@ -1,20 +1,19 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
-Imports System.Configuration
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 
 Public Class CuponDatos
 
-    Private ReadOnly _connectionString As String
+    Private ReadOnly _conexion As alpes.Datos.ConexionOracle
 
     Public Sub New()
-        _connectionString = ConfigurationManager.ConnectionStrings("OracleConnection").ConnectionString
+        _conexion = New alpes.Datos.ConexionOracle()
     End Sub
 
     Public Function Insertar(ByVal entidad As Cupon) As Integer
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CUPON.SP_INSERTAR_CUPON", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_CODIGO", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(entidad.Codigo), CType(DBNull.Value, Object), entidad.Codigo)
@@ -34,7 +33,7 @@ Public Class CuponDatos
     End Function
 
     Public Sub Actualizar(ByVal entidad As Cupon)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CUPON.SP_ACTUALIZAR_CUPON", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_CUPON_ID", OracleDbType.Int32).Value = entidad.CuponId
@@ -53,7 +52,7 @@ Public Class CuponDatos
     End Sub
 
     Public Sub Eliminar(ByVal id As Integer)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CUPON.SP_ELIMINAR_CUPON", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CUPON_ID", OracleDbType.Int32).Value = id
@@ -67,7 +66,7 @@ Public Class CuponDatos
     Public Function ObtenerPorId(ByVal id As Integer) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CUPON.SP_OBTENER_CUPON", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CUPON_ID", OracleDbType.Int32).Value = id
@@ -85,7 +84,7 @@ Public Class CuponDatos
     Public Function Listar() As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CUPON.SP_LISTAR_CUPONES", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
@@ -102,7 +101,7 @@ Public Class CuponDatos
     Public Function Buscar(ByVal criterio As String, ByVal valor As String) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CUPON.SP_BUSCAR_CUPONES", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio

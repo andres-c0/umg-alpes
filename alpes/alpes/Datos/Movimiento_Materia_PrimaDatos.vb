@@ -1,14 +1,14 @@
-Imports Oracle.ManagedDataAccess.Client
+﻿Imports Oracle.ManagedDataAccess.Client
 Imports System.Data
 Imports alpes.Entidades
 
 Namespace Datos
     Public Class MovimientoMateriaPrimaDatos
 
-        Private ReadOnly _conexion As ConexionOracle
+        Private ReadOnly _conexion As alpes.Datos.ConexionOracle
 
         Public Sub New()
-            _conexion = New ConexionOracle()
+            _conexion = New alpes.Datos.ConexionOracle()
         End Sub
 
         Public Function Insertar(entidad As MovimientoMateriaPrima) As Integer

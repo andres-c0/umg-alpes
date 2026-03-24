@@ -42,12 +42,79 @@ Namespace Datos
             End Using
         End Function
 
+        Public Sub Actualizar(cliente As Cliente)
+            Using conn = _conexion.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_CLIENTE.SP_ACTUALIZAR_CLIENTE", conn)
+                    cmd.CommandType = CommandType.StoredProcedure
+                    cmd.Parameters.Add("P_CLI_ID", OracleDbType.Int32).Value = cliente.CliId
+                    cmd.Parameters.Add("P_TIPO_DOCUMENTO", OracleDbType.Varchar2).Value = cliente.TipoDocumento
+                    cmd.Parameters.Add("P_NUM_DOCUMENTO", OracleDbType.Varchar2).Value = cliente.NumDocumento
+                    cmd.Parameters.Add("P_NIT", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(cliente.Nit), CType(DBNull.Value, Object), cliente.Nit)
+                    cmd.Parameters.Add("P_NOMBRES", OracleDbType.Varchar2).Value = cliente.Nombres
+                    cmd.Parameters.Add("P_APELLIDOS", OracleDbType.Varchar2).Value = cliente.Apellidos
+                    cmd.Parameters.Add("P_EMAIL", OracleDbType.Varchar2).Value = cliente.Email
+                    cmd.Parameters.Add("P_TEL_RESIDENCIA", OracleDbType.Varchar2).Value = cliente.TelResidencia
+                    cmd.Parameters.Add("P_TEL_CELULAR", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(cliente.TelCelular), CType(DBNull.Value, Object), cliente.TelCelular)
+                    cmd.Parameters.Add("P_DIRECCION", OracleDbType.Varchar2).Value = cliente.Direccion
+                    cmd.Parameters.Add("P_CIUDAD", OracleDbType.Varchar2).Value = cliente.Ciudad
+                    cmd.Parameters.Add("P_DEPARTAMENTO", OracleDbType.Varchar2).Value = cliente.Departamento
+                    cmd.Parameters.Add("P_PAIS", OracleDbType.Varchar2).Value = cliente.Pais
+                    cmd.Parameters.Add("P_PROFESION", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(cliente.Profesion), CType(DBNull.Value, Object), cliente.Profesion)
+
+                    conn.Open()
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+        End Sub
+
+        Public Sub Eliminar(cliId As Integer)
+            Using conn = _conexion.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_CLIENTE.SP_ELIMINAR_CLIENTE", conn)
+                    cmd.CommandType = CommandType.StoredProcedure
+                    cmd.Parameters.Add("P_CLI_ID", OracleDbType.Int32).Value = cliId
+                    conn.Open()
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+        End Sub
+
+        Public Function ObtenerPorId(cliId As Integer) As DataTable
+            Using conn = _conexion.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_CLIENTE.SP_OBTENER_CLIENTE", conn)
+                    cmd.CommandType = CommandType.StoredProcedure
+                    cmd.Parameters.Add("P_CLI_ID", OracleDbType.Int32).Value = cliId
+                    cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
+                    Using da As New OracleDataAdapter(cmd)
+                        Dim dt As New DataTable()
+                        da.Fill(dt)
+                        Return dt
+                    End Using
+                End Using
+            End Using
+        End Function
+
         Public Function Listar() As DataTable
             Using conn = _conexion.ObtenerConexion()
                 Using cmd As New OracleCommand("PKG_CLIENTE.SP_LISTAR_CLIENTES", conn)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
+                    Using da As New OracleDataAdapter(cmd)
+                        Dim dt As New DataTable()
+                        da.Fill(dt)
+                        Return dt
+                    End Using
+                End Using
+            End Using
+        End Function
+
+        Public Function Buscar(criterio As String, valor As String) As DataTable
+            Using conn = _conexion.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_CLIENTE.SP_BUSCAR_CLIENTES", conn)
+                    cmd.CommandType = CommandType.StoredProcedure
+                    cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio
+                    cmd.Parameters.Add("P_VALOR", OracleDbType.Varchar2).Value = valor
+                    cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
                     Using da As New OracleDataAdapter(cmd)
                         Dim dt As New DataTable()
                         da.Fill(dt)

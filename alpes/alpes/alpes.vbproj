@@ -185,6 +185,7 @@
     <Compile Include="App_Start\BundleConfig.vb" />
     <Compile Include="App_Start\FilterConfig.vb" />
     <Compile Include="App_Start\RouteConfig.vb" />
+    <Compile Include="Controllers\ApiEntidadesController.vb" />
     <Compile Include="Controllers\CampanaMarketingController.vb" />
     <Compile Include="Controllers\ClienteController.vb" />
     <Compile Include="Controllers\CuponController.vb" />
@@ -192,6 +193,7 @@
     <Compile Include="Controllers\PoliticaEnvioController.vb" />
     <Compile Include="Controllers\PromocionController.vb" />
     <Compile Include="Controllers\PromocionProductoController.vb" />
+    <Compile Include="Controllers\ProveedorController.vb" />
     <Compile Include="Controllers\PruebaController.vb" />
     <Compile Include="Controllers\ReglaEnvioGratisController.vb" />
     <Compile Include="Controllers\ReglaPromocionController.vb" />
@@ -383,6 +385,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
+    <Compile Include="Servicios\EntidadCrudServicio.vb" />
     <Compile Include="Servicios\CampanaMarketingServicio.vb" />
     <Compile Include="Servicios\ClienteServicio.vb" />
     <Compile Include="Servicios\CuponServicio.vb" />
@@ -390,6 +393,7 @@
     <Compile Include="Servicios\PoliticaEnvioServicio.vb" />
     <Compile Include="Servicios\PromocionProductoServicio.vb" />
     <Compile Include="Servicios\PromocionServicio.vb" />
+    <Compile Include="Servicios\ProveedorServicio.vb" />
     <Compile Include="Servicios\ReglaEnvioGratisServicio.vb" />
     <Compile Include="Servicios\ReglaPromocionServicio.vb" />
     <Compile Include="Servicios\TarifaEnvioServicio.vb" />
@@ -497,6 +501,7 @@
     <Content Include="Views\_ViewStart.vbhtml" />
     <Content Include="Views\Home\About.vbhtml" />
     <Content Include="Views\Home\Contact.vbhtml" />
+    <Content Include="Views\Home\Cruds.vbhtml" />
     <Content Include="Views\Home\Index.vbhtml" />
     <Content Include="Views\Shared\Error.vbhtml" />
     <Content Include="Views\Shared\_Layout.vbhtml" />
