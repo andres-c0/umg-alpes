@@ -1,20 +1,19 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
-Imports System.Configuration
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 
 Public Class EstadoEnvioDatos
 
-    Private ReadOnly _connectionString As String
+    Private ReadOnly _conexion As alpes.Datos.ConexionOracle
 
     Public Sub New()
-        _connectionString = ConfigurationManager.ConnectionStrings("OracleConnection").ConnectionString
+        _conexion = New alpes.Datos.ConexionOracle()
     End Sub
 
     Public Function Insertar(ByVal entidad As EstadoEnvio) As Integer
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ESTADO_ENVIO.SP_INSERTAR_ESTADO_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_CODIGO", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(entidad.Codigo), CType(DBNull.Value, Object), entidad.Codigo)
@@ -29,7 +28,7 @@ Public Class EstadoEnvioDatos
     End Function
 
     Public Sub Actualizar(ByVal entidad As EstadoEnvio)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ESTADO_ENVIO.SP_ACTUALIZAR_ESTADO_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_ESTADO_ENVIO_ID", OracleDbType.Int32).Value = entidad.EstadoEnvioId
@@ -43,7 +42,7 @@ Public Class EstadoEnvioDatos
     End Sub
 
     Public Sub Eliminar(ByVal id As Integer)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ESTADO_ENVIO.SP_ELIMINAR_ESTADO_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_ESTADO_ENVIO_ID", OracleDbType.Int32).Value = id
@@ -57,7 +56,7 @@ Public Class EstadoEnvioDatos
     Public Function ObtenerPorId(ByVal id As Integer) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ESTADO_ENVIO.SP_OBTENER_ESTADO_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_ESTADO_ENVIO_ID", OracleDbType.Int32).Value = id
@@ -75,7 +74,7 @@ Public Class EstadoEnvioDatos
     Public Function Listar() As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ESTADO_ENVIO.SP_LISTAR_ESTADOS_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
@@ -92,7 +91,7 @@ Public Class EstadoEnvioDatos
     Public Function Buscar(ByVal criterio As String, ByVal valor As String) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ESTADO_ENVIO.SP_BUSCAR_ESTADOS_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio

@@ -2,23 +2,18 @@
 Imports alpes.Servicios
 Imports alpes.Entidades
 
-Public Class ClienteController
+Public Class ProveedorController
     Inherits Controller
 
-    Private ReadOnly _servicio As ClienteServicio
+    Private ReadOnly _servicio As ProveedorServicio
 
     Public Sub New()
-        _servicio = New ClienteServicio()
+        _servicio = New ProveedorServicio()
     End Sub
 
     Function Index() As ActionResult
-        Dim dt = _servicio.Listar()
-        Return View(dt)
-    End Function
-
-    Function Details(id As Integer) As ActionResult
-        Dim dt = _servicio.ObtenerPorId(id)
-        Return View(dt)
+        Dim modelo = _servicio.Listar()
+        Return View(modelo)
     End Function
 
     Function Create() As ActionResult
@@ -26,33 +21,33 @@ Public Class ClienteController
     End Function
 
     <HttpPost>
-    Function Create(cliente As Cliente) As ActionResult
+    Function Create(proveedor As Proveedor) As ActionResult
         If ModelState.IsValid Then
-            _servicio.Insertar(cliente)
+            _servicio.Insertar(proveedor)
             Return RedirectToAction("Index")
         End If
 
-        Return View(cliente)
+        Return View(proveedor)
     End Function
 
     Function Edit(id As Integer) As ActionResult
-        Dim dt = _servicio.ObtenerPorId(id)
-        Return View(dt)
+        Dim modelo = _servicio.Buscar("PROV_ID", id.ToString())
+        Return View(modelo)
     End Function
 
     <HttpPost>
-    Function Edit(cliente As Cliente) As ActionResult
+    Function Edit(proveedor As Proveedor) As ActionResult
         If ModelState.IsValid Then
-            _servicio.Actualizar(cliente)
+            _servicio.Actualizar(proveedor)
             Return RedirectToAction("Index")
         End If
 
-        Return View(cliente)
+        Return View(proveedor)
     End Function
 
     Function Delete(id As Integer) As ActionResult
-        Dim dt = _servicio.ObtenerPorId(id)
-        Return View(dt)
+        Dim modelo = _servicio.Buscar("PROV_ID", id.ToString())
+        Return View(modelo)
     End Function
 
     <HttpPost, ActionName("Delete")>
@@ -67,19 +62,19 @@ Public Class ClienteController
     End Function
 
     <HttpGet>
-    Function ApiObtener(id As Integer) As JsonResult
-        Return Json(_servicio.ObtenerPorId(id), JsonRequestBehavior.AllowGet)
+    Function ApiBuscar(criterio As String, valor As String) As JsonResult
+        Return Json(_servicio.Buscar(criterio, valor), JsonRequestBehavior.AllowGet)
     End Function
 
     <HttpPost>
-    Function ApiCrear(cliente As Cliente) As JsonResult
-        Dim nuevoId = _servicio.Insertar(cliente)
+    Function ApiCrear(proveedor As Proveedor) As JsonResult
+        Dim nuevoId = _servicio.Insertar(proveedor)
         Return Json(New With {.id = nuevoId})
     End Function
 
     <HttpPost>
-    Function ApiActualizar(cliente As Cliente) As JsonResult
-        _servicio.Actualizar(cliente)
+    Function ApiActualizar(proveedor As Proveedor) As JsonResult
+        _servicio.Actualizar(proveedor)
         Return Json(New With {.ok = True})
     End Function
 

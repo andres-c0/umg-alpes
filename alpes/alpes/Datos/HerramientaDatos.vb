@@ -1,14 +1,14 @@
-Imports Oracle.ManagedDataAccess.Client
+﻿Imports Oracle.ManagedDataAccess.Client
 Imports System.Data
 Imports alpes.Entidades
 
 Namespace Datos
     Public Class HerramientaDatos
 
-        Private ReadOnly _conexion As ConexionOracle
+        Private ReadOnly _conexion As alpes.Datos.ConexionOracle
 
         Public Sub New()
-            _conexion = New ConexionOracle()
+            _conexion = New alpes.Datos.ConexionOracle()
         End Sub
 
         Public Function Insertar(entidad As Herramienta) As Integer

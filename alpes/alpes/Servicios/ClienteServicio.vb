@@ -15,8 +15,24 @@ Namespace Servicios
             Return _datos.Insertar(cliente)
         End Function
 
+        Public Sub Actualizar(cliente As Cliente)
+            _datos.Actualizar(cliente)
+        End Sub
+
+        Public Sub Eliminar(cliId As Integer)
+            _datos.Eliminar(cliId)
+        End Sub
+
+        Public Function ObtenerPorId(cliId As Integer) As DataTable
+            Return _datos.ObtenerPorId(cliId)
+        End Function
+
         Public Function Listar() As DataTable
             Return _datos.Listar()
+        End Function
+
+        Public Function Buscar(criterio As String, valor As String) As DataTable
+            Return _datos.Buscar(criterio, valor)
         End Function
 
     End Class

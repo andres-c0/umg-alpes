@@ -1,20 +1,19 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
-Imports System.Configuration
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 
 Public Class PromocionDatos
 
-    Private ReadOnly _connectionString As String
+    Private ReadOnly _conexion As alpes.Datos.ConexionOracle
 
     Public Sub New()
-        _connectionString = ConfigurationManager.ConnectionStrings("OracleConnection").ConnectionString
+        _conexion = New alpes.Datos.ConexionOracle()
     End Sub
 
     Public Function Insertar(ByVal entidad As Promocion) As Integer
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_PROMOCION.SP_INSERTAR_PROMOCION", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_TIPO_PROMOCION_ID", OracleDbType.Int32).Value = entidad.TipoPromocionId
@@ -33,7 +32,7 @@ Public Class PromocionDatos
     End Function
 
     Public Sub Actualizar(ByVal entidad As Promocion)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_PROMOCION.SP_ACTUALIZAR_PROMOCION", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_PROMOCION_ID", OracleDbType.Int32).Value = entidad.PromocionId
@@ -51,7 +50,7 @@ Public Class PromocionDatos
     End Sub
 
     Public Sub Eliminar(ByVal id As Integer)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_PROMOCION.SP_ELIMINAR_PROMOCION", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_PROMOCION_ID", OracleDbType.Int32).Value = id
@@ -65,7 +64,7 @@ Public Class PromocionDatos
     Public Function ObtenerPorId(ByVal id As Integer) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_PROMOCION.SP_OBTENER_PROMOCION", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_PROMOCION_ID", OracleDbType.Int32).Value = id
@@ -83,7 +82,7 @@ Public Class PromocionDatos
     Public Function Listar() As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_PROMOCION.SP_LISTAR_PROMOCIONES", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
@@ -100,7 +99,7 @@ Public Class PromocionDatos
     Public Function Buscar(ByVal criterio As String, ByVal valor As String) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_PROMOCION.SP_BUSCAR_PROMOCIONES", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio

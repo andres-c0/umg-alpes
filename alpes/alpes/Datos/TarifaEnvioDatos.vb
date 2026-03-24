@@ -1,20 +1,19 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
-Imports System.Configuration
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 
 Public Class TarifaEnvioDatos
 
-    Private ReadOnly _connectionString As String
+    Private ReadOnly _conexion As alpes.Datos.ConexionOracle
 
     Public Sub New()
-        _connectionString = ConfigurationManager.ConnectionStrings("OracleConnection").ConnectionString
+        _conexion = New alpes.Datos.ConexionOracle()
     End Sub
 
     Public Function Insertar(ByVal entidad As TarifaEnvio) As Integer
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_TARIFA_ENVIO.SP_INSERTAR_TARIFA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_ZONA_ENVIO_ID", OracleDbType.Int32).Value = entidad.ZonaEnvioId
@@ -32,7 +31,7 @@ Public Class TarifaEnvioDatos
     End Function
 
     Public Sub Actualizar(ByVal entidad As TarifaEnvio)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_TARIFA_ENVIO.SP_ACTUALIZAR_TARIFA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_TARIFA_ENVIO_ID", OracleDbType.Int32).Value = entidad.TarifaEnvioId
@@ -49,7 +48,7 @@ Public Class TarifaEnvioDatos
     End Sub
 
     Public Sub Eliminar(ByVal id As Integer)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_TARIFA_ENVIO.SP_ELIMINAR_TARIFA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_TARIFA_ENVIO_ID", OracleDbType.Int32).Value = id
@@ -63,7 +62,7 @@ Public Class TarifaEnvioDatos
     Public Function ObtenerPorId(ByVal id As Integer) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_TARIFA_ENVIO.SP_OBTENER_TARIFA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_TARIFA_ENVIO_ID", OracleDbType.Int32).Value = id
@@ -81,7 +80,7 @@ Public Class TarifaEnvioDatos
     Public Function Listar() As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_TARIFA_ENVIO.SP_LISTAR_TARIFAS_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
@@ -98,7 +97,7 @@ Public Class TarifaEnvioDatos
     Public Function Buscar(ByVal criterio As String, ByVal valor As String) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_TARIFA_ENVIO.SP_BUSCAR_TARIFAS_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio
