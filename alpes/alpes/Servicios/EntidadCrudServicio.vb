@@ -1,25 +1,14 @@
 ﻿Imports System.Data
+Imports System.IO
 Imports System.Reflection
+Imports System.Text.RegularExpressions
+Imports System.Web.Hosting
 Imports Newtonsoft.Json
 
 Namespace Servicios
     Public Class EntidadCrudServicio
 
-        Private Shared ReadOnly _mapaEntidades As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase) From {
-            {"CLIENTE", "ClienteDatos"},
-            {"ESTADO_ENVIO", "EstadoEnvioDatos"},
-            {"TIPO_ENTREGA", "TipoEntregaDatos"},
-            {"ZONA_ENVIO", "ZonaEnvioDatos"},
-            {"POLITICA_ENVIO", "PoliticaEnvioDatos"},
-            {"REGLA_ENVIO_GRATIS", "ReglaEnvioGratisDatos"},
-            {"TARIFA_ENVIO", "TarifaEnvioDatos"},
-            {"TIPO_PROMOCION", "TipoPromocionDatos"},
-            {"PROMOCION", "PromocionDatos"},
-            {"PROMOCION_PRODUCTO", "PromocionProductoDatos"},
-            {"REGLA_PROMOCION", "ReglaPromocionDatos"},
-            {"CAMPANA_MARKETING", "CampanaMarketingDatos"},
-            {"CUPON", "CuponDatos"}
-        }
+        Private Shared ReadOnly _mapaEntidades As Lazy(Of Dictionary(Of String, String)) = New Lazy(Of Dictionary(Of String, String))(AddressOf ConstruirMapaEntidades)
 
         Private Shared Function NormalizarNombre(nombre As String) As String
             If String.IsNullOrWhiteSpace(nombre) Then
@@ -29,20 +18,69 @@ Namespace Servicios
             Return New String(nombre.Where(Function(c) Char.IsLetterOrDigit(c)).ToArray()).ToUpperInvariant()
         End Function
 
+        Private Shared Function ObtenerRutaScripts() As String
+            Dim rutaWeb = HostingEnvironment.MapPath("~/scripts")
+            If Not String.IsNullOrWhiteSpace(rutaWeb) AndAlso Directory.Exists(rutaWeb) Then
+                Return rutaWeb
+            End If
+
+            Dim rutaRepo = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "scripts"))
+            If Directory.Exists(rutaRepo) Then
+                Return rutaRepo
+            End If
+
+            Return String.Empty
+        End Function
+
+        Private Shared Function ConstruirMapaEntidades() As Dictionary(Of String, String)
+            Dim mapa As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+            Dim rutaScripts = ObtenerRutaScripts()
+            If String.IsNullOrWhiteSpace(rutaScripts) Then
+                Return mapa
+            End If
+
+            Dim tiposDatos = GetType(EntidadCrudServicio).Assembly.GetTypes().Where(
+                Function(t) t.IsClass AndAlso t.Name.EndsWith("Datos", StringComparison.OrdinalIgnoreCase)).ToList()
+
+            For Each archivoSql In Directory.GetFiles(rutaScripts, "*.sql", SearchOption.TopDirectoryOnly)
+                Dim contenido = File.ReadAllText(archivoSql)
+                Dim match = Regex.Match(contenido, "CREATE\s+OR\s+REPLACE\s+PACKAGE\s+([A-Za-z0-9_]+)\s+AS", RegexOptions.IgnoreCase)
+                If Not match.Success Then Continue For
+
+                Dim paquete = match.Groups(1).Value.ToUpperInvariant()
+                If Not paquete.StartsWith("PKG_") Then Continue For
+
+                Dim entidadClave = paquete.Substring(4)
+                Dim entidadNormalizada = NormalizarNombre(entidadClave)
+
+                Dim tipo = tiposDatos.FirstOrDefault(
+                    Function(t)
+                        Dim nombreEntidad = Regex.Replace(t.Name, "DATOS$", "", RegexOptions.IgnoreCase)
+                        Return NormalizarNombre(nombreEntidad) = entidadNormalizada
+                    End Function)
+
+                If tipo IsNot Nothing AndAlso Not mapa.ContainsKey(entidadClave) Then
+                    mapa.Add(entidadClave, tipo.Name)
+                End If
+            Next
+
+            Return mapa
+        End Function
+
         Private Shared Function ResolverTipoDatos(entidad As String) As Type
             Dim clave = NormalizarNombre(entidad)
             If String.IsNullOrWhiteSpace(clave) Then
                 Return Nothing
             End If
 
-            Dim nombreClase As String = Nothing
-            If Not _mapaEntidades.TryGetValue(clave, nombreClase) Then
+            Dim entrada = _mapaEntidades.Value.FirstOrDefault(Function(kv) NormalizarNombre(kv.Key) = clave)
+            If String.IsNullOrWhiteSpace(entrada.Value) Then
                 Return Nothing
             End If
 
             Dim ensamblado = GetType(EntidadCrudServicio).Assembly
             Return ensamblado.GetTypes().FirstOrDefault(
-                Function(t) t.IsClass AndAlso String.Equals(t.Name, nombreClase, StringComparison.OrdinalIgnoreCase))
+                Function(t) t.IsClass AndAlso String.Equals(t.Name, entrada.Value, StringComparison.OrdinalIgnoreCase))
         End Function
 
         Private Shared Function CrearInstanciaDatos(tipoDatos As Type) As Object
@@ -65,7 +103,7 @@ Namespace Servicios
 
         Private Shared Sub ValidarEntidadSoportada(tipoDatos As Type, entidad As String)
             If tipoDatos Is Nothing Then
-                Throw New ArgumentException($"La entidad '{entidad}' no está soportada por los scripts SQL actuales.")
+                Throw New ArgumentException($"La entidad '{entidad}' no está soportada por los scripts SQL disponibles en /scripts.")
             End If
         End Sub
 
@@ -143,7 +181,7 @@ Namespace Servicios
         End Sub
 
         Public Function EntidadesSoportadas() As IEnumerable(Of String)
-            Return _mapaEntidades.Keys.OrderBy(Function(x) x).ToArray()
+            Return _mapaEntidades.Value.Keys.OrderBy(Function(x) x).ToArray()
         End Function
 
     End Class
