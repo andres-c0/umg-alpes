@@ -1,20 +1,19 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
-Imports System.Configuration
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 
 Public Class ZonaEnvioDatos
 
-    Private ReadOnly _connectionString As String
+    Private ReadOnly _conexion As Datos.ConexionOracle
 
     Public Sub New()
-        _connectionString = ConfigurationManager.ConnectionStrings("OracleConnection").ConnectionString
+        _conexion = New Datos.ConexionOracle()
     End Sub
 
     Public Function Insertar(ByVal entidad As ZonaEnvio) As Integer
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ZONA_ENVIO.SP_INSERTAR_ZONA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_NOMBRE", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(entidad.Nombre), CType(DBNull.Value, Object), entidad.Nombre)
@@ -31,7 +30,7 @@ Public Class ZonaEnvioDatos
     End Function
 
     Public Sub Actualizar(ByVal entidad As ZonaEnvio)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ZONA_ENVIO.SP_ACTUALIZAR_ZONA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_ZONA_ENVIO_ID", OracleDbType.Int32).Value = entidad.ZonaEnvioId
@@ -47,7 +46,7 @@ Public Class ZonaEnvioDatos
     End Sub
 
     Public Sub Eliminar(ByVal id As Integer)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ZONA_ENVIO.SP_ELIMINAR_ZONA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_ZONA_ENVIO_ID", OracleDbType.Int32).Value = id
@@ -61,7 +60,7 @@ Public Class ZonaEnvioDatos
     Public Function ObtenerPorId(ByVal id As Integer) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ZONA_ENVIO.SP_OBTENER_ZONA_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_ZONA_ENVIO_ID", OracleDbType.Int32).Value = id
@@ -79,7 +78,7 @@ Public Class ZonaEnvioDatos
     Public Function Listar() As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ZONA_ENVIO.SP_LISTAR_ZONAS_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
@@ -96,7 +95,7 @@ Public Class ZonaEnvioDatos
     Public Function Buscar(ByVal criterio As String, ByVal valor As String) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_ZONA_ENVIO.SP_BUSCAR_ZONAS_ENVIO", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio

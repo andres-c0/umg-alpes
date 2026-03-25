@@ -1,20 +1,19 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
-Imports System.Configuration
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 
 Public Class CampanaMarketingDatos
 
-    Private ReadOnly _connectionString As String
+    Private ReadOnly _conexion As Datos.ConexionOracle
 
     Public Sub New()
-        _connectionString = ConfigurationManager.ConnectionStrings("OracleConnection").ConnectionString
+        _conexion = New Datos.ConexionOracle()
     End Sub
 
     Public Function Insertar(ByVal entidad As CampanaMarketing) As Integer
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CAMPANA_MARKETING.SP_INSERTAR_CAMPANA_MARKETING", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_NOMBRE", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(entidad.Nombre), CType(DBNull.Value, Object), entidad.Nombre)
@@ -32,7 +31,7 @@ Public Class CampanaMarketingDatos
     End Function
 
     Public Sub Actualizar(ByVal entidad As CampanaMarketing)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CAMPANA_MARKETING.SP_ACTUALIZAR_CAMPANA_MARKETING", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_CAMPANA_MARKETING_ID", OracleDbType.Int32).Value = entidad.CampanaMarketingId
@@ -49,7 +48,7 @@ Public Class CampanaMarketingDatos
     End Sub
 
     Public Sub Eliminar(ByVal id As Integer)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CAMPANA_MARKETING.SP_ELIMINAR_CAMPANA_MARKETING", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CAMPANA_MARKETING_ID", OracleDbType.Int32).Value = id
@@ -63,7 +62,7 @@ Public Class CampanaMarketingDatos
     Public Function ObtenerPorId(ByVal id As Integer) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CAMPANA_MARKETING.SP_OBTENER_CAMPANA_MARKETING", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CAMPANA_MARKETING_ID", OracleDbType.Int32).Value = id
@@ -81,7 +80,7 @@ Public Class CampanaMarketingDatos
     Public Function Listar() As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CAMPANA_MARKETING.SP_LISTAR_CAMPANA_MARKETING", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
@@ -98,7 +97,7 @@ Public Class CampanaMarketingDatos
     Public Function Buscar(ByVal criterio As String, ByVal valor As String) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_CAMPANA_MARKETING.SP_BUSCAR_CAMPANA_MARKETING", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio

@@ -1,20 +1,19 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
-Imports System.Configuration
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 
 Public Class ReglaEnvioGratisDatos
 
-    Private ReadOnly _connectionString As String
+    Private ReadOnly _conexion As Datos.ConexionOracle
 
     Public Sub New()
-        _connectionString = ConfigurationManager.ConnectionStrings("OracleConnection").ConnectionString
+        _conexion = New Datos.ConexionOracle()
     End Sub
 
     Public Function Insertar(ByVal entidad As ReglaEnvioGratis) As Integer
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_REGLA_ENVIO_GRATIS.SP_INSERTAR_REGLA_ENVIO_GRATIS", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_ZONA_ENVIO_ID", OracleDbType.Int32).Value = entidad.ZonaEnvioId
@@ -32,7 +31,7 @@ Public Class ReglaEnvioGratisDatos
     End Function
 
     Public Sub Actualizar(ByVal entidad As ReglaEnvioGratis)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_REGLA_ENVIO_GRATIS.SP_ACTUALIZAR_REGLA_ENVIO_GRATIS", cn)
                 cmd.CommandType = CommandType.StoredProcedure
             cmd.Parameters.Add("P_REGLA_ENVIO_GRATIS_ID", OracleDbType.Int32).Value = entidad.ReglaEnvioGratisId
@@ -49,7 +48,7 @@ Public Class ReglaEnvioGratisDatos
     End Sub
 
     Public Sub Eliminar(ByVal id As Integer)
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_REGLA_ENVIO_GRATIS.SP_ELIMINAR_REGLA_ENVIO_GRATIS", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_REGLA_ENVIO_GRATIS_ID", OracleDbType.Int32).Value = id
@@ -63,7 +62,7 @@ Public Class ReglaEnvioGratisDatos
     Public Function ObtenerPorId(ByVal id As Integer) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_REGLA_ENVIO_GRATIS.SP_OBTENER_REGLA_ENVIO_GRATIS", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_REGLA_ENVIO_GRATIS_ID", OracleDbType.Int32).Value = id
@@ -81,7 +80,7 @@ Public Class ReglaEnvioGratisDatos
     Public Function Listar() As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_REGLA_ENVIO_GRATIS.SP_LISTAR_REGLAS_ENVIO_GRATIS", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
@@ -98,7 +97,7 @@ Public Class ReglaEnvioGratisDatos
     Public Function Buscar(ByVal criterio As String, ByVal valor As String) As DataTable
         Dim dt As New DataTable()
 
-        Using cn As New OracleConnection(_connectionString)
+        Using cn = _conexion.ObtenerConexion()
             Using cmd As New OracleCommand("PKG_REGLA_ENVIO_GRATIS.SP_BUSCAR_REGLAS_ENVIO_GRATIS", cn)
                 cmd.CommandType = CommandType.StoredProcedure
                 cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio

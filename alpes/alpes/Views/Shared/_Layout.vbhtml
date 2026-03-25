@@ -21,6 +21,7 @@
                     <li>@Html.ActionLink("Inicio", "Index", "Home", New With { .area = "" }, New With { .class = "nav-link" })</li>
                     <li>@Html.ActionLink("Acerca de", "About", "Home", New With { .area = "" }, New With { .class = "nav-link" })</li>
                     <li>@Html.ActionLink("Contacto", "Contact", "Home", New With { .area = "" }, New With { .class = "nav-link" })</li>
+                    <li>@Html.ActionLink("CRUD General", "Index", "CrudGeneral", New With { .area = "" }, New With { .class = "nav-link" })</li>
                 </ul>
             </div>
         </div>

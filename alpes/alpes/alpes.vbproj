@@ -187,6 +187,8 @@
     <Compile Include="App_Start\RouteConfig.vb" />
     <Compile Include="Controllers\CampanaMarketingController.vb" />
     <Compile Include="Controllers\ClienteController.vb" />
+    <Compile Include="Controllers\CrudApiController.vb" />
+    <Compile Include="Controllers\CrudGeneralController.vb" />
     <Compile Include="Controllers\CuponController.vb" />
     <Compile Include="Controllers\EstadoEnvioController.vb" />
     <Compile Include="Controllers\PoliticaEnvioController.vb" />
@@ -474,6 +476,7 @@
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
     <Content Include="Views\Prueba\Conexion.vbhtml" />
+    <Content Include="Views\CrudGeneral\Index.vbhtml" />
     <Content Include="Views\Cliente\Index.vbhtml" />
     <Content Include="Views\Cliente\Create.vbhtml" />
   </ItemGroup>
