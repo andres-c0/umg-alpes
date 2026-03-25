@@ -7,25 +7,26 @@ Imports System.Data
 Imports System.Globalization
 Imports System.Linq
 Imports System.Reflection
+Imports System.Text
 Imports System.Web.Mvc
 Imports Newtonsoft.Json.Linq
 
 Public Class CrudApiController
     Inherits Controller
 
+    Private Shared ReadOnly _assembly As Assembly = GetType(CrudApiController).Assembly
+
     <HttpGet>
     Public Function Tablas() As JsonResult
-        Return Json(GetTableConfigs(), JsonRequestBehavior.AllowGet)
+        Dim configs = BuildTableConfigs()
+        Return Json(configs, JsonRequestBehavior.AllowGet)
     End Function
 
     <HttpGet>
     Public Function Listar(ByVal tabla As String) As JsonResult
         Try
-            Dim dt = ExecuteList(tabla)
-            Return Json(New With {
-                .ok = True,
-                .data = DataTableToList(dt)
-            }, JsonRequestBehavior.AllowGet)
+            Dim dt = ExecuteDataMethod(tabla, "Listar")
+            Return Json(New With {.ok = True, .data = DataTableToList(dt)}, JsonRequestBehavior.AllowGet)
         Catch ex As Exception
             Return Json(New With {.ok = False, .error = ex.Message}, JsonRequestBehavior.AllowGet)
         End Try
@@ -34,7 +35,7 @@ Public Class CrudApiController
     <HttpGet>
     Public Function ObtenerPorId(ByVal tabla As String, ByVal id As Integer) As JsonResult
         Try
-            Dim dt = ExecuteGet(tabla, id)
+            Dim dt = ExecuteDataMethod(tabla, "ObtenerPorId", id)
             Dim row = If(dt.Rows.Count > 0, DataRowToDictionary(dt.Rows(0)), Nothing)
             Return Json(New With {.ok = True, .data = row}, JsonRequestBehavior.AllowGet)
         Catch ex As Exception
@@ -45,9 +46,11 @@ Public Class CrudApiController
     <HttpPost>
     Public Function Insertar(ByVal tabla As String, ByVal payload As String) As JsonResult
         Try
+            Dim map = ResolveTableMapping(tabla)
             Dim data = ParsePayload(payload)
-            Dim id = ExecuteInsert(tabla, data)
-            Return Json(New With {.ok = True, .id = id})
+            Dim entity = BuildEntityFromPayload(map.EntityType, data)
+            Dim result = ExecuteRawDataMethod(map.DataType, "Insertar", entity)
+            Return Json(New With {.ok = True, .id = If(result Is Nothing, Nothing, result)})
         Catch ex As Exception
             Return Json(New With {.ok = False, .error = ex.Message})
         End Try
@@ -56,8 +59,10 @@ Public Class CrudApiController
     <HttpPost>
     Public Function Actualizar(ByVal tabla As String, ByVal payload As String) As JsonResult
         Try
+            Dim map = ResolveTableMapping(tabla)
             Dim data = ParsePayload(payload)
-            ExecuteUpdate(tabla, data)
+            Dim entity = BuildEntityFromPayload(map.EntityType, data)
+            ExecuteRawDataMethod(map.DataType, "Actualizar", entity)
             Return Json(New With {.ok = True})
         Catch ex As Exception
             Return Json(New With {.ok = False, .error = ex.Message})
@@ -67,11 +72,152 @@ Public Class CrudApiController
     <HttpPost>
     Public Function Eliminar(ByVal tabla As String, ByVal id As Integer) As JsonResult
         Try
-            ExecuteDelete(tabla, id)
+            ExecuteDataMethod(tabla, "Eliminar", id)
             Return Json(New With {.ok = True})
         Catch ex As Exception
             Return Json(New With {.ok = False, .error = ex.Message})
         End Try
+    End Function
+
+    Private Shared Function BuildTableConfigs() As IEnumerable(Of Object)
+        Return GetTableMappings() _
+            .Where(Function(m) HasMethod(m.DataType, "Listar")) _
+            .Select(Function(m) New With {
+                .key = m.TableKey,
+                .label = m.EntityType.Name,
+                .idField = GetIdFieldName(m.EntityType),
+                .fields = GetEditableFields(m.EntityType)
+            }) _
+            .OrderBy(Function(x) x.label) _
+            .ToList()
+    End Function
+
+    Private Shared Function GetEditableFields(ByVal entityType As Type) As IEnumerable(Of String)
+        Return entityType.GetProperties(BindingFlags.Public Or BindingFlags.Instance) _
+            .Where(Function(p) p.CanWrite) _
+            .Select(Function(p) p.Name) _
+            .Where(Function(name) Not IsAuditField(name) AndAlso Not name.EndsWith("Id", StringComparison.OrdinalIgnoreCase)) _
+            .ToArray()
+    End Function
+
+    Private Shared Function IsAuditField(ByVal name As String) As Boolean
+        Return name.Equals("CreatedAt", StringComparison.OrdinalIgnoreCase) OrElse
+               name.Equals("UpdatedAt", StringComparison.OrdinalIgnoreCase) OrElse
+               name.Equals("Estado", StringComparison.OrdinalIgnoreCase)
+    End Function
+
+    Private Shared Function GetIdFieldName(ByVal entityType As Type) As String
+        Dim idProp = entityType.GetProperties().FirstOrDefault(Function(p) p.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase))
+        Return If(idProp Is Nothing, String.Empty, idProp.Name)
+    End Function
+
+    Private Shared Function ExecuteDataMethod(ByVal tableKey As String, ByVal methodName As String, ParamArray args As Object()) As DataTable
+        Dim map = ResolveTableMapping(tableKey)
+        Dim result = ExecuteRawDataMethod(map.DataType, methodName, args)
+
+        If result Is Nothing Then
+            Return New DataTable()
+        End If
+
+        Return CType(result, DataTable)
+    End Function
+
+    Private Shared Function ExecuteRawDataMethod(ByVal dataType As Type, ByVal methodName As String, ParamArray args As Object()) As Object
+        Dim method = dataType.GetMethod(methodName)
+        If method Is Nothing Then
+            Throw New InvalidOperationException($"La clase {dataType.Name} no expone {methodName}.")
+        End If
+
+        Dim instance = Activator.CreateInstance(dataType)
+        Return method.Invoke(instance, args)
+    End Function
+
+    Private Shared Function ResolveTableMapping(ByVal tableKey As String) As TableMapping
+        If String.IsNullOrWhiteSpace(tableKey) Then
+            Throw New ArgumentException("Debe enviar la tabla.")
+        End If
+
+        Dim map = GetTableMappings().FirstOrDefault(Function(m) m.TableKey.Equals(tableKey, StringComparison.OrdinalIgnoreCase))
+        If map Is Nothing Then
+            Throw New ArgumentException("Tabla no soportada: " & tableKey)
+        End If
+
+        Return map
+    End Function
+
+    Private Shared Function GetTableMappings() As IEnumerable(Of TableMapping)
+        Dim dataTypes = _assembly.GetTypes() _
+            .Where(Function(t) t.IsClass AndAlso t.Name.EndsWith("Datos", StringComparison.Ordinal) AndAlso Not t.Name.Equals("ConexionOracle", StringComparison.OrdinalIgnoreCase))
+
+        Dim mappings As New List(Of TableMapping)()
+
+        For Each dataType In dataTypes
+            Dim baseName = dataType.Name.Substring(0, dataType.Name.Length - 5)
+            Dim entityType = _assembly.GetTypes().FirstOrDefault(Function(t) t.IsClass AndAlso t.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase))
+            If entityType Is Nothing Then
+                Continue For
+            End If
+
+            mappings.Add(New TableMapping With {
+                .TableKey = ToSnakeCase(baseName),
+                .DataType = dataType,
+                .EntityType = entityType
+            })
+        Next
+
+        Return mappings
+    End Function
+
+    Private Shared Function ToSnakeCase(ByVal value As String) As String
+        Dim sb As New StringBuilder()
+
+        For i = 0 To value.Length - 1
+            Dim ch = value(i)
+            If Char.IsUpper(ch) AndAlso i > 0 AndAlso value(i - 1) <> "_"c Then
+                sb.Append("_"c)
+            End If
+            sb.Append(Char.ToLowerInvariant(ch))
+        Next
+
+        Return sb.ToString().Replace("__", "_")
+    End Function
+
+    Private Shared Function BuildEntityFromPayload(ByVal entityType As Type, ByVal data As IDictionary(Of String, Object)) As Object
+        Dim entity = Activator.CreateInstance(entityType)
+
+        For Each prop In entityType.GetProperties(BindingFlags.Public Or BindingFlags.Instance)
+            If Not prop.CanWrite OrElse Not data.ContainsKey(prop.Name) Then
+                Continue For
+            End If
+
+            Dim raw = data(prop.Name)
+            If raw Is Nothing Then
+                prop.SetValue(entity, Nothing)
+                Continue For
+            End If
+
+            Dim targetType = Nullable.GetUnderlyingType(prop.PropertyType)
+            If targetType Is Nothing Then
+                targetType = prop.PropertyType
+            End If
+
+            prop.SetValue(entity, ConvertToType(raw, targetType))
+        Next
+
+        Return entity
+    End Function
+
+    Private Shared Function ConvertToType(ByVal value As Object, ByVal targetType As Type) As Object
+        If targetType Is GetType(DateTime) Then
+            Return DateTime.Parse(value.ToString(), CultureInfo.InvariantCulture)
+        End If
+
+        If targetType Is GetType(Boolean) Then
+            Dim text = value.ToString().Trim().ToUpperInvariant()
+            Return (text = "1" OrElse text = "TRUE" OrElse text = "S" OrElse text = "SI" OrElse text = "Y")
+        End If
+
+        Return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture)
     End Function
 
     Private Shared Function ParsePayload(ByVal payload As String) As IDictionary(Of String, Object)
@@ -106,254 +252,14 @@ Public Class CrudApiController
         Return dict
     End Function
 
-    Private Shared Function GetTableConfigs() As Object
-        Return New Object() {
-            BuildConfig("cliente", "Clientes", "CliId", New String() {"TipoDocumento", "NumDocumento", "Nit", "Nombres", "Apellidos", "Email", "TelResidencia", "TelCelular", "Direccion", "Ciudad", "Departamento", "Pais", "Profesion"}),
-            BuildConfig("cupon", "Cupones", "CuponId", New String() {"Codigo", "Descripcion", "VigenciaInicio", "VigenciaFin", "LimiteUsoTotal", "LimiteUsoPorCliente", "UsosActuales"}),
-            BuildConfig("estado_envio", "Estados de envío", "EstadoEnvioId", New String() {"Codigo", "Descripcion"}),
-            BuildConfig("promocion", "Promociones", "PromocionId", New String() {"TipoPromocionId", "Nombre", "Descripcion", "VigenciaInicio", "VigenciaFin", "Prioridad"}),
-            BuildConfig("tipo_promocion", "Tipos de promoción", "TipoPromocionId", New String() {"Nombre", "Descripcion"}),
-            BuildConfig("tipo_entrega", "Tipos de entrega", "TipoEntregaId", New String() {"Nombre", "Descripcion"}),
-            BuildConfig("zona_envio", "Zonas de envío", "ZonaEnvioId", New String() {"Nombre", "Pais", "Departamento", "Ciudad"}),
-            BuildConfig("tarifa_envio", "Tarifas de envío", "TarifaEnvioId", New String() {"ZonaEnvioId", "TipoEntregaId", "PesoDesdeKg", "PesoHastaKg", "Costo"}),
-            BuildConfig("politica_envio", "Políticas de envío", "PoliticaEnvioId", New String() {"Titulo", "Descripcion", "VigenciaInicio", "VigenciaFin"}),
-            BuildConfig("regla_envio_gratis", "Reglas de envío gratis", "ReglaEnvioGratisId", New String() {"ZonaEnvioId", "MontoMinimo", "PesoMaxKg", "VigenciaInicio", "VigenciaFin"}),
-            BuildConfig("regla_promocion", "Reglas de promoción", "ReglaPromocionId", New String() {"PromocionId", "MinCompra", "MinItems", "AplicaTipoProducto", "TopeDescuento"}),
-            BuildConfig("promocion_producto", "Promociones por producto", "PromocionProductoId", New String() {"PromocionId", "ProductoId", "LimiteUnidades"}),
-            BuildConfig("campana_marketing", "Campañas de marketing", "CampanaMarketingId", New String() {"Nombre", "Canal", "Presupuesto", "Inicio", "Fin"})
-        }
+    Private Shared Function HasMethod(ByVal type As Type, ByVal methodName As String) As Boolean
+        Return type.GetMethod(methodName) IsNot Nothing
     End Function
 
-    Private Shared Function BuildConfig(ByVal key As String, ByVal label As String, ByVal idField As String, ByVal fields As IEnumerable(Of String)) As Object
-        Return New With {
-            .key = key,
-            .label = label,
-            .idField = idField,
-            .fields = fields
-        }
-    End Function
-
-    Private Shared Sub FillEntity(Of T As New)(ByVal target As T, ByVal data As IDictionary(Of String, Object))
-        Dim props = GetType(T).GetProperties(BindingFlags.Public Or BindingFlags.Instance)
-
-        For Each prop In props
-            If Not prop.CanWrite OrElse Not data.ContainsKey(prop.Name) Then
-                Continue For
-            End If
-
-            Dim raw = data(prop.Name)
-            If raw Is Nothing Then
-                prop.SetValue(target, Nothing)
-                Continue For
-            End If
-
-            Dim targetType = Nullable.GetUnderlyingType(prop.PropertyType)
-            If targetType Is Nothing Then
-                targetType = prop.PropertyType
-            End If
-
-            Dim safeValue = ConvertToType(raw, targetType)
-            prop.SetValue(target, safeValue)
-        Next
-    End Sub
-
-    Private Shared Function ConvertToType(ByVal value As Object, ByVal targetType As Type) As Object
-        If targetType Is GetType(DateTime) Then
-            If TypeOf value Is DateTime Then
-                Return value
-            End If
-            Return DateTime.Parse(value.ToString(), CultureInfo.InvariantCulture)
-        End If
-
-        If targetType Is GetType(Boolean) Then
-            If TypeOf value Is Boolean Then
-                Return value
-            End If
-
-            Dim text = value.ToString().Trim().ToUpperInvariant()
-            Return (text = "1" OrElse text = "TRUE" OrElse text = "S" OrElse text = "SI" OrElse text = "Y")
-        End If
-
-        If targetType.IsEnum Then
-            Return [Enum].Parse(targetType, value.ToString())
-        End If
-
-        Return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture)
-    End Function
-
-    Private Shared Function ExecuteList(ByVal tabla As String) As DataTable
-        Select Case tabla.ToLowerInvariant()
-            Case "cliente" : Return New Servicios.ClienteServicio().Listar()
-            Case "cupon" : Return New CuponServicio().Listar()
-            Case "estado_envio" : Return New EstadoEnvioServicio().Listar()
-            Case "promocion" : Return New PromocionServicio().Listar()
-            Case "tipo_promocion" : Return New TipoPromocionServicio().Listar()
-            Case "tipo_entrega" : Return New TipoEntregaServicio().Listar()
-            Case "zona_envio" : Return New ZonaEnvioServicio().Listar()
-            Case "tarifa_envio" : Return New TarifaEnvioServicio().Listar()
-            Case "politica_envio" : Return New PoliticaEnvioServicio().Listar()
-            Case "regla_envio_gratis" : Return New ReglaEnvioGratisServicio().Listar()
-            Case "regla_promocion" : Return New ReglaPromocionServicio().Listar()
-            Case "promocion_producto" : Return New PromocionProductoServicio().Listar()
-            Case "campana_marketing" : Return New CampanaMarketingServicio().Listar()
-            Case Else : Throw New ArgumentException("Tabla no soportada: " & tabla)
-        End Select
-    End Function
-
-    Private Shared Function ExecuteGet(ByVal tabla As String, ByVal id As Integer) As DataTable
-        Select Case tabla.ToLowerInvariant()
-            Case "cliente" : Return New Servicios.ClienteServicio().ObtenerPorId(id)
-            Case "cupon" : Return New CuponServicio().ObtenerPorId(id)
-            Case "estado_envio" : Return New EstadoEnvioServicio().ObtenerPorId(id)
-            Case "promocion" : Return New PromocionServicio().ObtenerPorId(id)
-            Case "tipo_promocion" : Return New TipoPromocionServicio().ObtenerPorId(id)
-            Case "tipo_entrega" : Return New TipoEntregaServicio().ObtenerPorId(id)
-            Case "zona_envio" : Return New ZonaEnvioServicio().ObtenerPorId(id)
-            Case "tarifa_envio" : Return New TarifaEnvioServicio().ObtenerPorId(id)
-            Case "politica_envio" : Return New PoliticaEnvioServicio().ObtenerPorId(id)
-            Case "regla_envio_gratis" : Return New ReglaEnvioGratisServicio().ObtenerPorId(id)
-            Case "regla_promocion" : Return New ReglaPromocionServicio().ObtenerPorId(id)
-            Case "promocion_producto" : Return New PromocionProductoServicio().ObtenerPorId(id)
-            Case "campana_marketing" : Return New CampanaMarketingServicio().ObtenerPorId(id)
-            Case Else : Throw New ArgumentException("La tabla no expone ObtenerPorId o no está soportada: " & tabla)
-        End Select
-    End Function
-
-    Private Shared Function ExecuteInsert(ByVal tabla As String, ByVal data As IDictionary(Of String, Object)) As Integer
-        Select Case tabla.ToLowerInvariant()
-            Case "cliente"
-                Dim entity As New Entidades.Cliente()
-                FillEntity(entity, data)
-                Return New Servicios.ClienteServicio().Insertar(entity)
-            Case "cupon"
-                Dim entity As New Cupon()
-                FillEntity(entity, data)
-                Return New CuponServicio().Insertar(entity)
-            Case "estado_envio"
-                Dim entity As New EstadoEnvio()
-                FillEntity(entity, data)
-                Return New EstadoEnvioServicio().Insertar(entity)
-            Case "promocion"
-                Dim entity As New Promocion()
-                FillEntity(entity, data)
-                Return New PromocionServicio().Insertar(entity)
-            Case "tipo_promocion"
-                Dim entity As New TipoPromocion()
-                FillEntity(entity, data)
-                Return New TipoPromocionServicio().Insertar(entity)
-            Case "tipo_entrega"
-                Dim entity As New TipoEntrega()
-                FillEntity(entity, data)
-                Return New TipoEntregaServicio().Insertar(entity)
-            Case "zona_envio"
-                Dim entity As New ZonaEnvio()
-                FillEntity(entity, data)
-                Return New ZonaEnvioServicio().Insertar(entity)
-            Case "tarifa_envio"
-                Dim entity As New TarifaEnvio()
-                FillEntity(entity, data)
-                Return New TarifaEnvioServicio().Insertar(entity)
-            Case "politica_envio"
-                Dim entity As New PoliticaEnvio()
-                FillEntity(entity, data)
-                Return New PoliticaEnvioServicio().Insertar(entity)
-            Case "regla_envio_gratis"
-                Dim entity As New ReglaEnvioGratis()
-                FillEntity(entity, data)
-                Return New ReglaEnvioGratisServicio().Insertar(entity)
-            Case "regla_promocion"
-                Dim entity As New ReglaPromocion()
-                FillEntity(entity, data)
-                Return New ReglaPromocionServicio().Insertar(entity)
-            Case "promocion_producto"
-                Dim entity As New PromocionProducto()
-                FillEntity(entity, data)
-                Return New PromocionProductoServicio().Insertar(entity)
-            Case "campana_marketing"
-                Dim entity As New CampanaMarketing()
-                FillEntity(entity, data)
-                Return New CampanaMarketingServicio().Insertar(entity)
-            Case Else
-                Throw New ArgumentException("Tabla no soportada: " & tabla)
-        End Select
-    End Function
-
-    Private Shared Sub ExecuteUpdate(ByVal tabla As String, ByVal data As IDictionary(Of String, Object))
-        Select Case tabla.ToLowerInvariant()
-            Case "cliente"
-                Dim entity As New Entidades.Cliente()
-                FillEntity(entity, data)
-                New Servicios.ClienteServicio().Actualizar(entity)
-            Case "cupon"
-                Dim entity As New Cupon()
-                FillEntity(entity, data)
-                New CuponServicio().Actualizar(entity)
-            Case "estado_envio"
-                Dim entity As New EstadoEnvio()
-                FillEntity(entity, data)
-                New EstadoEnvioServicio().Actualizar(entity)
-            Case "promocion"
-                Dim entity As New Promocion()
-                FillEntity(entity, data)
-                New PromocionServicio().Actualizar(entity)
-            Case "tipo_promocion"
-                Dim entity As New TipoPromocion()
-                FillEntity(entity, data)
-                New TipoPromocionServicio().Actualizar(entity)
-            Case "tipo_entrega"
-                Dim entity As New TipoEntrega()
-                FillEntity(entity, data)
-                New TipoEntregaServicio().Actualizar(entity)
-            Case "zona_envio"
-                Dim entity As New ZonaEnvio()
-                FillEntity(entity, data)
-                New ZonaEnvioServicio().Actualizar(entity)
-            Case "tarifa_envio"
-                Dim entity As New TarifaEnvio()
-                FillEntity(entity, data)
-                New TarifaEnvioServicio().Actualizar(entity)
-            Case "politica_envio"
-                Dim entity As New PoliticaEnvio()
-                FillEntity(entity, data)
-                New PoliticaEnvioServicio().Actualizar(entity)
-            Case "regla_envio_gratis"
-                Dim entity As New ReglaEnvioGratis()
-                FillEntity(entity, data)
-                New ReglaEnvioGratisServicio().Actualizar(entity)
-            Case "regla_promocion"
-                Dim entity As New ReglaPromocion()
-                FillEntity(entity, data)
-                New ReglaPromocionServicio().Actualizar(entity)
-            Case "promocion_producto"
-                Dim entity As New PromocionProducto()
-                FillEntity(entity, data)
-                New PromocionProductoServicio().Actualizar(entity)
-            Case "campana_marketing"
-                Dim entity As New CampanaMarketing()
-                FillEntity(entity, data)
-                New CampanaMarketingServicio().Actualizar(entity)
-            Case Else
-                Throw New ArgumentException("La tabla no soporta actualización: " & tabla)
-        End Select
-    End Sub
-
-    Private Shared Sub ExecuteDelete(ByVal tabla As String, ByVal id As Integer)
-        Select Case tabla.ToLowerInvariant()
-            Case "cliente" : New Servicios.ClienteServicio().Eliminar(id)
-            Case "cupon" : New CuponServicio().Eliminar(id)
-            Case "estado_envio" : New EstadoEnvioServicio().Eliminar(id)
-            Case "promocion" : New PromocionServicio().Eliminar(id)
-            Case "tipo_promocion" : New TipoPromocionServicio().Eliminar(id)
-            Case "tipo_entrega" : New TipoEntregaServicio().Eliminar(id)
-            Case "zona_envio" : New ZonaEnvioServicio().Eliminar(id)
-            Case "tarifa_envio" : New TarifaEnvioServicio().Eliminar(id)
-            Case "politica_envio" : New PoliticaEnvioServicio().Eliminar(id)
-            Case "regla_envio_gratis" : New ReglaEnvioGratisServicio().Eliminar(id)
-            Case "regla_promocion" : New ReglaPromocionServicio().Eliminar(id)
-            Case "promocion_producto" : New PromocionProductoServicio().Eliminar(id)
-            Case "campana_marketing" : New CampanaMarketingServicio().Eliminar(id)
-            Case Else : Throw New ArgumentException("La tabla no soporta eliminación: " & tabla)
-        End Select
-    End Sub
+    Private Class TableMapping
+        Public Property TableKey As String
+        Public Property DataType As Type
+        Public Property EntityType As Type
+    End Class
 
 End Class
