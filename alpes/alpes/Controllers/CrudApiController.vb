@@ -1,5 +1,6 @@
 Option Strict On
 Option Explicit On
+Option Infer On
 
 Imports System
 Imports System.Collections.Generic
@@ -18,14 +19,14 @@ Public Class CrudApiController
 
     <HttpGet>
     Public Function Tablas() As JsonResult
-        Dim configs = BuildTableConfigs()
+        Dim configs As IEnumerable(Of Object) = BuildTableConfigs()
         Return Json(configs, JsonRequestBehavior.AllowGet)
     End Function
 
     <HttpGet>
     Public Function Listar(ByVal tabla As String) As JsonResult
         Try
-            Dim dt = ExecuteDataMethod(tabla, "Listar")
+            Dim dt As DataTable = ExecuteDataMethod(tabla, "Listar")
             Return Json(New With {.ok = True, .data = DataTableToList(dt)}, JsonRequestBehavior.AllowGet)
         Catch ex As Exception
             Return Json(New With {.ok = False, .error = ex.Message}, JsonRequestBehavior.AllowGet)
@@ -35,8 +36,8 @@ Public Class CrudApiController
     <HttpGet>
     Public Function ObtenerPorId(ByVal tabla As String, ByVal id As Integer) As JsonResult
         Try
-            Dim dt = ExecuteDataMethod(tabla, "ObtenerPorId", id)
-            Dim row = If(dt.Rows.Count > 0, DataRowToDictionary(dt.Rows(0)), Nothing)
+            Dim dt As DataTable = ExecuteDataMethod(tabla, "ObtenerPorId", id)
+            Dim row As Dictionary(Of String, Object) = If(dt.Rows.Count > 0, DataRowToDictionary(dt.Rows(0)), Nothing)
             Return Json(New With {.ok = True, .data = row}, JsonRequestBehavior.AllowGet)
         Catch ex As Exception
             Return Json(New With {.ok = False, .error = ex.Message}, JsonRequestBehavior.AllowGet)
@@ -46,10 +47,10 @@ Public Class CrudApiController
     <HttpPost>
     Public Function Insertar(ByVal tabla As String, ByVal payload As String) As JsonResult
         Try
-            Dim map = ResolveTableMapping(tabla)
-            Dim data = ParsePayload(payload)
-            Dim entity = BuildEntityFromPayload(map.EntityType, data)
-            Dim result = ExecuteRawDataMethod(map.DataType, "Insertar", entity)
+            Dim map As TableMapping = ResolveTableMapping(tabla)
+            Dim data As IDictionary(Of String, Object) = ParsePayload(payload)
+            Dim entity As Object = BuildEntityFromPayload(map.EntityType, data)
+            Dim result As Object = ExecuteRawDataMethod(map.DataType, "Insertar", entity)
             Return Json(New With {.ok = True, .id = If(result Is Nothing, Nothing, result)})
         Catch ex As Exception
             Return Json(New With {.ok = False, .error = ex.Message})
@@ -59,9 +60,9 @@ Public Class CrudApiController
     <HttpPost>
     Public Function Actualizar(ByVal tabla As String, ByVal payload As String) As JsonResult
         Try
-            Dim map = ResolveTableMapping(tabla)
-            Dim data = ParsePayload(payload)
-            Dim entity = BuildEntityFromPayload(map.EntityType, data)
+            Dim map As TableMapping = ResolveTableMapping(tabla)
+            Dim data As IDictionary(Of String, Object) = ParsePayload(payload)
+            Dim entity As Object = BuildEntityFromPayload(map.EntityType, data)
             ExecuteRawDataMethod(map.DataType, "Actualizar", entity)
             Return Json(New With {.ok = True})
         Catch ex As Exception
@@ -107,13 +108,13 @@ Public Class CrudApiController
     End Function
 
     Private Shared Function GetIdFieldName(ByVal entityType As Type) As String
-        Dim idProp = entityType.GetProperties().FirstOrDefault(Function(p) p.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase))
+        Dim idProp As PropertyInfo = entityType.GetProperties().FirstOrDefault(Function(p) p.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase))
         Return If(idProp Is Nothing, String.Empty, idProp.Name)
     End Function
 
     Private Shared Function ExecuteDataMethod(ByVal tableKey As String, ByVal methodName As String, ParamArray args As Object()) As DataTable
-        Dim map = ResolveTableMapping(tableKey)
-        Dim result = ExecuteRawDataMethod(map.DataType, methodName, args)
+        Dim map As TableMapping = ResolveTableMapping(tableKey)
+        Dim result As Object = ExecuteRawDataMethod(map.DataType, methodName, args)
 
         If result Is Nothing Then
             Return New DataTable()
@@ -123,12 +124,12 @@ Public Class CrudApiController
     End Function
 
     Private Shared Function ExecuteRawDataMethod(ByVal dataType As Type, ByVal methodName As String, ParamArray args As Object()) As Object
-        Dim method = dataType.GetMethod(methodName)
+        Dim method As MethodInfo = dataType.GetMethod(methodName)
         If method Is Nothing Then
-            Throw New InvalidOperationException($"La clase {dataType.Name} no expone {methodName}.")
+            Throw New InvalidOperationException(String.Format("La clase {0} no expone {1}.", dataType.Name, methodName))
         End If
 
-        Dim instance = Activator.CreateInstance(dataType)
+        Dim instance As Object = Activator.CreateInstance(dataType)
         Return method.Invoke(instance, args)
     End Function
 
@@ -137,7 +138,7 @@ Public Class CrudApiController
             Throw New ArgumentException("Debe enviar la tabla.")
         End If
 
-        Dim map = GetTableMappings().FirstOrDefault(Function(m) m.TableKey.Equals(tableKey, StringComparison.OrdinalIgnoreCase))
+        Dim map As TableMapping = GetTableMappings().FirstOrDefault(Function(m) m.TableKey.Equals(tableKey, StringComparison.OrdinalIgnoreCase))
         If map Is Nothing Then
             Throw New ArgumentException("Tabla no soportada: " & tableKey)
         End If
@@ -146,14 +147,15 @@ Public Class CrudApiController
     End Function
 
     Private Shared Function GetTableMappings() As IEnumerable(Of TableMapping)
-        Dim dataTypes = _assembly.GetTypes() _
+        Dim dataTypes As IEnumerable(Of Type) = _assembly.GetTypes() _
             .Where(Function(t) t.IsClass AndAlso t.Name.EndsWith("Datos", StringComparison.Ordinal) AndAlso Not t.Name.Equals("ConexionOracle", StringComparison.OrdinalIgnoreCase))
 
         Dim mappings As New List(Of TableMapping)()
 
-        For Each dataType In dataTypes
-            Dim baseName = dataType.Name.Substring(0, dataType.Name.Length - 5)
-            Dim entityType = _assembly.GetTypes().FirstOrDefault(Function(t) t.IsClass AndAlso t.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase))
+        For Each dataType As Type In dataTypes
+            Dim baseName As String = dataType.Name.Substring(0, dataType.Name.Length - 5)
+            Dim entityType As Type = _assembly.GetTypes().FirstOrDefault(Function(t) t.IsClass AndAlso t.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase))
+
             If entityType Is Nothing Then
                 Continue For
             End If
@@ -171,8 +173,8 @@ Public Class CrudApiController
     Private Shared Function ToSnakeCase(ByVal value As String) As String
         Dim sb As New StringBuilder()
 
-        For i = 0 To value.Length - 1
-            Dim ch = value(i)
+        For i As Integer = 0 To value.Length - 1
+            Dim ch As Char = value(i)
             If Char.IsUpper(ch) AndAlso i > 0 AndAlso value(i - 1) <> "_"c Then
                 sb.Append("_"c)
             End If
@@ -183,20 +185,21 @@ Public Class CrudApiController
     End Function
 
     Private Shared Function BuildEntityFromPayload(ByVal entityType As Type, ByVal data As IDictionary(Of String, Object)) As Object
-        Dim entity = Activator.CreateInstance(entityType)
+        Dim entity As Object = Activator.CreateInstance(entityType)
 
-        For Each prop In entityType.GetProperties(BindingFlags.Public Or BindingFlags.Instance)
+        For Each prop As PropertyInfo In entityType.GetProperties(BindingFlags.Public Or BindingFlags.Instance)
             If Not prop.CanWrite OrElse Not data.ContainsKey(prop.Name) Then
                 Continue For
             End If
 
-            Dim raw = data(prop.Name)
+            Dim raw As Object = data(prop.Name)
+
             If raw Is Nothing Then
                 prop.SetValue(entity, Nothing)
                 Continue For
             End If
 
-            Dim targetType = Nullable.GetUnderlyingType(prop.PropertyType)
+            Dim targetType As Type = Nullable.GetUnderlyingType(prop.PropertyType)
             If targetType Is Nothing Then
                 targetType = prop.PropertyType
             End If
@@ -213,7 +216,7 @@ Public Class CrudApiController
         End If
 
         If targetType Is GetType(Boolean) Then
-            Dim text = value.ToString().Trim().ToUpperInvariant()
+            Dim text As String = value.ToString().Trim().ToUpperInvariant()
             Return (text = "1" OrElse text = "TRUE" OrElse text = "S" OrElse text = "SI" OrElse text = "Y")
         End If
 
@@ -225,11 +228,23 @@ Public Class CrudApiController
             Return New Dictionary(Of String, Object)(StringComparer.OrdinalIgnoreCase)
         End If
 
-        Dim jObject = JObject.Parse(payload)
-        Return jObject.Properties().ToDictionary(
-            Function(p) p.Name,
-            Function(p) CType(If(p.Value.Type = JTokenType.Null, Nothing, CType(p.Value, JValue).Value), Object),
-            StringComparer.OrdinalIgnoreCase)
+        Dim jsonObj As JObject = JObject.Parse(payload)
+        Dim result As New Dictionary(Of String, Object)(StringComparer.OrdinalIgnoreCase)
+
+        For Each prop As JProperty In jsonObj.Properties()
+            If prop.Value Is Nothing OrElse prop.Value.Type = JTokenType.Null Then
+                result(prop.Name) = Nothing
+            Else
+                Dim jVal As JValue = TryCast(prop.Value, JValue)
+                If jVal IsNot Nothing Then
+                    result(prop.Name) = jVal.Value
+                Else
+                    result(prop.Name) = prop.Value.ToString()
+                End If
+            End If
+        Next
+
+        Return result
     End Function
 
     Private Shared Function DataTableToList(ByVal dt As DataTable) As IList(Of Dictionary(Of String, Object))
