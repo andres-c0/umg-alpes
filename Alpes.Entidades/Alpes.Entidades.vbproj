@@ -82,6 +82,11 @@
     </Compile>
     <Compile Include="Seguridad\Rol.vb" />
     <Compile Include="Seguridad\Usuario.vb" />
+    <Compile Include="Ventas\Cuotas_Pago.vb" />
+    <Compile Include="Ventas\Factura.vb" />
+    <Compile Include="Ventas\Orden_Venta.vb" />
+    <Compile Include="Ventas\Orden_Venta_Detalle.vb" />
+    <Compile Include="Ventas\Pago.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -107,7 +112,6 @@
     <Folder Include="Inventario\" />
     <Folder Include="Produccion\" />
     <Folder Include="RRHH\" />
-    <Folder Include="Ventas\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>
