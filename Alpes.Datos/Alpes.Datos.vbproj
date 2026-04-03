@@ -118,6 +118,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Repositorios\Cuotas_PagoDatos.vb" />
+    <Compile Include="Repositorios\FacturaDatos.vb" />
+    <Compile Include="Repositorios\Orden_VentaDatos.vb" />
+    <Compile Include="Repositorios\Orden_Venta_DetalleDatos.vb" />
+    <Compile Include="Repositorios\PagoDatos.vb" />
     <Compile Include="Repositorios\RolDatos.vb" />
     <Compile Include="Repositorios\UsuarioDatos.vb" />
     <Compile Include="Utilidades\PruebaConexion.vb" />
