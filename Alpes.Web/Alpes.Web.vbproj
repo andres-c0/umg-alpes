@@ -151,7 +151,12 @@
     <Compile Include="App_Start\FilterConfig.vb" />
     <Compile Include="App_Start\RouteConfig.vb" />
     <Compile Include="Controllers\CrudController.vb" />
+    <Compile Include="Controllers\Cuotas_PagoController.vb" />
+    <Compile Include="Controllers\FacturaController.vb" />
     <Compile Include="Controllers\MetadataController.vb" />
+    <Compile Include="Controllers\Orden_VentaController.vb" />
+    <Compile Include="Controllers\Orden_Venta_DetalleController.vb" />
+    <Compile Include="Controllers\PagoController.vb" />
     <Compile Include="Controllers\RolController.vb" />
     <Compile Include="Controllers\UsuarioController.vb" />
     <Compile Include="Global.asax.vb">
