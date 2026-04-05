@@ -119,11 +119,26 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Repositorios\Cuotas_PagoDatos.vb" />
+    <Compile Include="Repositorios\DevolucionDatos.vb" />
+    <Compile Include="Repositorios\EvaluacionDatos.vb" />
+    <Compile Include="Repositorios\Expediente_EmpleadoDatos.vb" />
     <Compile Include="Repositorios\FacturaDatos.vb" />
+    <Compile Include="Repositorios\Factura_DetalleDatos.vb" />
+    <Compile Include="Repositorios\Historial_CompraDatos.vb" />
+    <Compile Include="Repositorios\Historial_PromocionDatos.vb" />
+    <Compile Include="Repositorios\Incidente_LaboralDatos.vb" />
+    <Compile Include="Repositorios\NominaDatos.vb" />
+    <Compile Include="Repositorios\Nomina_DetalleDatos.vb" />
     <Compile Include="Repositorios\Orden_VentaDatos.vb" />
     <Compile Include="Repositorios\Orden_Venta_DetalleDatos.vb" />
     <Compile Include="Repositorios\PagoDatos.vb" />
+    <Compile Include="Repositorios\PromocionDatos.vb" />
+    <Compile Include="Repositorios\Promocion_ProductoDatos.vb" />
+    <Compile Include="Repositorios\Regla_Envio_GratisDatos.vb" />
+    <Compile Include="Repositorios\Regla_PromocionDatos.vb" />
+    <Compile Include="Repositorios\Resena_ComentarioDatos.vb" />
     <Compile Include="Repositorios\RolDatos.vb" />
+    <Compile Include="Repositorios\Tarifa_EnvioDatos.vb" />
     <Compile Include="Repositorios\UsuarioDatos.vb" />
     <Compile Include="Utilidades\PruebaConexion.vb" />
   </ItemGroup>

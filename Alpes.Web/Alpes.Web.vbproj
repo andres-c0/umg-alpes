@@ -152,12 +152,27 @@
     <Compile Include="App_Start\RouteConfig.vb" />
     <Compile Include="Controllers\CrudController.vb" />
     <Compile Include="Controllers\Cuotas_PagoController.vb" />
+    <Compile Include="Controllers\DevolucionController.vb" />
+    <Compile Include="Controllers\EvaluacionController.vb" />
+    <Compile Include="Controllers\Expediente_EmpleadoController.vb" />
     <Compile Include="Controllers\FacturaController.vb" />
+    <Compile Include="Controllers\Factura_DetalleController.vb" />
+    <Compile Include="Controllers\Historial_CompraController.vb" />
+    <Compile Include="Controllers\Historial_PromocionController.vb" />
+    <Compile Include="Controllers\Incidente_LaboralController.vb" />
     <Compile Include="Controllers\MetadataController.vb" />
+    <Compile Include="Controllers\NominaController.vb" />
+    <Compile Include="Controllers\Nomina_DetalleController.vb" />
     <Compile Include="Controllers\Orden_VentaController.vb" />
     <Compile Include="Controllers\Orden_Venta_DetalleController.vb" />
     <Compile Include="Controllers\PagoController.vb" />
+    <Compile Include="Controllers\PromocionController.vb" />
+    <Compile Include="Controllers\Promocion_ProductoController.vb" />
+    <Compile Include="Controllers\Regla_Envio_GratisController.vb" />
+    <Compile Include="Controllers\Regla_PromocionController.vb" />
+    <Compile Include="Controllers\Resena_ComentarioController.vb" />
     <Compile Include="Controllers\RolController.vb" />
+    <Compile Include="Controllers\Tarifa_EnvioController.vb" />
     <Compile Include="Controllers\UsuarioController.vb" />
     <Compile Include="Global.asax.vb">
       <DependentUpon>Global.asax</DependentUpon>

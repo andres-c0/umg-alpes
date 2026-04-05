@@ -82,11 +82,26 @@
     </Compile>
     <Compile Include="PruebaConexionServicio.vb" />
     <Compile Include="Servicios\Cuotas_PagoServicio.vb" />
+    <Compile Include="Servicios\DevolucionServicio.vb" />
+    <Compile Include="Servicios\EvaluacionServicio.vb" />
+    <Compile Include="Servicios\Expediente_EmpleadoServicio.vb" />
     <Compile Include="Servicios\FacturaServicio.vb" />
+    <Compile Include="Servicios\Factura_DetalleServicio.vb" />
+    <Compile Include="Servicios\Historial_CompraServicio.vb" />
+    <Compile Include="Servicios\Historial_PromocionServicio.vb" />
+    <Compile Include="Servicios\Incidente_LaboralServicio.vb" />
+    <Compile Include="Servicios\NominaServicio.vb" />
+    <Compile Include="Servicios\Nomina_DetalleServicio.vb" />
     <Compile Include="Servicios\Orden_VentaServicio.vb" />
     <Compile Include="Servicios\Orden_Venta_DetalleServicio.vb" />
     <Compile Include="Servicios\PagoServicio.vb" />
+    <Compile Include="Servicios\PromocionServicio.vb" />
+    <Compile Include="Servicios\Promocion_ProductoServicio.vb" />
+    <Compile Include="Servicios\Regla_Envio_GratisServicio.vb" />
+    <Compile Include="Servicios\Regla_PromocionServicio.vb" />
+    <Compile Include="Servicios\Resena_ComentarioServicio.vb" />
     <Compile Include="Servicios\RolServicio.vb" />
+    <Compile Include="Servicios\Tarifa_EnvioServicio.vb" />
     <Compile Include="Servicios\UsuarioServicio.vb" />
   </ItemGroup>
   <ItemGroup>
