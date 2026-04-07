@@ -80,13 +80,28 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="RRHH\Evaluacion.vb" />
+    <Compile Include="RRHH\Expediente_Empleado.vb" />
+    <Compile Include="RRHH\Incidente_Laboral.vb" />
+    <Compile Include="RRHH\Nomina.vb" />
+    <Compile Include="RRHH\Nomina_Detalle.vb" />
     <Compile Include="Seguridad\Rol.vb" />
     <Compile Include="Seguridad\Usuario.vb" />
     <Compile Include="Ventas\Cuotas_Pago.vb" />
+    <Compile Include="Ventas\Devolucion.vb" />
     <Compile Include="Ventas\Factura.vb" />
+    <Compile Include="Ventas\Factura_Detalle.vb" />
+    <Compile Include="Ventas\Historial_Compra.vb" />
+    <Compile Include="Ventas\Historial_Promocion.vb" />
     <Compile Include="Ventas\Orden_Venta.vb" />
     <Compile Include="Ventas\Orden_Venta_Detalle.vb" />
     <Compile Include="Ventas\Pago.vb" />
+    <Compile Include="Ventas\Promocion.vb" />
+    <Compile Include="Ventas\Promocion_Producto.vb" />
+    <Compile Include="Ventas\Regla_Envio_Gratis.vb" />
+    <Compile Include="Ventas\Regla_Promocion.vb" />
+    <Compile Include="Ventas\Resena_Comentario.vb" />
+    <Compile Include="Ventas\Tarifa_Envio.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -111,7 +126,6 @@
     <Folder Include="Compras\" />
     <Folder Include="Inventario\" />
     <Folder Include="Produccion\" />
-    <Folder Include="RRHH\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

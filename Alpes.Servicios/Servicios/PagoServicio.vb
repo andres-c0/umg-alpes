@@ -14,18 +14,6 @@ Namespace Servicios
             _datos = New PagoDatos()
         End Sub
 
-        Public Function Listar() As List(Of Pago)
-            Return _datos.Listar()
-        End Function
-
-        Public Function ObtenerPorId(ByVal id As Integer) As Pago
-            Return _datos.ObtenerPorId(id)
-        End Function
-
-        Public Function Buscar(ByVal valor As Decimal) As List(Of Pago)
-            Return _datos.Buscar(valor)
-        End Function
-
         Public Function Insertar(ByVal entidad As Pago) As Integer
             Return _datos.Insertar(entidad)
         End Function
@@ -37,6 +25,18 @@ Namespace Servicios
         Public Sub Eliminar(ByVal id As Integer)
             _datos.Eliminar(id)
         End Sub
+
+        Public Function ObtenerPorId(ByVal id As Integer) As Pago
+            Return _datos.ObtenerPorId(id)
+        End Function
+
+        Public Function Listar() As List(Of Pago)
+            Return _datos.Listar()
+        End Function
+
+        Public Function Buscar(ByVal valor As String) As List(Of Pago)
+            Return _datos.Buscar(valor)
+        End Function
 
     End Class
 End Namespace

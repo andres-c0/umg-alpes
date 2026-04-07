@@ -3,15 +3,15 @@ Option Explicit On
 
 Namespace Ventas
     Public Class Factura
-        Public Property factura_id As Integer
-        Public Property orden_venta_id As Integer
-        Public Property num_factura As String
-        Public Property fecha_emision As DateTime
-        Public Property nit_facturacion As String
-        Public Property direccion_facturacion_snapshot As String
-        Public Property total_factura_snapshot As Decimal
-        Public Property created_at As DateTime?
-        Public Property updated_at As DateTime?
-        Public Property estado As String
+        Public Property FacturaId As Integer
+        Public Property OrdenVentaId As Integer
+        Public Property NumFactura As String
+        Public Property FechaEmision As DateTime
+        Public Property NitFacturacion As String
+        Public Property DireccionFacturacionSnapshot As String
+        Public Property TotalFacturaSnapshot As Decimal
+        Public Property CreatedAt As DateTime?
+        Public Property UpdatedAt As DateTime?
+        Public Property Estado As String
     End Class
 End Namespace

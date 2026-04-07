@@ -16,107 +16,120 @@ Namespace Repositorios
         End Sub
 
         Public Function Insertar(ByVal entidad As Pago) As Integer
-            Using conn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_PAGO.SP_INSERTAR", conn)
+            Dim idGenerado As Integer = 0
+
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_PAGO.SP_INSERTAR", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
-                    cmd.Parameters.Add("P_ORDEN_VENTA_ID", entidad.orden_venta_id)
-                    cmd.Parameters.Add("P_METODO_PAGO_ID", entidad.metodo_pago_id)
-                    cmd.Parameters.Add("P_MONTO", entidad.monto)
-                    cmd.Parameters.Add("P_ESTADO_PAGO", entidad.estado_pago)
-                    cmd.Parameters.Add("P_REFERENCIA", entidad.referencia)
-                    cmd.Parameters.Add("P_PAGO_AT", entidad.pago_at)
-                    cmd.Parameters.Add("P_ESTADO", entidad.estado)
+                    cmd.Parameters.Add("P_ORDEN_VENTA_ID", OracleDbType.Int32).Value = entidad.OrdenVentaId
+                    cmd.Parameters.Add("P_METODO_PAGO_ID", OracleDbType.Int32).Value = entidad.MetodoPagoId
+                    cmd.Parameters.Add("P_MONTO", OracleDbType.Decimal).Value = entidad.Monto
+
+                    If String.IsNullOrWhiteSpace(entidad.EstadoPago) Then
+                        cmd.Parameters.Add("P_ESTADO_PAGO", OracleDbType.Varchar2).Value = DBNull.Value
+                    Else
+                        cmd.Parameters.Add("P_ESTADO_PAGO", OracleDbType.Varchar2).Value = entidad.EstadoPago
+                    End If
+
+                    If String.IsNullOrWhiteSpace(entidad.Referencia) Then
+                        cmd.Parameters.Add("P_REFERENCIA", OracleDbType.Varchar2).Value = DBNull.Value
+                    Else
+                        cmd.Parameters.Add("P_REFERENCIA", OracleDbType.Varchar2).Value = entidad.Referencia
+                    End If
+
+                    cmd.Parameters.Add("P_PAGO_AT", OracleDbType.TimeStamp).Value = entidad.PagoAt
+
+                    If String.IsNullOrWhiteSpace(entidad.Estado) Then
+                        cmd.Parameters.Add("P_ESTADO", OracleDbType.Varchar2).Value = DBNull.Value
+                    Else
+                        cmd.Parameters.Add("P_ESTADO", OracleDbType.Varchar2).Value = entidad.Estado
+                    End If
 
                     cmd.Parameters.Add("P_ID", OracleDbType.Int32).Direction = ParameterDirection.Output
 
-                    Try
-                        conn.Open()
-                        cmd.ExecuteNonQuery()
-                        Return Convert.ToInt32(cmd.Parameters("P_ID").Value)
-                    Catch ex As OracleException
-                        Throw New Exception(ex.Message)
-                    End Try
+                    cmd.ExecuteNonQuery()
+                    idGenerado = Convert.ToInt32(cmd.Parameters("P_ID").Value.ToString())
                 End Using
             End Using
+
+            Return idGenerado
         End Function
 
         Public Sub Actualizar(ByVal entidad As Pago)
-            Using conn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_PAGO.SP_ACTUALIZAR", conn)
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_PAGO.SP_ACTUALIZAR", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
-                    cmd.Parameters.Add("P_PAGO_ID", entidad.pago_id)
-                    cmd.Parameters.Add("P_ORDEN_VENTA_ID", entidad.orden_venta_id)
-                    cmd.Parameters.Add("P_METODO_PAGO_ID", entidad.metodo_pago_id)
-                    cmd.Parameters.Add("P_MONTO", entidad.monto)
-                    cmd.Parameters.Add("P_ESTADO_PAGO", entidad.estado_pago)
-                    cmd.Parameters.Add("P_REFERENCIA", entidad.referencia)
-                    cmd.Parameters.Add("P_PAGO_AT", entidad.pago_at)
-                    cmd.Parameters.Add("P_ESTADO", entidad.estado)
+                    cmd.Parameters.Add("P_PAGO_ID", OracleDbType.Int32).Value = entidad.PagoId
+                    cmd.Parameters.Add("P_ORDEN_VENTA_ID", OracleDbType.Int32).Value = entidad.OrdenVentaId
+                    cmd.Parameters.Add("P_METODO_PAGO_ID", OracleDbType.Int32).Value = entidad.MetodoPagoId
+                    cmd.Parameters.Add("P_MONTO", OracleDbType.Decimal).Value = entidad.Monto
 
-                    Try
-                        conn.Open()
-                        cmd.ExecuteNonQuery()
-                    Catch ex As OracleException
-                        Throw New Exception(ex.Message)
-                    End Try
+                    If String.IsNullOrWhiteSpace(entidad.EstadoPago) Then
+                        cmd.Parameters.Add("P_ESTADO_PAGO", OracleDbType.Varchar2).Value = DBNull.Value
+                    Else
+                        cmd.Parameters.Add("P_ESTADO_PAGO", OracleDbType.Varchar2).Value = entidad.EstadoPago
+                    End If
+
+                    If String.IsNullOrWhiteSpace(entidad.Referencia) Then
+                        cmd.Parameters.Add("P_REFERENCIA", OracleDbType.Varchar2).Value = DBNull.Value
+                    Else
+                        cmd.Parameters.Add("P_REFERENCIA", OracleDbType.Varchar2).Value = entidad.Referencia
+                    End If
+
+                    cmd.Parameters.Add("P_PAGO_AT", OracleDbType.TimeStamp).Value = entidad.PagoAt
+                    cmd.Parameters.Add("P_ESTADO", OracleDbType.Varchar2).Value = entidad.Estado
+
+                    cmd.ExecuteNonQuery()
                 End Using
             End Using
         End Sub
 
         Public Sub Eliminar(ByVal id As Integer)
-            Using conn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_PAGO.SP_ELIMINAR", conn)
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_PAGO.SP_ELIMINAR", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
-                    cmd.Parameters.Add("P_ID", id)
-
-                    Try
-                        conn.Open()
-                        cmd.ExecuteNonQuery()
-                    Catch ex As OracleException
-                        Throw New Exception(ex.Message)
-                    End Try
+                    cmd.Parameters.Add("P_ID", OracleDbType.Int32).Value = id
+                    cmd.ExecuteNonQuery()
                 End Using
             End Using
         End Sub
 
         Public Function ObtenerPorId(ByVal id As Integer) As Pago
-            Using conn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_PAGO.SP_OBTENER", conn)
+            Dim entidad As Pago = Nothing
+
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_PAGO.SP_OBTENER", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
-                    cmd.Parameters.Add("P_ID", id)
+                    cmd.Parameters.Add("P_ID", OracleDbType.Int32).Value = id
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
-
-                    conn.Open()
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
                         If dr.Read() Then
-                            Return Mapear(dr)
+                            entidad = MapearPago(dr)
                         End If
                     End Using
                 End Using
             End Using
 
-            Return Nothing
+            Return entidad
         End Function
 
         Public Function Listar() As List(Of Pago)
             Dim lista As New List(Of Pago)()
 
-            Using conn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_PAGO.SP_LISTAR", conn)
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_PAGO.SP_LISTAR", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
-                    conn.Open()
-
                     Using dr As OracleDataReader = cmd.ExecuteReader()
                         While dr.Read()
-                            lista.Add(Mapear(dr))
+                            lista.Add(MapearPago(dr))
                         End While
                     End Using
                 End Using
@@ -125,21 +138,19 @@ Namespace Repositorios
             Return lista
         End Function
 
-        Public Function Buscar(ByVal valor As Decimal) As List(Of Pago)
+        Public Function Buscar(ByVal valor As String) As List(Of Pago)
             Dim lista As New List(Of Pago)()
 
-            Using conn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_PAGO.SP_BUSCAR", conn)
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+                Using cmd As New OracleCommand("PKG_PAGO.SP_BUSCAR", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
-                    cmd.Parameters.Add("P_VALOR", valor)
+                    cmd.Parameters.Add("P_VALOR", OracleDbType.Varchar2).Value = valor
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
-
-                    conn.Open()
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
                         While dr.Read()
-                            lista.Add(Mapear(dr))
+                            lista.Add(MapearPago(dr))
                         End While
                     End Using
                 End Using
@@ -148,19 +159,25 @@ Namespace Repositorios
             Return lista
         End Function
 
-        Private Function Mapear(ByVal dr As OracleDataReader) As Pago
+        Private Function MapearPago(ByVal dr As OracleDataReader) As Pago
             Dim entidad As New Pago()
 
-            entidad.pago_id = Convert.ToInt32(dr("pago_id"))
-            entidad.orden_venta_id = Convert.ToInt32(dr("orden_venta_id"))
-            entidad.metodo_pago_id = Convert.ToInt32(dr("metodo_pago_id"))
-            entidad.monto = Convert.ToDecimal(dr("monto"))
-            entidad.estado_pago = dr("estado_pago").ToString()
-            entidad.referencia = dr("referencia").ToString()
-            entidad.pago_at = Convert.ToDateTime(dr("pago_at"))
-            entidad.created_at = Convert.ToDateTime(dr("created_at"))
-            entidad.updated_at = If(IsDBNull(dr("updated_at")), CType(Nothing, DateTime?), Convert.ToDateTime(dr("updated_at")))
-            entidad.estado = dr("estado").ToString()
+            entidad.PagoId = Convert.ToInt32(dr("pago_id"))
+            entidad.OrdenVentaId = Convert.ToInt32(dr("orden_venta_id"))
+            entidad.MetodoPagoId = Convert.ToInt32(dr("metodo_pago_id"))
+            entidad.Monto = Convert.ToDecimal(dr("monto"))
+            entidad.EstadoPago = If(IsDBNull(dr("estado_pago")), String.Empty, dr("estado_pago").ToString())
+            entidad.Referencia = If(IsDBNull(dr("referencia")), String.Empty, dr("referencia").ToString())
+            entidad.PagoAt = Convert.ToDateTime(dr("pago_at"))
+            entidad.CreatedAt = Convert.ToDateTime(dr("created_at"))
+
+            If IsDBNull(dr("updated_at")) Then
+                entidad.UpdatedAt = Nothing
+            Else
+                entidad.UpdatedAt = Convert.ToDateTime(dr("updated_at"))
+            End If
+
+            entidad.Estado = dr("estado").ToString()
 
             Return entidad
         End Function

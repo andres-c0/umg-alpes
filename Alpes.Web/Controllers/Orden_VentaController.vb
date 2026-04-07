@@ -17,15 +17,18 @@ Public Class Orden_VentaController
     End Sub
 
     Function Index() As ActionResult
-        Return Json(_servicio.Listar(), JsonRequestBehavior.AllowGet)
+        Dim lista As List(Of Orden_Venta) = _servicio.Listar()
+        Return Json(lista, JsonRequestBehavior.AllowGet)
     End Function
 
-    Function Obtener(id As Integer) As ActionResult
-        Return Json(_servicio.ObtenerPorId(id), JsonRequestBehavior.AllowGet)
+    Function Obtener(ByVal id As Integer) As ActionResult
+        Dim entidad As Orden_Venta = _servicio.ObtenerPorId(id)
+        Return Json(entidad, JsonRequestBehavior.AllowGet)
     End Function
 
-    Function Buscar(valor As String) As ActionResult
-        Return Json(_servicio.Buscar(valor), JsonRequestBehavior.AllowGet)
+    Function Buscar(ByVal valor As String) As ActionResult
+        Dim lista As List(Of Orden_Venta) = _servicio.Buscar(valor)
+        Return Json(lista, JsonRequestBehavior.AllowGet)
     End Function
 
     <HttpPost>
@@ -34,11 +37,18 @@ Public Class Orden_VentaController
             Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
             Dim entidad As Orden_Venta = JsonConvert.DeserializeObject(Of Orden_Venta)(jsonBody)
 
-            Dim idGenerado = _servicio.Insertar(entidad)
+            Dim idGenerado As Integer = _servicio.Insertar(entidad)
 
-            Return Json(New With {.success = True, .id = idGenerado})
+            Return Json(New With {
+                .success = True,
+                .message = "Orden_Venta insertada correctamente.",
+                .id = idGenerado
+            })
         Catch ex As Exception
-            Return Json(New With {.success = False, .message = ex.Message})
+            Return Json(New With {
+                .success = False,
+                .message = ex.Message
+            })
         End Try
     End Function
 
@@ -50,9 +60,15 @@ Public Class Orden_VentaController
 
             _servicio.Actualizar(entidad)
 
-            Return Json(New With {.success = True})
+            Return Json(New With {
+                .success = True,
+                .message = "Orden_Venta actualizada correctamente."
+            })
         Catch ex As Exception
-            Return Json(New With {.success = False, .message = ex.Message})
+            Return Json(New With {
+                .success = False,
+                .message = ex.Message
+            })
         End Try
     End Function
 
@@ -60,13 +76,20 @@ Public Class Orden_VentaController
     Function Eliminar() As ActionResult
         Try
             Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim data = JsonConvert.DeserializeObject(Of Dictionary(Of String, Integer))(jsonBody)
+            Dim datos = JsonConvert.DeserializeObject(Of Dictionary(Of String, Integer))(jsonBody)
 
-            _servicio.Eliminar(data("id"))
+            Dim id As Integer = datos("id")
+            _servicio.Eliminar(id)
 
-            Return Json(New With {.success = True})
+            Return Json(New With {
+                .success = True,
+                .message = "Orden_Venta eliminada correctamente."
+            })
         Catch ex As Exception
-            Return Json(New With {.success = False, .message = ex.Message})
+            Return Json(New With {
+                .success = False,
+                .message = ex.Message
+            })
         End Try
     End Function
 

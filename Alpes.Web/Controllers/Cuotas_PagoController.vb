@@ -41,7 +41,7 @@ Public Class Cuotas_PagoController
 
             Return Json(New With {
                 .success = True,
-                .message = "Registro insertado correctamente.",
+                .message = "Cuotas_Pago insertado correctamente.",
                 .id = idGenerado
             })
         Catch ex As Exception
@@ -62,7 +62,7 @@ Public Class Cuotas_PagoController
 
             Return Json(New With {
                 .success = True,
-                .message = "Registro actualizado correctamente."
+                .message = "Cuotas_Pago actualizado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {
@@ -76,13 +76,14 @@ Public Class Cuotas_PagoController
     Function Eliminar() As ActionResult
         Try
             Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim data As Dictionary(Of String, Integer) = JsonConvert.DeserializeObject(Of Dictionary(Of String, Integer))(jsonBody)
+            Dim datos = JsonConvert.DeserializeObject(Of Dictionary(Of String, Integer))(jsonBody)
 
-            _servicio.Eliminar(data("id"))
+            Dim id As Integer = datos("id")
+            _servicio.Eliminar(id)
 
             Return Json(New With {
                 .success = True,
-                .message = "Registro eliminado correctamente."
+                .message = "Cuotas_Pago eliminado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {
