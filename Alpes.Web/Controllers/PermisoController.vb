@@ -1,33 +1,33 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
 Imports System.IO
 Imports System.Web.Mvc
 Imports Newtonsoft.Json
 Imports Alpes.Servicios.Servicios
-Imports Alpes.Entidades.Ventas
+Imports Alpes.Entidades.Seguridad
 
-Public Class FacturaController
+Public Class PermisoController
     Inherits Controller
 
-    Private ReadOnly _servicio As FacturaServicio
+    Private ReadOnly _servicio As PermisoServicio
 
     Public Sub New()
-        _servicio = New FacturaServicio()
+        _servicio = New PermisoServicio()
     End Sub
 
     Function Index() As ActionResult
-        Dim lista As List(Of Factura) = _servicio.Listar()
+        Dim lista As List(Of Permiso) = _servicio.Listar()
         Return Json(lista, JsonRequestBehavior.AllowGet)
     End Function
 
     Function Obtener(ByVal id As Integer) As ActionResult
-        Dim entidad As Factura = _servicio.ObtenerPorId(id)
+        Dim entidad As Permiso = _servicio.ObtenerPorId(id)
         Return Json(entidad, JsonRequestBehavior.AllowGet)
     End Function
 
-    Function Buscar(ByVal criterio As String, ByVal valor As String) As ActionResult
-        Dim lista As List(Of Factura) = _servicio.Buscar(criterio, valor)
+    Function Buscar(ByVal valor As String) As ActionResult
+        Dim lista As List(Of Permiso) = _servicio.Buscar(valor)
         Return Json(lista, JsonRequestBehavior.AllowGet)
     End Function
 
@@ -35,13 +35,13 @@ Public Class FacturaController
     Function Insertar() As ActionResult
         Try
             Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim entidad As Factura = JsonConvert.DeserializeObject(Of Factura)(jsonBody)
+            Dim entidad As Permiso = JsonConvert.DeserializeObject(Of Permiso)(jsonBody)
 
             Dim idGenerado As Integer = _servicio.Insertar(entidad)
 
             Return Json(New With {
                 .success = True,
-                .message = "Factura insertada correctamente.",
+                .message = "Permiso insertado correctamente.",
                 .id = idGenerado
             })
         Catch ex As Exception
@@ -56,13 +56,13 @@ Public Class FacturaController
     Function Actualizar() As ActionResult
         Try
             Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim entidad As Factura = JsonConvert.DeserializeObject(Of Factura)(jsonBody)
+            Dim entidad As Permiso = JsonConvert.DeserializeObject(Of Permiso)(jsonBody)
 
             _servicio.Actualizar(entidad)
 
             Return Json(New With {
                 .success = True,
-                .message = "Factura actualizada correctamente."
+                .message = "Permiso actualizado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {
@@ -83,7 +83,7 @@ Public Class FacturaController
 
             Return Json(New With {
                 .success = True,
-                .message = "Factura eliminada correctamente."
+                .message = "Permiso eliminado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {

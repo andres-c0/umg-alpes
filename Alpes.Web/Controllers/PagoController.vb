@@ -26,7 +26,7 @@ Public Class PagoController
         Return Json(entidad, JsonRequestBehavior.AllowGet)
     End Function
 
-    Function Buscar(ByVal valor As Decimal) As ActionResult
+    Function Buscar(ByVal valor As String) As ActionResult
         Dim lista As List(Of Pago) = _servicio.Buscar(valor)
         Return Json(lista, JsonRequestBehavior.AllowGet)
     End Function
@@ -41,7 +41,7 @@ Public Class PagoController
 
             Return Json(New With {
                 .success = True,
-                .message = "Registro insertado correctamente.",
+                .message = "Pago insertado correctamente.",
                 .id = idGenerado
             })
         Catch ex As Exception
@@ -62,7 +62,7 @@ Public Class PagoController
 
             Return Json(New With {
                 .success = True,
-                .message = "Registro actualizado correctamente."
+                .message = "Pago actualizado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {
@@ -76,13 +76,14 @@ Public Class PagoController
     Function Eliminar() As ActionResult
         Try
             Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim data As Dictionary(Of String, Integer) = JsonConvert.DeserializeObject(Of Dictionary(Of String, Integer))(jsonBody)
+            Dim datos = JsonConvert.DeserializeObject(Of Dictionary(Of String, Integer))(jsonBody)
 
-            _servicio.Eliminar(data("id"))
+            Dim id As Integer = datos("id")
+            _servicio.Eliminar(id)
 
             Return Json(New With {
                 .success = True,
-                .message = "Registro eliminado correctamente."
+                .message = "Pago eliminado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {
@@ -93,4 +94,3 @@ Public Class PagoController
     End Function
 
 End Class
-
