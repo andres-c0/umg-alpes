@@ -36,108 +36,82 @@ END PKG_ROL_EMPLEADO;
    PACKAGE BODY
    ============================================ */
 
-CREATE OR REPLACE PACKAGE BODY PKG_ROL_EMPLEADO AS
+PACKAGE BODY PKG_ROL_EMPLEADO AS
 
-  PROCEDURE SP_INSERTAR_ROL(
-    P_NOMBRE        IN ROL_EMPLEADO.NOMBRE%TYPE,
-    P_DESCRIPCION   IN ROL_EMPLEADO.DESCRIPCION%TYPE,
-    P_ROL_ID        OUT ROL_EMPLEADO.ROL_ID%TYPE
-  ) AS
+  PROCEDURE INSERTAR(
+    p_nombre IN VARCHAR2,
+    p_descripcion IN VARCHAR2,
+    p_estado IN VARCHAR2,
+    p_rol_empleado_id OUT NUMBER
+  ) IS
   BEGIN
-
-    INSERT INTO ROL_EMPLEADO(
-      NOMBRE,
-      DESCRIPCION,
-      CREATED_AT,
-      ESTADO
+    INSERT INTO ROL_EMPLEADO (
+      nombre,
+      descripcion,
+      estado,
+      created_at
     )
-    VALUES(
-      P_NOMBRE,
-      P_DESCRIPCION,
-      SYSTIMESTAMP,
-      'ACTIVO'
+    VALUES (
+      p_nombre,
+      p_descripcion,
+      p_estado,
+      SYSTIMESTAMP
     )
-    RETURNING ROL_ID INTO P_ROL_ID;
+    RETURNING rol_empleado_id INTO p_rol_empleado_id;
+  END INSERTAR;
 
-  END SP_INSERTAR_ROL;
 
 
-  PROCEDURE SP_ACTUALIZAR_ROL(
-    P_ROL_ID        IN ROL_EMPLEADO.ROL_ID%TYPE,
-    P_NOMBRE        IN ROL_EMPLEADO.NOMBRE%TYPE,
-    P_DESCRIPCION   IN ROL_EMPLEADO.DESCRIPCION%TYPE
-  ) AS
+  PROCEDURE ACTUALIZAR(
+    p_rol_empleado_id IN NUMBER,
+    p_nombre IN VARCHAR2,
+    p_descripcion IN VARCHAR2,
+    p_estado IN VARCHAR2
+  ) IS
   BEGIN
-
     UPDATE ROL_EMPLEADO
-       SET NOMBRE = P_NOMBRE,
-           DESCRIPCION = P_DESCRIPCION,
-           UPDATED_AT = SYSTIMESTAMP
-     WHERE ROL_ID = P_ROL_ID;
+       SET nombre = p_nombre,
+           descripcion = p_descripcion,
+           estado = p_estado,
+           updated_at = SYSTIMESTAMP
+     WHERE rol_empleado_id = p_rol_empleado_id;
+  END ACTUALIZAR;
 
-  END SP_ACTUALIZAR_ROL;
 
 
-  PROCEDURE SP_ELIMINAR_ROL(
-    P_ROL_ID IN ROL_EMPLEADO.ROL_ID%TYPE
-  ) AS
-    V_EXISTE NUMBER;
+  PROCEDURE ELIMINAR(
+    p_rol_empleado_id IN NUMBER
+  ) IS
   BEGIN
-
-    /* Validar si el rol está siendo usado por empleados */
-
-    SELECT COUNT(*)
-      INTO V_EXISTE
-      FROM EMPLEADO
-     WHERE ROL_ID = P_ROL_ID;
-
-    IF V_EXISTE > 0 THEN
-        RAISE_APPLICATION_ERROR(
-            -20001,
-            'No se puede eliminar el rol porque está asignado a empleados.'
-        );
-    END IF;
-
     UPDATE ROL_EMPLEADO
-       SET ESTADO = 'INACTIVO',
-           UPDATED_AT = SYSTIMESTAMP
-     WHERE ROL_ID = P_ROL_ID;
+       SET estado = 'INACTIVO',
+           updated_at = SYSTIMESTAMP
+     WHERE rol_empleado_id = p_rol_empleado_id;
+  END ELIMINAR;
 
-  END SP_ELIMINAR_ROL;
 
 
-  PROCEDURE SP_OBTENER_ROL(
-    P_ROL_ID IN ROL_EMPLEADO.ROL_ID%TYPE,
-    P_CURSOR OUT SYS_REFCURSOR
-  ) AS
+  PROCEDURE OBTENER_POR_ID(
+    p_rol_empleado_id IN NUMBER,
+    p_resultado OUT SYS_REFCURSOR
+  ) IS
   BEGIN
-
-    OPEN P_CURSOR FOR
-      SELECT ROL_ID,
-             NOMBRE,
-             DESCRIPCION,
-             ESTADO
+    OPEN p_resultado FOR
+      SELECT rol_empleado_id, nombre, descripcion, estado, created_at, updated_at
         FROM ROL_EMPLEADO
-       WHERE ROL_ID = P_ROL_ID;
+       WHERE rol_empleado_id = p_rol_empleado_id;
+  END OBTENER_POR_ID;
 
-  END SP_OBTENER_ROL;
 
 
-  PROCEDURE SP_LISTAR_ROLES(
-    P_CURSOR OUT SYS_REFCURSOR
-  ) AS
+  PROCEDURE LISTAR(
+    p_resultado OUT SYS_REFCURSOR
+  ) IS
   BEGIN
-
-    OPEN P_CURSOR FOR
-      SELECT ROL_ID,
-             NOMBRE,
-             DESCRIPCION,
-             ESTADO
+    OPEN p_resultado FOR
+      SELECT rol_empleado_id, nombre, descripcion, estado, created_at, updated_at
         FROM ROL_EMPLEADO
-       WHERE ESTADO = 'ACTIVO'
-       ORDER BY NOMBRE;
-
-  END SP_LISTAR_ROLES;
+       ORDER BY rol_empleado_id;
+  END LISTAR;
 
 END PKG_ROL_EMPLEADO;
-/

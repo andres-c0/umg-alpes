@@ -13,18 +13,6 @@ Namespace Servicios
             _datos = New Orden_Venta_DetalleDatos()
         End Sub
 
-        Public Function Listar() As List(Of Orden_Venta_Detalle)
-            Return _datos.Listar()
-        End Function
-
-        Public Function ObtenerPorId(ByVal id As Integer) As Orden_Venta_Detalle
-            Return _datos.ObtenerPorId(id)
-        End Function
-
-        Public Function Buscar(ByVal valor As Integer) As List(Of Orden_Venta_Detalle)
-            Return _datos.Buscar(valor)
-        End Function
-
         Public Function Insertar(ByVal entidad As Orden_Venta_Detalle) As Integer
             Return _datos.Insertar(entidad)
         End Function
@@ -36,6 +24,18 @@ Namespace Servicios
         Public Sub Eliminar(ByVal id As Integer)
             _datos.Eliminar(id)
         End Sub
+
+        Public Function ObtenerPorId(ByVal id As Integer) As Orden_Venta_Detalle
+            Return _datos.ObtenerPorId(id)
+        End Function
+
+        Public Function Listar() As List(Of Orden_Venta_Detalle)
+            Return _datos.Listar()
+        End Function
+
+        Public Function Buscar(ByVal valor As Integer) As List(Of Orden_Venta_Detalle)
+            Return _datos.Buscar(valor)
+        End Function
 
     End Class
 End Namespace

@@ -1,20 +1,412 @@
-﻿/* Set padding to keep content from hitting the edges */
-.body-content {
-    margin-top: 15px;
-    padding-left: 15px;
-    padding-right: 15px;
+﻿:root {
+    --cafe-oscuro: #2C1810;
+    --nogal-medio: #8B6F47;
+    --arena-calida: #C4A882;
+    --crema-fondo: #F7F3EE;
+    --verde-selva: #1A3A2A;
+    --oro-guatemalteco: #D4A853;
+    --rojo-colonial: #8B2E2E;
+    --pergamino: #E8E0D5;
+    --grafito: #4A4A4A;
+    --blanco: #FFFFFF;
+    --exito: #2E7D32;
+    --error: #8B2E2E;
+    --aviso: #D4A853;
+    --info: #1A3A2A;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Lato', sans-serif;
+    --text-xs: 11px;
+    --text-sm: 12px;
+    --text-base: 14px;
+    --text-md: 15px;
+    --text-lg: 16px;
+    --text-xl: 18px;
+    --text-2xl: 22px;
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    --tracking-wide: 1.2px;
+    --tracking-wider: 2.5px;
+    --tracking-widest: 2px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --radius-2xl: 20px;
+    --radius-full: 9999px;
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-elevated: 0 16px 40px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.08);
+    --shadow-gold: 0 8px 24px rgba(212,168,83,0.25);
+    --border-light: 1px solid #E8E0D5;
+    --border-medium: 1px solid #C4A882;
+    --border-focus: 1.5px solid #2C1810;
 }
 
-/* Override the default bootstrap behavior where horizontal description lists 
-   will truncate terms that are too long to fit in the left column 
-*/
-.dl-horizontal dt {
-    white-space: normal;
+html {
+    font-size: 16px;
+    min-height: 100%;
 }
 
-/* Set width on the form input elements since they're 100% wide by default */
-input,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: var(--crema-fondo);
+    color: var(--grafito);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.5;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+    a:hover,
+    a:focus {
+        text-decoration: none;
+        color: inherit;
+    }
+
+.container-fluid {
+    width: 100%;
+    padding-left: 24px;
+    padding-right: 24px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding-left: 24px;
+    padding-right: 24px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.topbar {
+    min-height: 72px;
+    background: var(--cafe-oscuro);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.brand-block {
+    display: flex;
+    align-items: center;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--oro-guatemalteco);
+    color: var(--cafe-oscuro);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: var(--weight-bold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-gold);
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.brand-title {
+    color: var(--blanco);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-wider);
+    line-height: 1.1;
+}
+
+.brand-tagline {
+    color: var(--arena-calida);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-widest);
+    margin-top: 2px;
+}
+
+.topbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.topbar-link {
+    color: rgba(255,255,255,0.88);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    transition: color 0.15s ease;
+}
+
+    .topbar-link:hover {
+        color: var(--oro-guatemalteco);
+    }
+
+.topbar-btn {
+    margin-left: 4px;
+}
+
+.page-shell {
+    min-height: calc(100vh - 72px - 92px);
+    background: var(--crema-fondo);
+}
+
+.main-content {
+    width: 100%;
+}
+
+.site-footer {
+    background: #f1e9df;
+    border-top: var(--border-light);
+    padding: 28px 0;
+    text-align: center;
+}
+
+.footer-brand {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    color: var(--cafe-oscuro);
+    margin-bottom: 6px;
+}
+
+.footer-copy {
+    color: var(--nogal-medio);
+    font-size: var(--text-sm);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--cafe-oscuro);
+    margin-top: 0;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+.btn-primary {
+    background: var(--cafe-oscuro);
+    color: var(--crema-fondo);
+    padding: 12px 24px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+
+    .btn-primary:hover {
+        background: #3D2416;
+        color: var(--crema-fondo);
+    }
+
+.btn-outlined {
+    background: transparent;
+    color: var(--cafe-oscuro);
+    border: 1.5px solid var(--cafe-oscuro);
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+    .btn-outlined:hover {
+        background: rgba(44, 24, 16, 0.04);
+    }
+
+.btn-gold {
+    background: var(--oro-guatemalteco);
+    color: var(--cafe-oscuro);
+    border: none;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+    .btn-gold:hover {
+        background: #c89a3c;
+        color: var(--cafe-oscuro);
+    }
+
+.btn-danger {
+    background: transparent;
+    border: 1.5px solid var(--rojo-colonial);
+    color: var(--rojo-colonial);
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.card-base {
+    background: var(--blanco);
+    border: var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.input-field,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
 select,
 textarea {
-    max-width: 280px;
+    width: 100%;
+    border: 1px solid #E8E0D5;
+    border-radius: 12px;
+    background: var(--blanco);
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--cafe-oscuro);
+    font-family: var(--font-body);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+    .input-field:focus,
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+        border: 1.5px solid var(--cafe-oscuro);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 24, 16, 0.08);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--arena-calida);
+    }
+
+label {
+    display: inline-block;
+    margin-bottom: 6px;
+    color: var(--nogal-medio);
+    font-size: 13px;
+    font-weight: var(--weight-medium);
+}
+
+.text-muted {
+    color: var(--nogal-medio);
+}
+
+.section-title {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.section-subtitle {
+    font-size: 15px;
+    color: var(--nogal-medio);
+    margin-bottom: 24px;
+}
+
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.badge-success {
+    background: #E8F5EE;
+    color: var(--exito);
+}
+
+.badge-warning {
+    background: #FFF8E7;
+    color: var(--aviso);
+}
+
+.badge-danger {
+    background: #FAECEC;
+    color: var(--error);
+}
+
+.badge-info {
+    background: #EAF4F0;
+    color: var(--info);
+}
+
+@media (max-width: 992px) {
+    .brand-title {
+        font-size: 20px;
+    }
+
+    .topbar {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .topbar-nav {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container,
+    .container-fluid {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .brand-link {
+        align-items: flex-start;
+    }
+
+    .brand-title {
+        font-size: 18px;
+    }
+
+    .brand-tagline {
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .topbar-nav {
+        width: 100%;
+    }
 }

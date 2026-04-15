@@ -31,8 +31,7 @@ CREATE OR REPLACE PACKAGE PKG_CARGO AS
 
 END PKG_CARGO;
 /
-
-
+ 
 /* ============================================
    PACKAGE BODY
    ============================================ */
@@ -101,6 +100,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_CARGO AS
       SELECT CARGO_ID,
              NOMBRE,
              DESCRIPCION,
+             CREATED_AT,
+             UPDATED_AT,
              ESTADO
         FROM CARGO
        WHERE ESTADO = 'ACTIVO'
@@ -116,7 +117,12 @@ CREATE OR REPLACE PACKAGE BODY PKG_CARGO AS
   BEGIN
 
     OPEN P_CURSOR FOR
-      SELECT *
+      SELECT CARGO_ID,
+             NOMBRE,
+             DESCRIPCION,
+             CREATED_AT,
+             UPDATED_AT,
+             ESTADO
         FROM CARGO
        WHERE CARGO_ID = P_CARGO_ID;
 

@@ -3,14 +3,14 @@ Option Explicit On
 
 Namespace Ventas
     Public Class Orden_Venta_Detalle
-        Public Property orden_venta_det_id As Integer
-        Public Property orden_venta_id As Integer
-        Public Property producto_id As Integer
-        Public Property cantidad As Integer
-        Public Property precio_unitario_snapshot As Decimal
-        Public Property subtotal_linea As Decimal
-        Public Property created_at As DateTime
-        Public Property updated_at As DateTime?
-        Public Property estado As String
+        Public Property OrdenVentaDetId As Integer
+        Public Property OrdenVentaId As Integer
+        Public Property ProductoId As Integer
+        Public Property Cantidad As Integer
+        Public Property PrecioUnitarioSnapshot As Decimal
+        Public Property SubtotalLinea As Decimal
+        Public Property CreatedAt As DateTime
+        Public Property UpdatedAt As DateTime?
+        Public Property Estado As String
     End Class
 End Namespace

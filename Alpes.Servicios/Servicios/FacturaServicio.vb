@@ -13,18 +13,6 @@ Namespace Servicios
             _datos = New FacturaDatos()
         End Sub
 
-        Public Function Listar() As List(Of Factura)
-            Return _datos.Listar()
-        End Function
-
-        Public Function ObtenerPorId(ByVal id As Integer) As Factura
-            Return _datos.ObtenerPorId(id)
-        End Function
-
-        Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of Factura)
-            Return _datos.Buscar(criterio, valor)
-        End Function
-
         Public Function Insertar(ByVal entidad As Factura) As Integer
             Return _datos.Insertar(entidad)
         End Function
@@ -36,6 +24,18 @@ Namespace Servicios
         Public Sub Eliminar(ByVal id As Integer)
             _datos.Eliminar(id)
         End Sub
+
+        Public Function ObtenerPorId(ByVal id As Integer) As Factura
+            Return _datos.ObtenerPorId(id)
+        End Function
+
+        Public Function Listar() As List(Of Factura)
+            Return _datos.Listar()
+        End Function
+
+        Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of Factura)
+            Return _datos.Buscar(criterio, valor)
+        End Function
 
     End Class
 End Namespace

@@ -3,15 +3,15 @@ Option Explicit On
 
 Namespace Ventas
     Public Class Pago
-        Public Property pago_id As Integer
-        Public Property orden_venta_id As Integer
-        Public Property metodo_pago_id As Integer
-        Public Property monto As Decimal
-        Public Property estado_pago As String
-        Public Property referencia As String
-        Public Property pago_at As DateTime
-        Public Property created_at As DateTime
-        Public Property updated_at As DateTime?
-        Public Property estado As String
+        Public Property PagoId As Integer
+        Public Property OrdenVentaId As Integer
+        Public Property MetodoPagoId As Integer
+        Public Property Monto As Decimal
+        Public Property EstadoPago As String
+        Public Property Referencia As String
+        Public Property PagoAt As DateTime
+        Public Property CreatedAt As DateTime
+        Public Property UpdatedAt As DateTime?
+        Public Property Estado As String
     End Class
 End Namespace
