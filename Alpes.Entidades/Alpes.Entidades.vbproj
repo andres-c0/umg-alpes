@@ -65,6 +65,37 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.vb" />
+    <Compile Include="Clientes\Cliente.vb" />
+    <Compile Include="Clientes\FAQ.vb" />
+    <Compile Include="Compras\Abastecimiento.vb" />
+    <Compile Include="Compras\CondicionPago.vb" />
+    <Compile Include="Compras\ContratoProveedor.vb" />
+    <Compile Include="Compras\Control_Calidad.vb" />
+    <Compile Include="Compras\CuentaPagarProveedor.vb" />
+    <Compile Include="Compras\Estado_Orden_Compra.vb" />
+    <Compile Include="Compras\ExpedienteProveedor.vb" />
+    <Compile Include="Compras\HistoricoPrecioMateriaPrimaProveedor.vb" />
+    <Compile Include="Compras\Orden_Compra.vb" />
+    <Compile Include="Compras\Orden_Compra_Detalle.vb" />
+    <Compile Include="Compras\PagoProveedor..vb" />
+    <Compile Include="Compras\Proveedor.vb" />
+    <Compile Include="Compras\Recepcion_Material.vb" />
+    <Compile Include="Compras\Ruta_Entrega.vb" />
+    <Compile Include="Envios\Estado_Envio.vb" />
+    <Compile Include="Envios\Politica_Envio.vb" />
+    <Compile Include="Envios\SeguimientoEnvio.vb" />
+    <Compile Include="Envios\Tipo_Entrega.vb" />
+    <Compile Include="Envios\Zona_Envio.vb" />
+    <Compile Include="Inventario\Categoria.vb" />
+    <Compile Include="Inventario\Inventario_Producto.vb" />
+    <Compile Include="Inventario\Movimiento_Inventario.vb" />
+    <Compile Include="Inventario\Precio_Historico.vb" />
+    <Compile Include="Inventario\Producto.vb" />
+    <Compile Include="Inventario\Unidad_Medida.vb" />
+    <Compile Include="Inventario\Vehiculo.vb" />
+    <Compile Include="Marketing\Campana_Marketing.vb" />
+    <Compile Include="Marketing\Cupon.vb" />
+    <Compile Include="Marketing\Tipo_Promocion.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -80,22 +111,50 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Produccion\ConsumoMateriaPrima.vb" />
+    <Compile Include="Produccion\Estado_Produccion.vb" />
+    <Compile Include="Produccion\Herramienta.vb" />
+    <Compile Include="Produccion\Inventario_Materia_Prima.vb" />
+    <Compile Include="Produccion\ListaMateriales.vb" />
+    <Compile Include="Produccion\ListaMaterialesDetalle.vb" />
+    <Compile Include="Produccion\MantenimientoHerramienta.vb" />
+    <Compile Include="Produccion\Materia_Prima.vb" />
+    <Compile Include="Produccion\Movimiento_Materia_Prima.vb" />
+    <Compile Include="Produccion\OrdenProduccion.vb" />
+    <Compile Include="Produccion\OrdenProduccionTarea.vb" />
+    <Compile Include="Produccion\PlanProduccion.vb" />
+    <Compile Include="Produccion\ProduccionResultados.vb" />
+    <Compile Include="RRHH\Cargo.vb" />
+    <Compile Include="RRHH\Departamento.vb" />
+    <Compile Include="RRHH\Empleado.vb" />
     <Compile Include="RRHH\Evaluacion.vb" />
     <Compile Include="RRHH\Expediente_Empleado.vb" />
+    <Compile Include="RRHH\HistorialLaboral.vb" />
     <Compile Include="RRHH\Incidente_Laboral.vb" />
     <Compile Include="RRHH\Nomina.vb" />
     <Compile Include="RRHH\Nomina_Detalle.vb" />
+    <Compile Include="RRHH\Rol_Empleado.vb" />
+    <Compile Include="Seguridad\Historial_Cambio_Contrasena.vb" />
+    <Compile Include="Seguridad\Permiso.vb" />
     <Compile Include="Seguridad\Rol.vb" />
+    <Compile Include="Seguridad\Rol_Permiso.vb" />
+    <Compile Include="Seguridad\Sesion.vb" />
     <Compile Include="Seguridad\Usuario.vb" />
+    <Compile Include="Ventas\Carrito.vb" />
+    <Compile Include="Ventas\CarritoDetalle.vb" />
     <Compile Include="Ventas\Cuotas_Pago.vb" />
     <Compile Include="Ventas\Devolucion.vb" />
+    <Compile Include="Ventas\Estado_Orden.vb" />
     <Compile Include="Ventas\Factura.vb" />
     <Compile Include="Ventas\Factura_Detalle.vb" />
     <Compile Include="Ventas\Historial_Compra.vb" />
     <Compile Include="Ventas\Historial_Promocion.vb" />
+    <Compile Include="Ventas\ListaDeseos.vb" />
+    <Compile Include="Ventas\Metodo_Pago.vb" />
     <Compile Include="Ventas\Orden_Venta.vb" />
     <Compile Include="Ventas\Orden_Venta_Detalle.vb" />
     <Compile Include="Ventas\Pago.vb" />
+    <Compile Include="Ventas\PreferenciaCliente.vb" />
     <Compile Include="Ventas\Promocion.vb" />
     <Compile Include="Ventas\Promocion_Producto.vb" />
     <Compile Include="Ventas\Regla_Envio_Gratis.vb" />
@@ -122,10 +181,6 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Compras\" />
-    <Folder Include="Inventario\" />
-    <Folder Include="Produccion\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

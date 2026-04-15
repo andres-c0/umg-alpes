@@ -64,7 +64,6 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -81,28 +80,87 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="PruebaConexionServicio.vb" />
+    <Compile Include="Servicios\AbastecimientoServicio.vb" />
+    <Compile Include="Servicios\Campana_MarketingServicio.vb" />
+    <Compile Include="Servicios\CargoServicio.vb" />
+    <Compile Include="Servicios\CarritoDetalleServicio.vb" />
+    <Compile Include="Servicios\CarritoServicio.vb" />
+    <Compile Include="Servicios\CategoriaServicio.vb" />
+    <Compile Include="Servicios\ClienteServicio.vb" />
+    <Compile Include="Servicios\CondicionPagoServicio.vb" />
+    <Compile Include="Servicios\ConsumoMateriaPrimaServicio.vb" />
+    <Compile Include="Servicios\ContratoProveedorServicio.vb" />
+    <Compile Include="Servicios\Control_CalidadServicio.vb" />
+    <Compile Include="Servicios\CuentaPagarProveedorServicio.vb" />
     <Compile Include="Servicios\Cuotas_PagoServicio.vb" />
+    <Compile Include="Servicios\CuponServicio .vb" />
+    <Compile Include="Servicios\DepartamentoServicio.vb" />
     <Compile Include="Servicios\DevolucionServicio.vb" />
+    <Compile Include="Servicios\EmpleadoServicio.vb" />
+    <Compile Include="Servicios\Estado_EnvioServicio.vb" />
+    <Compile Include="Servicios\Estado_OrdenServicio.vb" />
+    <Compile Include="Servicios\Estado_Orden_CompraServicio.vb" />
+    <Compile Include="Servicios\Estado_ProduccionServicio.vb" />
     <Compile Include="Servicios\EvaluacionServicio.vb" />
+    <Compile Include="Servicios\ExpedienteProveedorServicio.vb" />
     <Compile Include="Servicios\Expediente_EmpleadoServicio.vb" />
     <Compile Include="Servicios\FacturaServicio.vb" />
     <Compile Include="Servicios\Factura_DetalleServicio.vb" />
+    <Compile Include="Servicios\FAQServicio.vb" />
+    <Compile Include="Servicios\HerramientaServicio.vb" />
+    <Compile Include="Servicios\HistorialLaboralServicio.vb" />
+    <Compile Include="Servicios\Historial_Cambio_ContrasenaServicio.vb" />
     <Compile Include="Servicios\Historial_CompraServicio.vb" />
     <Compile Include="Servicios\Historial_PromocionServicio.vb" />
+    <Compile Include="Servicios\HistoricoPrecioMateriaPrimaProveedorServicio.vb" />
     <Compile Include="Servicios\Incidente_LaboralServicio.vb" />
+    <Compile Include="Servicios\Inventario_Materia_PrimaServicio.vb" />
+    <Compile Include="Servicios\Inventario_ProductoServicio.vb" />
+    <Compile Include="Servicios\ListaDeseoServicio.vb" />
+    <Compile Include="Servicios\ListaMaterialesDetalleServicio.vb" />
+    <Compile Include="Servicios\ListaMaterialesServicio.vb" />
+    <Compile Include="Servicios\MantenimientoHerramientaServicio.vb" />
+    <Compile Include="Servicios\Materia_PrimaServicio.vb" />
+    <Compile Include="Servicios\Metodo_PagoServicio.vb" />
+    <Compile Include="Servicios\Movimiento_InventarioServicio.vb" />
+    <Compile Include="Servicios\Movimiento_Materia_PrimaServicio.vb" />
     <Compile Include="Servicios\NominaServicio.vb" />
     <Compile Include="Servicios\Nomina_DetalleServicio.vb" />
+    <Compile Include="Servicios\OrdenProduccionServicio.vb" />
+    <Compile Include="Servicios\OrdenProduccionTareaServicio.vb" />
+    <Compile Include="Servicios\Orden_CompraServicio.vb" />
+    <Compile Include="Servicios\Orden_Compra_DetalleServicio.vb" />
     <Compile Include="Servicios\Orden_VentaServicio.vb" />
     <Compile Include="Servicios\Orden_Venta_DetalleServicio.vb" />
+    <Compile Include="Servicios\PagoProveedorServicio.vb" />
     <Compile Include="Servicios\PagoServicio.vb" />
+    <Compile Include="Servicios\PermisoServicio.vb" />
+    <Compile Include="Servicios\PlanProduccionServicio.vb" />
+    <Compile Include="Servicios\Politica_EnvioServicio.vb" />
+    <Compile Include="Servicios\Precio_HistoricoServicio.vb" />
+    <Compile Include="Servicios\PreferenciaClienteServicio.vb" />
+    <Compile Include="Servicios\ProduccionResultadosServicio.vb" />
+    <Compile Include="Servicios\ProductoServicio.vb" />
     <Compile Include="Servicios\PromocionServicio.vb" />
     <Compile Include="Servicios\Promocion_ProductoServicio.vb" />
+    <Compile Include="Servicios\ProveedorServicio.vb" />
+    <Compile Include="Servicios\Recepcion_MaterialServici.vb" />
     <Compile Include="Servicios\Regla_Envio_GratisServicio.vb" />
     <Compile Include="Servicios\Regla_PromocionServicio.vb" />
     <Compile Include="Servicios\Resena_ComentarioServicio.vb" />
     <Compile Include="Servicios\RolServicio.vb" />
+    <Compile Include="Servicios\Rol_EmpleadoServicio.vb" />
+    <Compile Include="Servicios\Rol_PermisoServicio.vb" />
+    <Compile Include="Servicios\Ruta_EntregaServicio.vb" />
+    <Compile Include="Servicios\SeguimientoEnvioServicio.vb" />
+    <Compile Include="Servicios\SesionServicio.vb" />
     <Compile Include="Servicios\Tarifa_EnvioServicio.vb" />
+    <Compile Include="Servicios\Tipo_EntregaServicio.vb" />
+    <Compile Include="Servicios\Tipo_PromocionServicio.vb" />
+    <Compile Include="Servicios\Unidad_MedidaServicio.vb" />
     <Compile Include="Servicios\UsuarioServicio.vb" />
+    <Compile Include="Servicios\VehiculoServicio.vb" />
+    <Compile Include="Servicios\Zona_EnvioServicio.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
