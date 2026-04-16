@@ -1,325 +1,125 @@
-﻿@Code
-    ViewBag.Title = "Login"
+@ModelType Alpes.Web.Models.LoginViewModel
+
+@Code
+    Layout = Nothing
+    ViewData("Title") = "Iniciar sesión"
 End Code
 
-<section class="login-page">
-    <div class="login-decoration login-decoration-top"></div>
-    <div class="login-decoration login-decoration-bottom"></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar sesión - Muebles de los Alpes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    @Styles.Render("~/Content/alpes.css")
+</head>
+<body>
 
-    <div class="login-wrapper">
-        <div class="login-brand-panel">
-            <div class="login-brand-tag">Portal oficial</div>
-            <h1 class="login-brand-title">MUEBLES DE LOS ALPES</h1>
-            <p class="login-brand-subtitle">ARTESANÍA · CALIDAD · ELEGANCIA</p>
+    <div class="auth-bg">
+        <div class="auth-box">
 
-            <div class="login-brand-copy">
-                Accede al portal para consultar productos, gestionar compras y administrar la operación
-                del sistema con una experiencia visual elegante y profesional.
-            </div>
-        </div>
-
-        <div class="login-card">
-            <div class="login-card-logo">A</div>
-
-            <div class="login-card-header">
-                <div class="login-accent-bar"></div>
-                <div>
-                    <h2 class="login-card-title">Iniciar sesión</h2>
-                    <p class="login-card-text">Ingresa tus credenciales para continuar.</p>
+            <div class="auth-logo">
+                <div class="auth-logo__icon">
+                    <i class="bi bi-house-heart-fill"></i>
                 </div>
+                <span class="auth-logo__brand">MUEBLES DE LOS ALPES</span>
+                <span class="auth-logo__tag">Artesanía · Calidad · Elegancia</span>
             </div>
 
-            <form class="login-form" method="post" action="#">
-                <div class="form-group">
-                    <label for="username">Usuario o correo</label>
-                    <div class="input-icon-wrapper">
-                        <span class="input-icon">@@</span>
-                        <input type="text" id="username" name="username" class="login-input" placeholder="Ingresa tu usuario" />
+            <div class="auth-card">
+                <div class="auth-card__hdr">
+                    <div class="auth-card__accent"></div>
+                    <div>
+                        <div class="auth-card__title">Iniciar sesión</div>
+                        <div class="auth-card__sub">Ingresa tus credenciales</div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="password">Contraseña</label>
-                    <div class="input-icon-wrapper">
-                        <span class="input-icon">••</span>
-                        <input type="password" id="password" name="password" class="login-input" placeholder="Ingresa tu contraseña" />
+                @If ViewData("Error") IsNot Nothing Then
+                    @<div class="a-alert error" style="display:block">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span>@ViewData("Error")</span>
                     </div>
-                </div>
+                End If
 
-                <div class="login-actions">
-                    <button type="submit" class="btn btn-primary login-btn">INGRESAR</button>
-                </div>
-            </form>
+                @Using Html.BeginForm("Login", "Home", FormMethod.Post)
+                    @Html.AntiForgeryToken()
 
-            <div class="login-footer-note">
-                Acceso para clientes y administradores.
+                    @<div class="a-form-group">
+                        <label for="Username">Usuario</label>
+                        <div class="a-input-wrap">
+                            <i class="bi bi-person a-input-icon"></i>
+                            @Html.TextBoxFor(Function(m) m.Username, New With {
+                                .class = "a-input",
+                                .placeholder = "Tu nombre de usuario",
+                                .autocomplete = "username"
+                            })
+                        </div>
+                        @Html.ValidationMessageFor(Function(m) m.Username, "", New With {.style = "color:#b3261e;font-size:12px;"})
+                    </div>
+
+                    @<div class="a-form-group">
+                        <label for="Password">Contraseña</label>
+                        <div class="a-input-wrap">
+                            <i class="bi bi-lock a-input-icon"></i>
+                            @Html.PasswordFor(Function(m) m.Password, New With {
+                                .class = "a-input",
+                                .placeholder = "Tu contraseña",
+                                .autocomplete = "current-password",
+                                .id = "password"
+                            })
+                            <button type="button" class="a-input-icon-r" id="toggle-pass">
+                                <i class="bi bi-eye" id="eye-icon"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(Function(m) m.Password, "", New With {.style = "color:#b3261e;font-size:12px;"})
+                    </div>
+
+                    @<div style="height:14px"></div>
+
+                    @<button type="submit" class="btn-a btn-a-primary btn-a-full"
+                             style="height:50px;border-radius:12px;font-size:14px">
+                        INGRESAR
+                    </button>
+                End Using
+
+                <div class="auth-divider">o</div>
+
+                <div style="text-align:center;font-size:13px;color:var(--nogal-medio)">
+                    ¿No tienes cuenta?
+                    <a href="/Home/Registro"
+                       style="color:var(--cafe-oscuro);font-weight:700;margin-left:4px">
+                        Regístrate
+                    </a>
+                </div>
             </div>
+
+            <div class="auth-footer">
+                &copy; 2025 Muebles de los Alpes &mdash; Todos los derechos reservados
+            </div>
+
         </div>
     </div>
 
-    <div class="login-page-footer">
-        © 2026 Muebles de los Alpes
-    </div>
-</section>
+    @Scripts.Render("~/bundles/jquery")
 
-<style>
-    .login-page {
-        min-height: calc(100vh - 72px - 92px);
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(180deg, #2C1810 0%, #3D2416 55%, #1E0E08 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 48px 16px;
-    }
+    <script>
+        $(function () {
+            $('#toggle-pass').on('click', function () {
+                var inp = $('#password');
+                var icon = $('#eye-icon');
 
-    .login-decoration {
-        position: absolute;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(212,168,83,0.18) 0%, rgba(212,168,83,0.05) 45%, transparent 70%);
-        pointer-events: none;
-    }
+                if (inp.attr('type') === 'password') {
+                    inp.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    inp.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+        });
+    </script>
 
-    .login-decoration-top {
-        width: 360px;
-        height: 360px;
-        top: -120px;
-        right: -80px;
-    }
-
-    .login-decoration-bottom {
-        width: 420px;
-        height: 420px;
-        left: -120px;
-        bottom: -180px;
-    }
-
-    .login-wrapper {
-        width: 100%;
-        max-width: 1180px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr 420px;
-        gap: 48px;
-        align-items: center;
-        position: relative;
-        z-index: 2;
-        animation: loginFadeUp 0.6s ease-out;
-    }
-
-    .login-brand-panel {
-        color: var(--blanco);
-        padding-right: 24px;
-    }
-
-    .login-brand-tag {
-        display: inline-flex;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(212,168,83,0.16);
-        color: #F1D8A1;
-        font-size: 12px;
-        font-weight: 700;
-        margin-bottom: 18px;
-    }
-
-    .login-brand-title {
-        color: var(--blanco);
-        font-size: 52px;
-        line-height: 1.05;
-        letter-spacing: 2.5px;
-        margin-bottom: 12px;
-    }
-
-    .login-brand-subtitle {
-        color: var(--arena-calida);
-        font-size: 14px;
-        letter-spacing: 2px;
-        margin-bottom: 22px;
-    }
-
-    .login-brand-copy {
-        max-width: 560px;
-        color: rgba(255,255,255,0.80);
-        font-size: 16px;
-        line-height: 1.7;
-    }
-
-    .login-card {
-        background: var(--blanco);
-        border-radius: 20px;
-        box-shadow: 0 16px 40px rgba(0,0,0,0.30);
-        padding: 30px;
-        border: 1px solid rgba(232,224,213,0.65);
-    }
-
-    .login-card-logo {
-        width: 72px;
-        height: 72px;
-        border-radius: 18px;
-        background: var(--oro-guatemalteco);
-        color: var(--cafe-oscuro);
-        font-family: var(--font-display);
-        font-size: 34px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 24px;
-        box-shadow: var(--shadow-gold);
-    }
-
-    .login-card-header {
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-        margin-bottom: 22px;
-    }
-
-    .login-accent-bar {
-        width: 5px;
-        min-width: 5px;
-        height: 52px;
-        border-radius: 999px;
-        background: var(--oro-guatemalteco);
-        margin-top: 2px;
-    }
-
-    .login-card-title {
-        font-size: 30px;
-        margin-bottom: 6px;
-    }
-
-    .login-card-text {
-        margin: 0;
-        color: var(--nogal-medio);
-        font-size: 14px;
-    }
-
-    .login-form .form-group {
-        margin-bottom: 18px;
-    }
-
-    .login-form label {
-        color: var(--arena-calida);
-        font-size: 13px;
-        margin-bottom: 8px;
-    }
-
-    .input-icon-wrapper {
-        position: relative;
-    }
-
-    .input-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--nogal-medio);
-        font-size: 18px;
-        font-weight: 700;
-        pointer-events: none;
-    }
-
-    .login-input {
-        background: var(--crema-fondo) !important;
-        border: 1px solid var(--pergamino) !important;
-        border-radius: 12px !important;
-        padding: 14px 16px 14px 44px !important;
-        font-size: 14px !important;
-        color: var(--cafe-oscuro) !important;
-        font-weight: 500;
-    }
-
-        .login-input:focus {
-            border: 1.5px solid var(--cafe-oscuro) !important;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(44,24,16,0.08);
-        }
-
-        .login-input::placeholder {
-            color: var(--arena-calida);
-        }
-
-    .login-actions {
-        margin-top: 8px;
-    }
-
-    .login-btn {
-        width: 100%;
-        min-height: 50px;
-        border-radius: 12px;
-    }
-
-    .login-footer-note {
-        margin-top: 18px;
-        text-align: center;
-        color: var(--nogal-medio);
-        font-size: 13px;
-    }
-
-    .login-page-footer {
-        position: relative;
-        z-index: 2;
-        margin-top: 26px;
-        text-align: center;
-        color: var(--arena-calida);
-        font-size: 13px;
-    }
-
-    @@keyframes loginFadeUp {
-        from {
-            opacity: 0;
-            transform: translateY(24px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @@media (max-width: 992px) {
-        .login-wrapper {
-            grid-template-columns: 1fr;
-            gap: 28px;
-            max-width: 720px;
-        }
-
-        .login-brand-panel {
-            padding-right: 0;
-            text-align: center;
-        }
-
-        .login-brand-copy {
-            margin: 0 auto;
-        }
-
-        .login-brand-title {
-            font-size: 40px;
-        }
-    }
-
-    @@media (max-width: 576px) {
-        .login-page {
-            padding: 28px 12px;
-        }
-
-        .login-card {
-            padding: 22px;
-        }
-
-        .login-brand-title {
-            font-size: 30px;
-        }
-
-        .login-card-title {
-            font-size: 24px;
-        }
-
-        .login-accent-bar {
-            height: 42px;
-        }
-    }
-</style>
+</body>
+</html>
