@@ -9,6 +9,8 @@ Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 Imports Alpes.Servicios.Servicios
 Imports Alpes.Entidades.Inventario
+Imports System.Linq
+Imports Alpes.Web.Models
 
 Public Class ProductoController
     Inherits Controller
@@ -24,12 +26,47 @@ Public Class ProductoController
         Try
             Dim lista As List(Of Producto) = _servicio.Listar()
 
-            Return Json(lista, JsonRequestBehavior.AllowGet)
+            Dim categoriaServicio As New CategoriaServicio()
+            Dim unidadServicio As New Unidad_MedidaServicio()
+
+            Dim categorias = categoriaServicio.Listar()
+            Dim unidades = unidadServicio.Listar()
+
+            Dim resultado = lista.Select(Function(p) New ProductoListadoViewModel With {
+            .ProductoId = p.ProductoId,
+            .Referencia = p.Referencia,
+            .Nombre = p.Nombre,
+            .Descripcion = p.Descripcion,
+            .Tipo = p.Tipo,
+            .Material = p.Material,
+            .AltoCm = p.AltoCm,
+            .AnchoCm = p.AnchoCm,
+            .ProfundidadCm = p.ProfundidadCm,
+            .Color = p.Color,
+            .PesoGramos = p.PesoGramos,
+            .ImagenUrl = p.ImagenUrl,
+            .UnidadMedidaId = p.UnidadMedidaId,
+            .UnidadMedidaNombre = If(
+                p.UnidadMedidaId.HasValue,
+                unidades.Where(Function(u) u.UnidadMedidaId = p.UnidadMedidaId.Value).
+                         Select(Function(u) u.Nombre).
+                         FirstOrDefault(),
+                ""
+            ),
+            .CategoriaId = p.CategoriaId,
+            .CategoriaNombre = categorias.Where(Function(c) c.CategoriaId = p.CategoriaId).
+                                         Select(Function(c) c.Nombre).
+                                         FirstOrDefault(),
+            .LoteProducto = p.LoteProducto,
+            .Estado = p.Estado
+        }).ToList()
+
+            Return Json(resultado, JsonRequestBehavior.AllowGet)
         Catch ex As Exception
             Return Json(New With {
-                .success = False,
-                .message = ex.Message
-            }, JsonRequestBehavior.AllowGet)
+            .success = False,
+            .message = ex.Message
+        }, JsonRequestBehavior.AllowGet)
         End Try
     End Function
 

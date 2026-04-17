@@ -236,6 +236,7 @@
     <Compile Include="Models\CrudCampoConfig.vb" />
     <Compile Include="Models\CrudTablaConfig.vb" />
     <Compile Include="Models\LoginViewModel.vb" />
+    <Compile Include="Models\ProductoListadoViewModel.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -305,6 +306,9 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <None Include="packages.config" />
+    <Content Include="Scripts\admin-inventario.js" />
+    <Content Include="Scripts\admin-ordenes.js" />
+    <Content Include="Scripts\admin-productos.js" />
     <Content Include="Scripts\alpes.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -328,6 +332,11 @@
     <Content Include="Views\Crud\Index.vbhtml" />
     <Content Include="Views\Home\Login.vbhtml" />
     <Content Include="Views\Home\Registro.vbhtml" />
+    <Content Include="Views\Admin\Productos.vbhtml" />
+    <Content Include="Views\Admin\Index.vbhtml" />
+    <Content Include="Views\Shared\_AdminLayout.vbhtml" />
+    <Content Include="Views\Admin\Inventario.vbhtml" />
+    <Content Include="Views\Admin\Ordenes.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
