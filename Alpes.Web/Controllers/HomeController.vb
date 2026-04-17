@@ -31,7 +31,7 @@ Namespace Controllers
                 End If
 
                 If rolId <> 3 Then
-                    Return RedirectToAction("Index", "Admin")
+                    Return RedirectToAction("Productos", "Admin")
                 Else
                     Return RedirectToAction("Index", "Cliente")
                 End If
@@ -100,7 +100,7 @@ Namespace Controllers
                 End If
 
                 If usuario.RolId <> 3 Then
-                    Return RedirectToAction("Index", "Admin")
+                    Return RedirectToAction("Productos", "Admin")
                 Else
                     Return RedirectToAction("Index", "Cliente")
                 End If
