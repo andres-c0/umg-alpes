@@ -31,7 +31,7 @@ Namespace Controllers
                 End If
 
                 If rolId <> 3 Then
-                    Return RedirectToAction("Productos", "Admin")
+                    Return RedirectToAction("Index", "Admin")
                 Else
                     Return RedirectToAction("Index", "Cliente")
                 End If
@@ -73,9 +73,6 @@ Namespace Controllers
                     Return View(model)
                 End If
 
-                ' Comparación simple.
-                ' Si PasswordHash en la base de datos contiene un hash real,
-                ' luego habrá que reemplazar esta validación por una validación de hash.
                 If String.IsNullOrWhiteSpace(usuario.PasswordHash) OrElse
                    Not String.Equals(usuario.PasswordHash, model.Password, StringComparison.Ordinal) Then
 
@@ -100,7 +97,7 @@ Namespace Controllers
                 End If
 
                 If usuario.RolId <> 3 Then
-                    Return RedirectToAction("Productos", "Admin")
+                    Return RedirectToAction("Index", "Admin")
                 Else
                     Return RedirectToAction("Index", "Cliente")
                 End If

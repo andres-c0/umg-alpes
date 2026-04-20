@@ -348,6 +348,7 @@
     <Content Include="Views\Admin\Compras.vbhtml" />
     <Content Include="Views\Admin\Empleados.vbhtml" />
     <Content Include="Views\Admin\Nomina.vbhtml" />
+    <Content Include="Views\Shared\_Layout.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
@@ -371,7 +372,6 @@
     <Content Include="Views\Home\Contact.vbhtml" />
     <Content Include="Views\Home\Index.vbhtml" />
     <Content Include="Views\Shared\Error.vbhtml" />
-    <Content Include="Views\Shared\_Layout.vbhtml" />
     <Content Include="Views\Web.config" />
   </ItemGroup>
   <ItemGroup>

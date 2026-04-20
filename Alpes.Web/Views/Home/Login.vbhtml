@@ -96,7 +96,7 @@ End Code
             </div>
 
             <div class="auth-footer">
-                &copy; 2025 Muebles de los Alpes &mdash; Todos los derechos reservados
+                &copy; 2026 Muebles de los Alpes &mdash; Todos los derechos reservados
             </div>
 
         </div>
