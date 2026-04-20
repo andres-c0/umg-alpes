@@ -28,7 +28,7 @@ End Code
             <div>
                 <div class="admin-sidebar__brand">
                     <div class="admin-sidebar__logo">
-                        <i class="bi bi-house-door-fill"></i>
+                        <i class="bi bi-shop"></i>
                     </div>
                     <div>
                         <div class="admin-sidebar__title">Muebles de los Alpes</div>
@@ -37,19 +37,27 @@ End Code
                 </div>
 
                 <nav class="admin-sidebar__nav">
-                    <a href="@Url.Action("Index", "Admin")" class="admin-nav__item">
-                        <i class="bi bi-speedometer2"></i>
-                        <span>Dashboard</span>
+                    <a href="@Url.Action("Index", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Dashboard", "active", ""))">
+                        <div class="admin-nav__left">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </div>
                     </a>
 
-                    <a href="@Url.Action("Productos", "Admin")" class="admin-nav__item">
-                        <i class="bi bi-box-seam"></i>
-                        <span>Productos</span>
+                    <a href="@Url.Action("Productos", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Productos", "active", ""))">
+                        <div class="admin-nav__left">
+                            <i class="bi bi-box-seam"></i>
+                            <span>Productos</span>
+                        </div>
+                        <i class="bi bi-chevron-right admin-nav__arrow"></i>
                     </a>
 
-                    <a href="@Url.Action("Ordenes", "Admin")" class="admin-nav__item">
-                        <i class="bi bi-receipt"></i>
-                        <span>Órdenes</span>
+                    <a href="@Url.Action("Ordenes", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Órdenes", "active", ""))">
+                        <div class="admin-nav__left">
+                            <i class="bi bi-receipt"></i>
+                            <span>Órdenes</span>
+                        </div>
+                        <span class="admin-nav__badge">9</span>
                     </a>
 
                     <a href="@Url.Action("Clientes", "Admin")" class="admin-nav__item">
@@ -58,9 +66,28 @@ End Code
                     </a>
 
                     <a href="@Url.Action("Inventario", "Admin")" class="admin-nav__item">
-    <i class="bi bi-boxes"></i>
-    <span>Inventario</span>
-</a>
+                        <i class="bi bi-boxes"></i>
+                        <span>Inventario</span>
+                    </a>
+                    <a href="@Url.Action("Proveedores", "Admin")" class="admin-nav__item">
+                        <i class="bi bi-truck"></i>
+                        <span>Proveedores</span>
+                    </a>
+
+                    <a href="@Url.Action("Compras", "Admin")" class="admin-nav__item">
+                        <i class="bi bi-bag"></i>
+                        <span>Compras</span>
+                    </a>
+
+                    <a href="@Url.Action("Empleados", "Admin")" class="admin-nav__item">
+                        <i class="bi bi-people"></i>
+                        <span>Empleados</span>
+                    </a>
+
+                    <a href="@Url.Action("Nomina", "Admin")" class="admin-nav__item">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Nómina</span>
+                    </a>
 
                     <a href="@Url.Action("Reportes", "Admin")" class="admin-nav__item">
                         <i class="bi bi-bar-chart"></i>
