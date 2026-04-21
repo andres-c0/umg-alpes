@@ -43,6 +43,13 @@ End Code
                     </div>
                 End If
 
+                @If TempData("Success") IsNot Nothing Then
+                    @<div class="a-alert success" style="display:block">
+                        <i class="bi bi-check-circle"></i>
+                        <span>@TempData("Success")</span>
+                    </div>
+                End If
+
                 @Using Html.BeginForm("Login", "Home", FormMethod.Post)
                     @Html.AntiForgeryToken()
 

@@ -97,7 +97,7 @@ End Code
                 <div class="dashboard-shortcut__label">Clientes</div>
             </a>
 
-            <a href="#" class="dashboard-shortcut">
+            <a href="@Url.Action("Marketing", "Admin")" class="dashboard-shortcut">
                 <div class="dashboard-shortcut__icon"><i class="bi bi-megaphone"></i></div>
                 <div class="dashboard-shortcut__label">Marketing</div>
             </a>
@@ -133,14 +133,14 @@ End Code
                 <div class="dashboard-shortcut__label">Compras</div>
             </a>
 
-            <a href="#" class="dashboard-shortcut">
-                <div class="dashboard-shortcut__icon"><i class="bi bi-building"></i></div>
+            <a href="@Url.Action("Produccion", "Admin")" class="dashboard-shortcut">
+                <div class="dashboard-shortcut__icon"><i class="bi bi-hammer"></i></div>
                 <div class="dashboard-shortcut__label">Producción</div>
             </a>
 
-            <a href="#" class="dashboard-shortcut">
-                <div class="dashboard-shortcut__icon"><i class="bi bi-gear-fill"></i></div>
-                <div class="dashboard-shortcut__label">Config.</div>
+            <a href="@Url.Action("Configuracion", "Admin")" class="dashboard-shortcut">
+                <div class="dashboard-shortcut__icon"><i class="bi bi-gear"></i></div>
+                <div class="dashboard-shortcut__label">Configuración</div>
             </a>
         </div>
     </div>

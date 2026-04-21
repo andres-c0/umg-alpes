@@ -122,6 +122,36 @@ Namespace Controllers
         End Function
 
         ' =========================
+        ' MARKETING
+        ' =========================
+        Function Marketing() As ActionResult
+            If Not EsAdmin() Then
+                Return RedirectToAction("Login", "Home")
+            End If
+
+            Return View()
+        End Function
+
+        ' =========================
+        ' PRODUCCIÓN
+        ' =========================
+        Function Produccion() As ActionResult
+            If Not EsAdmin() Then
+                Return RedirectToAction("Login", "Home")
+            End If
+
+            Return View()
+        End Function
+
+        Function Configuracion() As ActionResult
+            If Not EsAdmin() Then
+                Return RedirectToAction("Login", "Home")
+            End If
+
+            Return View()
+        End Function
+
+        ' =========================
         ' VALIDACIÓN DE ADMIN
         ' =========================
         Private Function EsAdmin() As Boolean
