@@ -237,6 +237,7 @@
     <Compile Include="Models\CrudTablaConfig.vb" />
     <Compile Include="Models\LoginViewModel.vb" />
     <Compile Include="Models\ProductoListadoViewModel.vb" />
+    <Compile Include="Models\RegistroViewModel.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -306,9 +307,18 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <None Include="packages.config" />
+    <Content Include="Scripts\admin-clientes.js" />
+    <Content Include="Scripts\admin-compras.js" />
+    <Content Include="Scripts\admin-configuracion.js" />
+    <Content Include="Scripts\admin-dashboard.js" />
+    <Content Include="Scripts\admin-empleados.js" />
     <Content Include="Scripts\admin-inventario.js" />
+    <Content Include="Scripts\admin-marketing.js" />
+    <Content Include="Scripts\admin-nomina.js" />
     <Content Include="Scripts\admin-ordenes.js" />
+    <Content Include="Scripts\admin-produccion.js" />
     <Content Include="Scripts\admin-productos.js" />
+    <Content Include="Scripts\admin-proveedores.js" />
     <Content Include="Scripts\alpes.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -337,6 +347,15 @@
     <Content Include="Views\Shared\_AdminLayout.vbhtml" />
     <Content Include="Views\Admin\Inventario.vbhtml" />
     <Content Include="Views\Admin\Ordenes.vbhtml" />
+    <Content Include="Views\Admin\Clientes.vbhtml" />
+    <Content Include="Views\Admin\Proveedores.vbhtml" />
+    <Content Include="Views\Admin\Compras.vbhtml" />
+    <Content Include="Views\Admin\Empleados.vbhtml" />
+    <Content Include="Views\Admin\Nomina.vbhtml" />
+    <Content Include="Views\Shared\_Layout.vbhtml" />
+    <Content Include="Views\Admin\Marketing.vbhtml" />
+    <Content Include="Views\Admin\Produccion.vbhtml" />
+    <Content Include="Views\Admin\Configuracion.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
@@ -360,7 +379,6 @@
     <Content Include="Views\Home\Contact.vbhtml" />
     <Content Include="Views\Home\Index.vbhtml" />
     <Content Include="Views\Shared\Error.vbhtml" />
-    <Content Include="Views\Shared\_Layout.vbhtml" />
     <Content Include="Views\Web.config" />
   </ItemGroup>
   <ItemGroup>

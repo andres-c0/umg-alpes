@@ -45,6 +45,7 @@ Public Class Inventario_ProductoController
                 .message = ex.Message
             }, JsonRequestBehavior.AllowGet)
         End Try
+
     End Function
 
     <HttpGet>
