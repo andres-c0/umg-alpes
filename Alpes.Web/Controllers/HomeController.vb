@@ -31,14 +31,19 @@ Namespace Controllers
                     Integer.TryParse(Session("RolId").ToString(), rolId)
                 End If
 
-                If rolId <> 3 Then
-                    Return RedirectToAction("Index", "Admin")
-                Else
-                    Return RedirectToAction("Index", "Cliente")
-                End If
+                Select Case rolId
+                    Case 27, 28
+                        Return RedirectToAction("Index", "Admin")
+                    Case 29
+                        Return RedirectToAction("Index", "Cliente")
+                    Case Else
+                        Session.Clear()
+                        Session.Abandon()
+                        Return View()
+                End Select
             End If
 
-            Return View(New LoginViewModel())
+            Return View()
         End Function
 
         <HttpPost>
@@ -97,11 +102,17 @@ Namespace Controllers
                     Session.Remove("EmpId")
                 End If
 
-                If usuario.RolId <> 3 Then
-                    Return RedirectToAction("Index", "Admin")
-                Else
-                    Return RedirectToAction("Index", "Cliente")
-                End If
+                Select Case usuario.RolId
+                    Case 27, 28
+                        Return RedirectToAction("Index", "Admin")
+                    Case 29
+                        Return RedirectToAction("Index", "Cliente")
+                    Case Else
+                        ViewData("Error") = "El rol del usuario no está configurado correctamente."
+                        Session.Clear()
+                        Session.Abandon()
+                        Return View(model)
+                End Select
 
             Catch ex As Exception
                 ViewData("Error") = "Ocurrió un error al iniciar sesión: " & ex.Message

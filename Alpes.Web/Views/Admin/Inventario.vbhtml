@@ -3,131 +3,144 @@
     Layout = "~/Views/Shared/_AdminLayout.vbhtml"
 End Code
 
-<div class="admin-page">
-    <div class="admin-page__header">
-        <div>
-            <h2 class="admin-page__title">Inventario</h2>
-            <div class="admin-page__subtitle">Gestión de inventario por producto</div>
+<div class="admin-page inventario-page">
+
+    <div class="inventario-hero admin-card">
+        <div class="inventario-hero__icon">
+            <i class="bi bi-box-seam-fill"></i>
         </div>
 
-        <button type="button" class="btn-a btn-a-primary" id="btnNuevoInventario">
-            <i class="bi bi-plus-lg"></i>
-            Nuevo inventario
-        </button>
-    </div>
-
-    <div class="dashboard-grid" style="margin-bottom:18px;">
-        <div class="dashboard-kpi">
-            <div class="dashboard-kpi__icon"><i class="bi bi-boxes"></i></div>
-            <div class="dashboard-kpi__body">
-                <div class="dashboard-kpi__value" id="kpiInventarioTotal">-</div>
-                <div class="dashboard-kpi__label">Registros</div>
+        <div class="inventario-hero__body">
+            <div class="inventario-hero__title">Inventario de productos</div>
+            <div class="inventario-hero__subtitle">
+                Visualiza stock, reserva y detalle del producto en un solo lugar.
             </div>
-        </div>
 
-        <div class="dashboard-kpi">
-            <div class="dashboard-kpi__icon"><i class="bi bi-exclamation-triangle"></i></div>
-            <div class="dashboard-kpi__body">
-                <div class="dashboard-kpi__value" id="kpiStockBajo">-</div>
-                <div class="dashboard-kpi__label">Stock bajo</div>
-            </div>
-        </div>
-
-        <div class="dashboard-kpi">
-            <div class="dashboard-kpi__icon"><i class="bi bi-shield-exclamation"></i></div>
-            <div class="dashboard-kpi__body">
-                <div class="dashboard-kpi__value" id="kpiSobreReservado">-</div>
-                <div class="dashboard-kpi__label">Sobre reservado</div>
+            <div class="inventario-hero__meta">
+                <i class="bi bi-stars"></i>
+                <span id="inventarioVisibleCount">0 registros visibles</span>
             </div>
         </div>
     </div>
 
-    <div class="admin-card">
-        <div class="admin-toolbar">
-            <select id="filtroEstadoInventario" class="a-input" style="max-width:220px;">
-                <option value="">Todos los estados</option>
-                <option value="normal">Normal</option>
-                <option value="stock-bajo">Stock bajo</option>
-                <option value="sobre-reservado">Sobre reservado</option>
-            </select>
-            <input type="text" id="txtBuscarInventario" class="a-input" placeholder="Buscar por producto..." />
-            <button type="button" class="btn-a" id="btnRecargarInventario">
-                <i class="bi bi-arrow-clockwise"></i>
-                Recargar
-            </button>
+    <div class="inventario-searchbar">
+        <i class="bi bi-search"></i>
+        <input type="text"
+               id="txtBuscarInventario"
+               placeholder="Buscar por nombre, referencia, ID, color, tipo o descripción" />
+    </div>
+
+    <div class="inventario-kpis">
+        <div class="inventario-kpi inventario-kpi--neutral">
+            <div class="inventario-kpi__icon">
+                <i class="bi bi-box-seam-fill"></i>
+            </div>
+            <div class="inventario-kpi__body">
+                <div class="inventario-kpi__label">Productos</div>
+                <div class="inventario-kpi__value" id="kpiInventarioProductos">0</div>
+            </div>
         </div>
 
-        <div class="table-wrap">
-            <table class="admin-table" id="tablaInventario">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Producto</th>
-                        <th>Stock</th>
-                        <th>Reservado</th>
-                        <th>Mínimo</th>
-                        <th>Estado inventario</th>
-                        <th style="width:140px;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="inventarioBody">
-                    <tr>
-                        <td colspan="7" class="table-empty">Cargando inventario...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="inventario-kpi inventario-kpi--success">
+            <div class="inventario-kpi__icon">
+                <i class="bi bi-boxes"></i>
+            </div>
+            <div class="inventario-kpi__body">
+                <div class="inventario-kpi__label">Stock actual</div>
+                <div class="inventario-kpi__value" id="kpiInventarioStock">0</div>
+            </div>
+        </div>
+
+        <div class="inventario-kpi inventario-kpi--warning">
+            <div class="inventario-kpi__icon">
+                <i class="bi bi-lock-fill"></i>
+            </div>
+            <div class="inventario-kpi__body">
+                <div class="inventario-kpi__label">Reservado</div>
+                <div class="inventario-kpi__value" id="kpiInventarioReservado">0</div>
+            </div>
+        </div>
+
+        <div class="inventario-kpi inventario-kpi--danger">
+            <div class="inventario-kpi__icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="inventario-kpi__body">
+                <div class="inventario-kpi__label">Bajo mínimo</div>
+                <div class="inventario-kpi__value" id="kpiInventarioBajoMinimo">0</div>
+            </div>
         </div>
     </div>
+
+    <div id="inventarioListado" class="inventario-listado">
+        <div class="table-empty">Cargando inventario...</div>
+    </div>
+
+    <button type="button" class="inventario-fab" id="btnNuevoInventario">
+        <i class="bi bi-plus-lg"></i>
+        <span>Nuevo</span>
+    </button>
 </div>
 
 <div class="modal-a" id="modalInventario" style="display:none;">
     <div class="modal-a__backdrop"></div>
-    <div class="modal-a__dialog">
-        <div class="modal-a__header">
-            <h3 id="modalInventarioTitulo">Nuevo inventario</h3>
-            <button type="button" class="modal-a__close" id="btnCerrarModalInventario">×</button>
+
+    <div class="modal-a__dialog modal-a__dialog--inventario modal-a__dialog--inventario-edit">
+        <div class="modal-sheet-handle"></div>
+
+        <div class="modal-a__header modal-a__header--inventory">
+            <h3 id="modalInventarioTitulo">Editar inventario</h3>
+            <button type="button" class="modal-a__close" id="btnCerrarModalInventarioX">×</button>
         </div>
 
-        <div class="modal-a__body">
-            <input type="hidden" id="InvProdId" value="0" />
+        <div class="modal-a__body modal-a__body--inventory">
+            <input type="hidden" id="hidInventarioId" value="0" />
+            <input type="hidden" id="txtProductoIdInventario" value="0" />
 
-            <div class="form-grid">
-                <div class="a-form-group form-grid__full">
-                    <label for="ProductoId">Producto</label>
-                    <select id="ProductoId" class="a-input">
-                        <option value="">Seleccione...</option>
-                    </select>
+            <div class="inventario-edit-summary">
+                <div class="inventario-edit-summary__title" id="invEditNombre">Producto</div>
+                <div class="inventario-edit-summary__ref" id="invEditReferencia">Ref: --</div>
+
+                <div class="inventario-edit-summary__chips">
+                    <span class="inventario-chip inventario-chip--soft" id="invEditTipo">GENERAL</span>
+                    <span class="inventario-chip inventario-chip--soft" id="invEditColor">Sin color</span>
+                    <span class="inventario-chip inventario-chip--soft" id="invEditDisponible">Disponible 0</span>
                 </div>
 
-                <div class="a-form-group">
-                    <label for="Stock">Stock</label>
-                    <input type="number" id="Stock" class="a-input" min="0" />
-                </div>
-
-                <div class="a-form-group">
-                    <label for="StockReservado">Stock reservado</label>
-                    <input type="number" id="StockReservado" class="a-input" min="0" />
-                </div>
-
-                <div class="a-form-group">
-                    <label for="StockMinimo">Stock mínimo</label>
-                    <input type="number" id="StockMinimo" class="a-input" min="0" />
+                <div class="inventario-edit-summary__desc" id="invEditDescripcion">
+                    Sin descripción disponible.
                 </div>
             </div>
 
-            <div class="a-alert error" id="inventarioError" style="display:none;">
-                <i class="bi bi-exclamation-circle"></i>
-                <span id="inventarioErrorTexto"></span>
+            <div class="inventario-form">
+                <div class="inventario-form__group">
+                    <label for="txtStockInventario">Stock</label>
+                    <input type="number" id="txtStockInventario" class="a-input no-icon" min="0" />
+                </div>
+
+                <div class="inventario-form__group">
+                    <label for="txtReservadoInventario">Stock Reservado</label>
+                    <input type="number" id="txtReservadoInventario" class="a-input no-icon" min="0" />
+                </div>
+
+                <div class="inventario-form__group">
+                    <label for="txtStockMinimoInventario">Stock Mínimo</label>
+                    <input type="number" id="txtStockMinimoInventario" class="a-input no-icon" min="0" />
+                </div>
             </div>
         </div>
 
-        <div class="modal-a__footer">
-            <button type="button" class="btn-a" id="btnCancelarInventario">Cancelar</button>
-            <button type="button" class="btn-a btn-a-primary" id="btnGuardarInventario">Guardar</button>
+        <div class="modal-a__footer modal-a__footer--inventory">
+            <button type="button" class="btn-a btn-a-primary btn-a-full" id="btnGuardarInventario">
+                GUARDAR
+            </button>
         </div>
     </div>
 </div>
 
+
+
+
 @section scripts
-    <script src="~/Scripts/admin-inventario.js"></script>
+    <script src="~/Scripts/admin-inventario.js?v=13"></script>s
 End Section

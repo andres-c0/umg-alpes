@@ -155,20 +155,14 @@ Namespace Controllers
         ' VALIDACIÓN DE ADMIN
         ' =========================
         Private Function EsAdmin() As Boolean
-            If Session("UsuarioId") Is Nothing Then
-                Return False
-            End If
-
-            If Session("RolId") Is Nothing Then
+            If Session("UsuarioId") Is Nothing OrElse Session("RolId") Is Nothing Then
                 Return False
             End If
 
             Dim rolId As Integer = 0
             Integer.TryParse(Session("RolId").ToString(), rolId)
 
-            ' 👇 AJUSTA ESTE VALOR SEGÚN TU BD
-            ' Si RolId = 1 es ADMIN, entonces:
-            Return rolId = 1
+            Return rolId = 27 OrElse rolId = 28
         End Function
         <HttpGet>
         Function DashboardData() As JsonResult

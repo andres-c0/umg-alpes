@@ -1,24 +1,22 @@
 (function () {
-    var inventarios = [];
-    var productos = [];
+    var inventario = [];
+    var inventarioFiltrado = [];
 
     $(document).ready(function () {
         enlazarEventos();
-        cargarCatalogos().then(function () {
-            cargarInventario();
-        });
+        cargarInventario();
     });
 
     function enlazarEventos() {
+        $('#txtBuscarInventario').on('input', function () {
+            filtrarInventario();
+        });
+
         $('#btnNuevoInventario').on('click', function () {
-            abrirNuevo();
+            nuevoInventario();
         });
 
-        $('#btnRecargarInventario').on('click', function () {
-            cargarInventario();
-        });
-
-        $('#btnCerrarModalInventario, #btnCancelarInventario, #modalInventario .modal-a__backdrop').on('click', function () {
+        $('#btnCerrarModalInventarioX, #btnCancelarInventario, #modalInventario .modal-a__backdrop').on('click', function () {
             cerrarModal();
         });
 
@@ -26,315 +24,377 @@
             guardarInventario();
         });
 
-        $('#txtBuscarInventario').on('input', function () {
-            renderTabla();
-        });
-
-        $('#filtroEstadoInventario').on('change', function () {
-            renderTabla();
-        });
-    }
-
-    function cargarCatalogos() {
-        return $.getJSON('/Producto/Index')
-            .done(function (res) {
-                productos = normalizarLista(res);
-                llenarProductos();
-            })
-            .fail(function () {
-                console.warn('No se pudieron cargar productos.');
+        $('#txtStockInventario, #txtReservadoInventario, #txtStockMinimoInventario')
+            .on('input change keyup', function () {
+                $(this).removeClass('input-error');
+                actualizarDisponibleEdit();
             });
     }
 
     function cargarInventario() {
-        $('#inventarioBody').html('<tr><td colspan="7" class="table-empty">Cargando inventario...</td></tr>');
+        $('#inventarioListado').html('<div class="table-empty">Cargando inventario...</div>');
 
         $.getJSON('/Inventario_Producto/Index')
             .done(function (res) {
-                inventarios = normalizarLista(res);
-                actualizarKPIs();
-                renderTabla();
+                if (res && res.success === false) {
+                    $('#inventarioListado').html('<div class="table-empty">' + escapeHtml(res.message || 'No fue posible cargar el inventario.') + '</div>');
+                    return;
+                }
+
+                inventario = $.isArray(res) ? res : (res.data || []);
+                inventarioFiltrado = inventario.slice();
+                renderInventario();
             })
             .fail(function () {
-                $('#inventarioBody').html('<tr><td colspan="7" class="table-empty">Error al cargar inventario.</td></tr>');
+                $('#inventarioListado').html('<div class="table-empty">Error al cargar inventario.</div>');
             });
     }
 
-    function normalizarLista(res) {
-        if ($.isArray(res)) return res;
-        if (res && $.isArray(res.data)) return res.data;
-        return [];
-    }
+    function filtrarInventario() {
+        var q = ($('#txtBuscarInventario').val() || '').trim().toLowerCase();
 
-    function renderTabla() {
-        var filtro = ($('#txtBuscarInventario').val() || '').toLowerCase().trim();
-        var estado = $('#filtroEstadoInventario').val() || '';
+        if (!q) {
+            inventarioFiltrado = inventario.slice();
+            renderInventario();
+            return;
+        }
 
-        var lista = inventarios.filter(function (x) {
-            var nombre = (x.NombreProducto || nombreProducto(x.ProductoId) || '').toLowerCase();
-            var coincideTexto = !filtro || nombre.indexOf(filtro) >= 0;
-            var coincideEstado = !estado || tipoEstadoInventario(x) === estado;
-            return coincideTexto && coincideEstado;
+        inventarioFiltrado = inventario.filter(function (x) {
+            var texto = [
+                getAny(x, ['ProductoNombre', 'NombreProducto', 'Producto', 'Nombre']),
+                getAny(x, ['Referencia', 'Codigo', 'Sku', 'SKU']),
+                getAny(x, ['ProductoId']),
+                getAny(x, ['InvProdId']),
+                getAny(x, ['Color']),
+                getAny(x, ['Tipo', 'CategoriaNombre', 'Categoria']),
+                getAny(x, ['Descripcion', 'Descripción'])
+            ].join(' ').toLowerCase();
+
+            return texto.indexOf(q) >= 0;
         });
 
-        if (!lista.length) {
-            $('#inventarioBody').html('<tr><td colspan="7" class="table-empty">No hay registros para mostrar.</td></tr>');
+        renderInventario();
+    }
+
+    function renderInventario() {
+        if (!inventarioFiltrado.length) {
+            actualizarResumen([]);
+            $('#inventarioListado').html('<div class="table-empty">No hay registros de inventario.</div>');
             return;
         }
 
         var html = '';
 
-        lista.forEach(function (x) {
-            html += '<tr class="' + claseFilaInventario(x) + '">';
-            html += '<td>' + valor(x.InvProdId) + '</td>';
-            html += '<td>' + valor(x.NombreProducto || nombreProducto(x.ProductoId)) + '</td>';
-            html += '<td>' + stockDecorado(x) + '</td>';
-            html += '<td>' + valor(x.StockReservado) + '</td>';
-            html += '<td>' + valor(x.StockMinimo) + '</td>';
-            html += '<td>' + badgeInventario(x) + '</td>';
-            html += '<td>';
-            html += '<div class="table-actions">';
-            html += '<button class="btn-icon" onclick="AdminInventario.editar(' + x.InvProdId + ')"><i class="bi bi-pencil"></i></button>';
-            html += '<button class="btn-icon btn-icon-danger" onclick="AdminInventario.eliminar(' + x.InvProdId + ', \'' + escapar(valor(x.NombreProducto || nombreProducto(x.ProductoId))) + '\')"><i class="bi bi-trash"></i></button>';
+        inventarioFiltrado.forEach(function (x) {
+            var inventarioId = entero(getAny(x, ['InvProdId'], 0));
+            var productoId = entero(getAny(x, ['ProductoId'], 0));
+            var nombre = valor(getAny(x, ['ProductoNombre', 'NombreProducto', 'Producto', 'Nombre'], 'Producto sin nombre'));
+            var referencia = valor(getAny(x, ['Referencia', 'Codigo', 'Sku', 'SKU'], '--'));
+            var tipo = valor(getAny(x, ['Tipo', 'CategoriaNombre', 'Categoria'], 'GENERAL'));
+            var color = valor(getAny(x, ['Color'], 'Sin color'));
+            var descripcion = valor(getAny(x, ['Descripcion', 'Descripción'], 'Sin descripción disponible.'));
+            var stock = entero(getAny(x, ['Stock'], 0));
+            var reservado = entero(getAny(x, ['Reservado'], 0));
+            var stockMinimo = entero(getAny(x, ['StockMinimo'], 0));
+
+            var disponible = Math.max(stock - reservado, 0);
+            var estado = obtenerEstadoInventario(disponible, stockMinimo);
+
+            html += '<div class="inventario-card">';
+            html += '   <div class="inventario-card__top">';
+            html += '       <div class="inventario-card__identity">';
+            html += '           <div class="inventario-card__icon"><i class="bi bi-box-seam-fill"></i></div>';
+            html += '           <div class="inventario-card__main">';
+            html += '               <div class="inventario-card__title">' + escapeHtml(nombre) + '</div>';
+            html += '               <div class="inventario-card__chips">';
+            html += '                   <span class="inventario-chip">ID producto #' + productoId + '</span>';
+            html += '                   <span class="inventario-chip">Inventario #' + inventarioId + '</span>';
+            html += '               </div>';
+            html += '               <div class="inventario-card__ref">Ref: ' + escapeHtml(referencia) + '</div>';
+            html += '               <div class="inventario-card__chips">';
+            html += '                   <span class="inventario-chip inventario-chip--soft">' + escapeHtml(tipo.toUpperCase()) + '</span>';
+            html += '                   <span class="inventario-chip inventario-chip--soft">' + escapeHtml(color) + '</span>';
+            html += '                   <span class="inventario-chip inventario-chip--soft">Disponible ' + disponible + '</span>';
+            html += '               </div>';
+            html += '           </div>';
+            html += '       </div>';
+            html += '       <div class="inventario-card__status ' + estado.clase + '">' + estado.texto + '</div>';
+            html += '   </div>';
+
+            html += '   <div class="inventario-card__desc">' + escapeHtml(descripcion) + '</div>';
+
+            html += '   <div class="inventario-card__stats">';
+            html += '       <div class="inventario-stat inventario-stat--neutral">';
+            html += '           <div class="inventario-stat__icon"><i class="bi bi-box-seam-fill"></i></div>';
+            html += '           <div class="inventario-stat__label">Stock actual</div>';
+            html += '           <div class="inventario-stat__value">' + stock + '</div>';
+            html += '       </div>';
+
+            html += '       <div class="inventario-stat inventario-stat--warning">';
+            html += '           <div class="inventario-stat__icon"><i class="bi bi-lock-fill"></i></div>';
+            html += '           <div class="inventario-stat__label">Reservado</div>';
+            html += '           <div class="inventario-stat__value">' + reservado + '</div>';
+            html += '       </div>';
+
+            html += '       <div class="inventario-stat inventario-stat--danger">';
+            html += '           <div class="inventario-stat__icon"><i class="bi bi-exclamation-triangle"></i></div>';
+            html += '           <div class="inventario-stat__label">Bajo mínimo</div>';
+            html += '           <div class="inventario-stat__value">' + stockMinimo + '</div>';
+            html += '       </div>';
+            html += '   </div>';
+
+            html += '   <div class="inventario-card__actions">';
+            html += '       <button type="button" class="inventario-btn inventario-btn--edit" onclick="AdminInventario.editar(' + inventarioId + ')">';
+            html += '           <i class="bi bi-pencil"></i><span>Editar</span>';
+            html += '       </button>';
+            html += '       <button type="button" class="inventario-btn inventario-btn--delete" onclick="AdminInventario.eliminar(' + inventarioId + ')">';
+            html += '           <i class="bi bi-trash"></i><span>Eliminar</span>';
+            html += '       </button>';
+            html += '   </div>';
+
             html += '</div>';
-            html += '</td>';
-            html += '</tr>';
         });
 
-        $('#inventarioBody').html(html);
+        actualizarResumen(inventarioFiltrado);
+        $('#inventarioListado').html(html);
     }
 
-    function actualizarKPIs() {
-        var total = inventarios.length;
-        var stockBajo = inventarios.filter(function (x) { return tipoEstadoInventario(x) === 'stock-bajo'; }).length;
-        var sobreReservado = inventarios.filter(function (x) { return tipoEstadoInventario(x) === 'sobre-reservado'; }).length;
+    function actualizarResumen(lista) {
+        var productos = lista.length;
+        var stock = 0;
+        var reservado = 0;
+        var bajoMinimo = 0;
 
-        $('#kpiInventarioTotal').text(total);
-        $('#kpiStockBajo').text(stockBajo);
-        $('#kpiSobreReservado').text(sobreReservado);
+        lista.forEach(function (x) {
+            var s = entero(getAny(x, ['Stock'], 0));
+            var r = entero(getAny(x, ['Reservado'], 0));
+            var m = entero(getAny(x, ['StockMinimo'], 0));
+            var d = Math.max(s - r, 0);
+
+            stock += s;
+            reservado += r;
+
+            if (d <= m) {
+                bajoMinimo++;
+            }
+        });
+
+        $('#inventarioVisibleCount').text(productos + ' registros visibles');
+        $('#kpiInventarioProductos').text(productos);
+        $('#kpiInventarioStock').text(stock);
+        $('#kpiInventarioReservado').text(reservado);
+        $('#kpiInventarioBajoMinimo').text(bajoMinimo);
     }
 
-    function abrirNuevo() {
+    function nuevoInventario() {
         limpiarFormulario();
         $('#modalInventarioTitulo').text('Nuevo inventario');
-        $('#modalInventario').show();
+        abrirModal();
     }
 
-    function abrirEditar(item) {
-        limpiarFormulario();
+    function editarInventario(id) {
+        var itemListado = inventario.find(function (x) {
+            return entero(getAny(x, ['InvProdId'], 0)) === entero(id);
+        });
 
-        $('#modalInventarioTitulo').text('Editar inventario');
-        $('#InvProdId').val(item.InvProdId || 0);
-        $('#ProductoId').val(item.ProductoId || '');
-        $('#Stock').val(item.Stock || 0);
-        $('#StockReservado').val(item.StockReservado || 0);
-        $('#StockMinimo').val(item.StockMinimo == null ? '' : item.StockMinimo);
+        $.getJSON('/Inventario_Producto/Obtener', { id: id })
+            .done(function (res) {
+                if (!res || res.success === false) {
+                    alert((res && res.message) || 'No se encontró el inventario.');
+                    return;
+                }
 
-        $('#modalInventario').show();
-    }
+                var x = res.data || res;
+                var base = itemListado || x;
 
-    function cerrarModal() {
-        $('#modalInventario').hide();
-        ocultarError();
-    }
+                var invProdId = entero(getAny(x, ['InvProdId'], 0));
+                var productoId = entero(getAny(x, ['ProductoId'], 0));
+                var nombre = valor(getAny(base, ['ProductoNombre', 'NombreProducto', 'Producto', 'Nombre'], 'Producto #' + productoId));
+                var referencia = valor(getAny(base, ['Referencia', 'Codigo', 'Sku', 'SKU'], '--'));
+                var tipo = valor(getAny(base, ['Tipo', 'CategoriaNombre', 'Categoria'], 'GENERAL'));
+                var color = valor(getAny(base, ['Color'], 'Sin color'));
+                var descripcion = valor(getAny(base, ['Descripcion', 'Descripción'], 'Sin descripción disponible.'));
+                var stock = entero(getAny(x, ['Stock'], 0));
+                var reservado = entero(getAny(x, ['Reservado'], 0));
+                var stockMinimo = entero(getAny(x, ['StockMinimo'], 0));
 
-    function limpiarFormulario() {
-        $('#InvProdId').val(0);
-        $('#ProductoId').val('');
-        $('#Stock').val(0);
-        $('#StockReservado').val(0);
-        $('#StockMinimo').val('');
-        ocultarError();
+                $('#modalInventarioTitulo').text('Editar inventario');
+                $('#hidInventarioId').val(invProdId);
+                $('#txtProductoIdInventario').val(productoId);
+
+                $('#invEditNombre').text(nombre);
+                $('#invEditReferencia').text('Ref: ' + referencia);
+                $('#invEditTipo').text((tipo || 'GENERAL').toUpperCase());
+                $('#invEditColor').text(color || 'Sin color');
+                $('#invEditDescripcion').text(descripcion || 'Sin descripción disponible.');
+
+                $('#txtStockInventario').val(stock);
+                $('#txtReservadoInventario').val(reservado);
+                $('#txtStockMinimoInventario').val(stockMinimo);
+
+                actualizarDisponibleEdit();
+                abrirModal();
+            })
+            .fail(function () {
+                alert('Error al obtener el inventario.');
+            });
     }
 
     function guardarInventario() {
-        var item = {
-            InvProdId: entero($('#InvProdId').val()),
-            ProductoId: entero($('#ProductoId').val()),
-            Stock: entero($('#Stock').val()),
-            StockReservado: entero($('#StockReservado').val()),
-            StockMinimo: enteroNullable($('#StockMinimo').val())
+        $('#txtStockInventario, #txtReservadoInventario, #txtStockMinimoInventario').removeClass('input-error');
+
+        var data = {
+            InvProdId: entero($('#hidInventarioId').val()),
+            ProductoId: entero($('#txtProductoIdInventario').val()),
+            Stock: entero($('#txtStockInventario').val()),
+            Reservado: entero($('#txtReservadoInventario').val()),
+            StockMinimo: entero($('#txtStockMinimoInventario').val())
         };
 
-        if (!item.ProductoId) {
-            mostrarError('Debes seleccionar un producto.');
+        if (data.ProductoId <= 0) {
+            alert('Debes ingresar un Producto ID válido.');
             return;
         }
 
-        if (item.Stock < 0 || item.StockReservado < 0) {
-            mostrarError('Stock y stock reservado no pueden ser negativos.');
+        if (data.Stock < 0) {
+            $('#txtStockInventario').addClass('input-error');
             return;
         }
 
-        if (item.StockMinimo !== null && item.StockMinimo < 0) {
-            mostrarError('El stock mínimo no puede ser negativo.');
+        if (data.Reservado < 0) {
+            $('#txtReservadoInventario').addClass('input-error');
             return;
         }
 
-        if (item.StockReservado > item.Stock) {
-            mostrarError('El stock reservado no puede ser mayor que el stock.');
+        if (data.StockMinimo < 0) {
+            $('#txtStockMinimoInventario').addClass('input-error');
             return;
         }
 
-        var url = item.InvProdId > 0 ? '/Inventario_Producto/Actualizar' : '/Inventario_Producto/Insertar';
+        var url = data.InvProdId > 0
+            ? '/Inventario_Producto/Actualizar'
+            : '/Inventario_Producto/Insertar';
+
+        var $btnGuardar = $('#btnGuardarInventario');
+        $btnGuardar.prop('disabled', true).text('GUARDANDO...');
 
         $.ajax({
             url: url,
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify(item)
+            data: JSON.stringify(data)
         })
             .done(function (res) {
-                if (res && res.success === false) {
-                    mostrarError(res.message || 'No fue posible guardar el inventario.');
+                $btnGuardar.prop('disabled', false).text('GUARDAR');
+
+                if (!res || res.success === false) {
+                    alert((res && res.message) || 'No se pudo guardar el inventario.');
                     return;
                 }
 
                 cerrarModal();
                 cargarInventario();
             })
-            .fail(function (xhr) {
-                mostrarError(obtenerMensaje(xhr, 'Error al guardar el inventario.'));
+            .fail(function () {
+                $btnGuardar.prop('disabled', false).text('GUARDAR');
+                alert('Error al guardar el inventario.');
             });
     }
 
-    function editarInventario(id) {
-        $.getJSON('/Inventario_Producto/Obtener', { id: id })
-            .done(function (res) {
-                if (!res) {
-                    mostrarError('No se encontró el registro.');
-                    return;
-                }
-                abrirEditar(res);
-            })
-            .fail(function (xhr) {
-                mostrarError(obtenerMensaje(xhr, 'Error al obtener el inventario.'));
-            });
-    }
-
-    function eliminarInventario(id, nombre) {
-        if (!confirm('¿Deseas eliminar el inventario de "' + nombre + '"?')) {
+    function eliminarInventario(id) {
+        if (!confirm('¿Deseas eliminar este registro de inventario?')) {
             return;
         }
 
         $.ajax({
             url: '/Inventario_Producto/Eliminar',
             type: 'POST',
-            data: { InvProdId: id }
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ id: id })
         })
             .done(function (res) {
-                if (res && res.success === false) {
-                    alert(res.message || 'No fue posible eliminar.');
+                if (!res || res.success === false) {
+                    alert((res && res.message) || 'No se pudo eliminar.');
                     return;
                 }
 
                 cargarInventario();
             })
-            .fail(function (xhr) {
-                alert(obtenerMensaje(xhr, 'Error al eliminar el inventario.'));
+            .fail(function () {
+                alert('Error al eliminar el inventario.');
             });
     }
 
-    function llenarProductos() {
-        var html = '<option value="">Seleccione...</option>';
+    function abrirModal() {
+        $('#modalInventario').show();
+    }
 
-        productos.forEach(function (p) {
-            var label = valor(p.Nombre);
-            if (p.Referencia) {
-                label += ' (' + p.Referencia + ')';
+    function cerrarModal() {
+        $('#modalInventario').hide();
+    }
+
+    function limpiarFormulario() {
+        $('#hidInventarioId').val(0);
+        $('#txtProductoIdInventario').val(0);
+
+        $('#invEditNombre').text('Producto');
+        $('#invEditReferencia').text('Ref: --');
+        $('#invEditTipo').text('GENERAL');
+        $('#invEditColor').text('Sin color');
+        $('#invEditDescripcion').text('Sin descripción disponible.');
+
+        $('#txtStockInventario').val('');
+        $('#txtReservadoInventario').val('');
+        $('#txtStockMinimoInventario').val('');
+
+        $('#invEditDisponible')
+            .removeClass('inventario-chip--danger inventario-chip--ok inventario-chip--soft')
+            .addClass('inventario-chip--soft')
+            .text('Disponible 0');
+
+        $('#txtStockInventario, #txtReservadoInventario, #txtStockMinimoInventario').removeClass('input-error');
+    }
+
+    function actualizarDisponibleEdit() {
+        var stock = parseInt($('#txtStockInventario').val(), 10);
+        var reservado = parseInt($('#txtReservadoInventario').val(), 10);
+        var minimo = parseInt($('#txtStockMinimoInventario').val(), 10);
+
+        stock = isNaN(stock) ? 0 : stock;
+        reservado = isNaN(reservado) ? 0 : reservado;
+        minimo = isNaN(minimo) ? 0 : minimo;
+
+        var disponible = Math.max(stock - reservado, 0);
+
+        $('#invEditDisponible').text('Disponible ' + disponible);
+
+        if (disponible <= minimo) {
+            $('#invEditDisponible')
+                .removeClass('inventario-chip--soft inventario-chip--ok inventario-chip--danger')
+                .addClass('inventario-chip--danger');
+        } else {
+            $('#invEditDisponible')
+                .removeClass('inventario-chip--soft inventario-chip--ok inventario-chip--danger')
+                .addClass('inventario-chip--ok');
+        }
+    }
+
+    function obtenerEstadoInventario(disponible, minimo) {
+        if (disponible <= minimo) {
+            return { texto: 'En alerta', clase: 'inventario-card__status--alert' };
+        }
+
+        return { texto: 'Disponible', clase: 'inventario-card__status--ok' };
+    }
+
+    function getAny(obj, keys, fallback) {
+        for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            if (obj && obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== '') {
+                return obj[k];
             }
-            html += '<option value="' + p.ProductoId + '">' + label + '</option>';
-        });
-
-        $('#ProductoId').html(html);
-    }
-
-    function nombreProducto(id) {
-        var item = productos.find(function (p) { return p.ProductoId == id; });
-        if (!item) return '';
-        return item.Nombre + (item.Referencia ? ' (' + item.Referencia + ')' : '');
-    }
-
-    function tipoEstadoInventario(x) {
-        var stock = entero(x.Stock);
-        var reservado = entero(x.StockReservado);
-        var minimo = enteroNullable(x.StockMinimo);
-
-        if (reservado > stock) {
-            return 'sobre-reservado';
         }
-
-        if (minimo !== null && stock <= minimo) {
-            return 'stock-bajo';
-        }
-
-        return 'normal';
-    }
-
-    function badgeInventario(x) {
-        var estado = tipoEstadoInventario(x);
-
-        if (estado === 'sobre-reservado') {
-            return '<span class="badge-stock badge-stock--danger">Sobre reservado</span>';
-        }
-
-        if (estado === 'stock-bajo') {
-            return '<span class="badge-stock badge-stock--warn">Stock bajo</span>';
-        }
-
-        return '<span class="badge-stock badge-stock--ok">Normal</span>';
-    }
-
-    function claseFilaInventario(x) {
-        var estado = tipoEstadoInventario(x);
-
-        if (estado === 'sobre-reservado') {
-            return 'row-stock-danger';
-        }
-
-        if (estado === 'stock-bajo') {
-            return 'row-stock-warn';
-        }
-
-        return '';
-    }
-
-    function stockDecorado(x) {
-        var stock = entero(x.Stock);
-        var estado = tipoEstadoInventario(x);
-
-        if (estado === 'sobre-reservado') {
-            return '<strong style="color:#b3261e;">' + stock + '</strong>';
-        }
-
-        if (estado === 'stock-bajo') {
-            return '<strong style="color:#9a5b00;">' + stock + '</strong>';
-        }
-
-        return stock;
-    }
-
-    function mostrarError(msg) {
-        $('#inventarioErrorTexto').text(msg);
-        $('#inventarioError').show();
-    }
-
-    function ocultarError() {
-        $('#inventarioErrorTexto').text('');
-        $('#inventarioError').hide();
-    }
-
-    function obtenerMensaje(xhr, defaultMsg) {
-        try {
-            var r = JSON.parse(xhr.responseText);
-            return r.message || defaultMsg;
-        } catch (e) {
-            return defaultMsg;
-        }
-    }
-
-    function valor(v) {
-        return v == null ? '' : v;
+        return fallback !== undefined ? fallback : '';
     }
 
     function entero(v) {
@@ -342,14 +402,17 @@
         return isNaN(n) ? 0 : n;
     }
 
-    function enteroNullable(v) {
-        if (v === null || v === undefined || v === '') return null;
-        var n = parseInt(v, 10);
-        return isNaN(n) ? null : n;
+    function valor(v) {
+        return v == null ? '' : String(v);
     }
 
-    function escapar(txt) {
-        return String(txt || '').replace(/'/g, "\\'");
+    function escapeHtml(texto) {
+        return valor(texto)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     window.AdminInventario = {
