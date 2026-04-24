@@ -43,6 +43,13 @@ End Code
                     </div>
                 End If
 
+                @If TempData("Success") IsNot Nothing Then
+                    @<div class="a-alert success" style="display:block">
+                        <i class="bi bi-check-circle"></i>
+                        <span>@TempData("Success")</span>
+                    </div>
+                End If
+
                 @Using Html.BeginForm("Login", "Home", FormMethod.Post)
                     @Html.AntiForgeryToken()
 
@@ -96,7 +103,7 @@ End Code
             </div>
 
             <div class="auth-footer">
-                &copy; 2025 Muebles de los Alpes &mdash; Todos los derechos reservados
+                &copy; 2026 Muebles de los Alpes &mdash; Todos los derechos reservados
             </div>
 
         </div>
