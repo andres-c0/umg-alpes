@@ -1,6 +1,7 @@
 Option Strict On
 Option Explicit On
 
+Imports System
 Imports System.Collections.Generic
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
@@ -22,39 +23,20 @@ Namespace Repositorios
                     conexion.Open()
                 End If
 
-                Using transaccion As OracleTransaction = conexion.BeginTransaction()
-                    Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_INSERTAR_PREFERENCIA_CLIENTE", conexion)
-                        cmd.CommandType = CommandType.StoredProcedure
-                        cmd.Transaction = transaccion
+                Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_INSERTAR_PREFERENCIA_CLIENTE", conexion)
+                    cmd.CommandType = CommandType.StoredProcedure
 
-                        cmd.Parameters.Add("P_CLI_ID", OracleDbType.Int32).Value = entidad.CliId
-                        cmd.Parameters.Add("P_CATEGORIA_ID", OracleDbType.Int32).Value = entidad.CategoriaId
+                    cmd.Parameters.Add("P_CLI_ID", OracleDbType.Int32).Value = entidad.CliId
+                    cmd.Parameters.Add("P_CATEGORIA_ID", OracleDbType.Int32).Value = entidad.CategoriaId
+                    cmd.Parameters.Add("P_PESO_PREFERENCIA", OracleDbType.Decimal).Value = entidad.PesoPreferencia
 
-                        Dim pEstilo As New OracleParameter("P_ESTILO", OracleDbType.Varchar2)
-                        If String.IsNullOrWhiteSpace(entidad.Estilo) Then
-                            pEstilo.Value = DBNull.Value
-                        Else
-                            pEstilo.Value = entidad.Estilo
-                        End If
-                        cmd.Parameters.Add(pEstilo)
+                    Dim pPrefId As New OracleParameter("P_PREF_ID", OracleDbType.Int32)
+                    pPrefId.Direction = ParameterDirection.Output
+                    cmd.Parameters.Add(pPrefId)
 
-                        Dim pMaterialPreferido As New OracleParameter("P_MATERIAL_PREFERIDO", OracleDbType.Varchar2)
-                        If String.IsNullOrWhiteSpace(entidad.MaterialPreferido) Then
-                            pMaterialPreferido.Value = DBNull.Value
-                        Else
-                            pMaterialPreferido.Value = entidad.MaterialPreferido
-                        End If
-                        cmd.Parameters.Add(pMaterialPreferido)
+                    cmd.ExecuteNonQuery()
 
-                        Dim pPreferenciaId As New OracleParameter("P_PREFERENCIA_ID", OracleDbType.Int32)
-                        pPreferenciaId.Direction = ParameterDirection.Output
-                        cmd.Parameters.Add(pPreferenciaId)
-
-                        cmd.ExecuteNonQuery()
-                        transaccion.Commit()
-
-                        Return Convert.ToInt32(pPreferenciaId.Value.ToString())
-                    End Using
+                    Return Convert.ToInt32(pPrefId.Value.ToString())
                 End Using
             End Using
         End Function
@@ -65,36 +47,16 @@ Namespace Repositorios
                     conexion.Open()
                 End If
 
-                Using transaccion As OracleTransaction = conexion.BeginTransaction()
-                    Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_ACTUALIZAR_PREFERENCIA_CLIENTE", conexion)
-                        cmd.CommandType = CommandType.StoredProcedure
-                        cmd.Transaction = transaccion
+                Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_ACTUALIZAR_PREFERENCIA_CLIENTE", conexion)
+                    cmd.CommandType = CommandType.StoredProcedure
 
-                        cmd.Parameters.Add("P_PREFERENCIA_ID", OracleDbType.Int32).Value = entidad.PreferenciaId
-                        cmd.Parameters.Add("P_CLI_ID", OracleDbType.Int32).Value = entidad.CliId
-                        cmd.Parameters.Add("P_CATEGORIA_ID", OracleDbType.Int32).Value = entidad.CategoriaId
+                    cmd.Parameters.Add("P_PREF_ID", OracleDbType.Int32).Value = entidad.PreferenciaId
+                    cmd.Parameters.Add("P_CLI_ID", OracleDbType.Int32).Value = entidad.CliId
+                    cmd.Parameters.Add("P_CATEGORIA_ID", OracleDbType.Int32).Value = entidad.CategoriaId
+                    cmd.Parameters.Add("P_PESO_PREFERENCIA", OracleDbType.Decimal).Value = entidad.PesoPreferencia
 
-                        Dim pEstilo As New OracleParameter("P_ESTILO", OracleDbType.Varchar2)
-                        If String.IsNullOrWhiteSpace(entidad.Estilo) Then
-                            pEstilo.Value = DBNull.Value
-                        Else
-                            pEstilo.Value = entidad.Estilo
-                        End If
-                        cmd.Parameters.Add(pEstilo)
-
-                        Dim pMaterialPreferido As New OracleParameter("P_MATERIAL_PREFERIDO", OracleDbType.Varchar2)
-                        If String.IsNullOrWhiteSpace(entidad.MaterialPreferido) Then
-                            pMaterialPreferido.Value = DBNull.Value
-                        Else
-                            pMaterialPreferido.Value = entidad.MaterialPreferido
-                        End If
-                        cmd.Parameters.Add(pMaterialPreferido)
-
-                        cmd.ExecuteNonQuery()
-                        transaccion.Commit()
-
-                        Return True
-                    End Using
+                    cmd.ExecuteNonQuery()
+                    Return True
                 End Using
             End Using
         End Function
@@ -105,18 +67,12 @@ Namespace Repositorios
                     conexion.Open()
                 End If
 
-                Using transaccion As OracleTransaction = conexion.BeginTransaction()
-                    Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_ELIMINAR_PREFERENCIA_CLIENTE", conexion)
-                        cmd.CommandType = CommandType.StoredProcedure
-                        cmd.Transaction = transaccion
+                Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_ELIMINAR_PREFERENCIA_CLIENTE", conexion)
+                    cmd.CommandType = CommandType.StoredProcedure
+                    cmd.Parameters.Add("P_PREF_ID", OracleDbType.Int32).Value = preferenciaId
 
-                        cmd.Parameters.Add("P_PREFERENCIA_ID", OracleDbType.Int32).Value = preferenciaId
-
-                        cmd.ExecuteNonQuery()
-                        transaccion.Commit()
-
-                        Return True
-                    End Using
+                    cmd.ExecuteNonQuery()
+                    Return True
                 End Using
             End Using
         End Function
@@ -132,7 +88,7 @@ Namespace Repositorios
                 Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_OBTENER_PREFERENCIA_CLIENTE", conexion)
                     cmd.CommandType = CommandType.StoredProcedure
 
-                    cmd.Parameters.Add("P_PREFERENCIA_ID", OracleDbType.Int32).Value = preferenciaId
+                    cmd.Parameters.Add("P_PREF_ID", OracleDbType.Int32).Value = preferenciaId
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
@@ -154,7 +110,7 @@ Namespace Repositorios
                     conexion.Open()
                 End If
 
-                Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_LISTAR_PREFERENCIAS_CLIENTE", conexion)
+                Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_LISTAR_PREFERENCIA_CLIENTE", conexion)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
@@ -177,7 +133,7 @@ Namespace Repositorios
                     conexion.Open()
                 End If
 
-                Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_BUSCAR_PREFERENCIAS_CLIENTE", conexion)
+                Using cmd As New OracleCommand("PKG_PREFERENCIA_CLIENTE.SP_BUSCAR_PREFERENCIA_CLIENTE", conexion)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio
                     cmd.Parameters.Add("P_VALOR", OracleDbType.Varchar2).Value = valor
@@ -197,11 +153,10 @@ Namespace Repositorios
         Private Function Mapear(ByVal dr As OracleDataReader) As PreferenciaCliente
             Dim entidad As New PreferenciaCliente()
 
-            entidad.PreferenciaId = Convert.ToInt32(dr("PREFERENCIA_ID"))
+            entidad.PreferenciaId = Convert.ToInt32(dr("PREF_ID"))
             entidad.CliId = Convert.ToInt32(dr("CLI_ID"))
             entidad.CategoriaId = Convert.ToInt32(dr("CATEGORIA_ID"))
-            entidad.Estilo = If(dr("ESTILO") Is DBNull.Value, String.Empty, dr("ESTILO").ToString())
-            entidad.MaterialPreferido = If(dr("MATERIAL_PREFERIDO") Is DBNull.Value, String.Empty, dr("MATERIAL_PREFERIDO").ToString())
+            entidad.PesoPreferencia = If(dr("PESO_PREFERENCIA") Is DBNull.Value, 0D, Convert.ToDecimal(dr("PESO_PREFERENCIA")))
             entidad.Estado = If(dr("ESTADO") Is DBNull.Value, String.Empty, dr("ESTADO").ToString())
 
             Return entidad

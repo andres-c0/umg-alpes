@@ -1,6 +1,7 @@
 Option Strict On
 Option Explicit On
 
+Imports System
 Imports System.Linq
 Imports System.Web.Mvc
 Imports Alpes.Servicios.Servicios
@@ -19,12 +20,17 @@ Namespace Controllers
         End Sub
 
         Function Index() As ActionResult
-            Return View()
+            Return RedirectToAction("Login", "Home")
         End Function
 
         <HttpGet>
         Function Login() As ActionResult
+            If TempData("Error") IsNot Nothing Then
+                ViewData("Error") = TempData("Error").ToString()
+            End If
+
             If Session("UsuarioId") IsNot Nothing Then
+                Return RedirigirSegunSesionActual()
                 Dim rolId As Integer = 0
 
                 If Session("RolId") IsNot Nothing Then
@@ -87,7 +93,7 @@ Namespace Controllers
                 End If
 
                 Session("UsuarioId") = usuario.UsuId
-                Session("Username") = usuario.Username
+                Session("Username") = If(usuario.Username, String.Empty)
                 Session("RolId") = usuario.RolId
 
                 If usuario.CliId.HasValue Then
@@ -102,6 +108,12 @@ Namespace Controllers
                     Session.Remove("EmpId")
                 End If
 
+                If usuario.RolId = 3 AndAlso Not usuario.CliId.HasValue Then
+                    Session.Clear()
+                    Session.Abandon()
+                    ViewData("Error") = "El usuario cliente no tiene un cliente asociado (CLI_ID)."
+                    Return View(model)
+                End If
                 Select Case usuario.RolId
                     Case 27, 28
                         Return RedirectToAction("Index", "Admin")
@@ -113,6 +125,8 @@ Namespace Controllers
                         Session.Abandon()
                         Return View(model)
                 End Select
+
+                Return RedirigirSegunRolUsuario(usuario)
 
             Catch ex As Exception
                 ViewData("Error") = "Ocurrió un error al iniciar sesión: " & ex.Message
@@ -229,6 +243,59 @@ Namespace Controllers
             Session.Clear()
             Session.Abandon()
             Return RedirectToAction("Login")
+        End Function
+
+        Private Function RedirigirSegunSesionActual() As ActionResult
+            Dim rolId As Integer = ObtenerRolIdDesdeSesion()
+            Dim cliId As Integer? = ObtenerCliIdDesdeSesion()
+
+            If rolId = 3 Then
+                If cliId.HasValue AndAlso cliId.Value > 0 Then
+                    Return RedirectToAction("Index", "PortalCliente")
+                End If
+
+                Session.Clear()
+                Session.Abandon()
+                TempData("Error") = "La sesión del cliente no es válida porque no tiene CLI_ID asociado."
+                Return RedirectToAction("Login", "Home")
+            End If
+
+            Return RedirectToAction("Productos", "Admin")
+        End Function
+
+        Private Function RedirigirSegunRolUsuario(ByVal usuario As Usuario) As ActionResult
+            If usuario Is Nothing Then
+                Return RedirectToAction("Login", "Home")
+            End If
+
+            If usuario.RolId = 3 Then
+                Return RedirectToAction("Index", "PortalCliente")
+            End If
+
+            Return RedirectToAction("Productos", "Admin")
+        End Function
+
+        Private Function ObtenerRolIdDesdeSesion() As Integer
+            Dim rolId As Integer = 0
+
+            If Session("RolId") IsNot Nothing Then
+                Integer.TryParse(Session("RolId").ToString(), rolId)
+            End If
+
+            Return rolId
+        End Function
+
+        Private Function ObtenerCliIdDesdeSesion() As Integer?
+            If Session("CliId") Is Nothing Then
+                Return Nothing
+            End If
+
+            Dim cliId As Integer = 0
+            If Integer.TryParse(Session("CliId").ToString(), cliId) AndAlso cliId > 0 Then
+                Return cliId
+            End If
+
+            Return Nothing
         End Function
     End Class
 End Namespace
