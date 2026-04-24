@@ -206,6 +206,7 @@
     <Compile Include="Controllers\PermisoController.vb" />
     <Compile Include="Controllers\PlanProduccionController.vb" />
     <Compile Include="Controllers\Politica_EnvioController.vb" />
+    <Compile Include="Controllers\PortalClienteController.vb" />
     <Compile Include="Controllers\Precio_HistoricoController.vb" />
     <Compile Include="Controllers\PreferenciaClienteController.vb" />
     <Compile Include="Controllers\ProduccionResultadosController.vb" />
@@ -236,6 +237,7 @@
     <Compile Include="Models\CrudCampoConfig.vb" />
     <Compile Include="Models\CrudTablaConfig.vb" />
     <Compile Include="Models\LoginViewModel.vb" />
+    <Compile Include="Models\ProductoListadoViewModel.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -305,6 +307,10 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <None Include="packages.config" />
+    <Content Include="Content\portal-cliente.css" />
+    <Content Include="Scripts\admin-inventario.js" />
+    <Content Include="Scripts\admin-ordenes.js" />
+    <Content Include="Scripts\admin-productos.js" />
     <Content Include="Scripts\alpes.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -319,15 +325,49 @@
     <Content Include="Scripts\bootstrap.bundle.min.js.map" />
     <Content Include="Scripts\bootstrap.bundle.js.map" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
+    <Content Include="Scripts\portal-carrito.js" />
+    <Content Include="Scripts\portal-checkout.js" />
+    <Content Include="Scripts\portal-cliente.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="Scripts\portal-configuracion.js" />
+    <Content Include="Scripts\portal-detalle-orden.js" />
+    <Content Include="Scripts\portal-detalle-producto.js" />
+    <Content Include="Scripts\portal-editar-perfil.js" />
+    <Content Include="Scripts\portal-favoritos.js" />
+    <Content Include="Scripts\portal-inicio.js" />
+    <Content Include="Scripts\portal-mis-ordenes.js" />
+    <Content Include="Scripts\portal-soporte.js" />
+    <Content Include="Scripts\portal-tarjetas.js" />
+    <Content Include="Scripts\portal-tracking.js" />
     <Content Include="Views\Crud\Index.vbhtml" />
     <Content Include="Views\Home\Login.vbhtml" />
     <Content Include="Views\Home\Registro.vbhtml" />
+    <Content Include="Views\Admin\Productos.vbhtml" />
+    <Content Include="Views\Admin\Index.vbhtml" />
+    <Content Include="Views\Shared\_AdminLayout.vbhtml" />
+    <Content Include="Views\Admin\Inventario.vbhtml" />
+    <Content Include="Views\Admin\Ordenes.vbhtml" />
+    <Content Include="Views\PortalCliente\Index.vbhtml" />
+    <Content Include="Views\Shared\_ClienteLayout.vbhtml" />
+    <Content Include="Views\PortalCliente\MiPerfil.vbhtml" />
+    <Content Include="Views\Shared\_PortalClientePerfilLayout.vbhtml" />
+    <Content Include="Views\PortalCliente\MisOrdenes.vbhtml" />
+    <Content Include="Views\PortalCliente\MisFavoritos.vbhtml" />
+    <Content Include="Views\PortalCliente\Notificaciones.vbhtml" />
+    <Content Include="Views\PortalCliente\Soporte.vbhtml" />
+    <Content Include="Views\PortalCliente\MisTarjetas.vbhtml" />
+    <Content Include="Views\PortalCliente\Tracking.vbhtml" />
+    <Content Include="Views\PortalCliente\Historial.vbhtml" />
+    <Content Include="Views\PortalCliente\Configuracion.vbhtml" />
+    <Content Include="Views\PortalCliente\DetalleProducto.vbhtml" />
+    <Content Include="Views\PortalCliente\DetalleOrden.vbhtml" />
+    <Content Include="Views\PortalCliente\Carrito.vbhtml" />
+    <Content Include="Views\PortalCliente\Checkout.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
@@ -351,7 +391,7 @@
     <Content Include="Views\Home\Contact.vbhtml" />
     <Content Include="Views\Home\Index.vbhtml" />
     <Content Include="Views\Shared\Error.vbhtml" />
-    <Content Include="Views\Shared\_Layout.vbhtml" />
+    <Content Include="Views\Shared\_PortalClienteLayout.vbhtml" />
     <Content Include="Views\Web.config" />
   </ItemGroup>
   <ItemGroup>

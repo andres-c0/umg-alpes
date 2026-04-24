@@ -97,6 +97,7 @@
     <Compile Include="Servicios\DepartamentoServicio.vb" />
     <Compile Include="Servicios\DevolucionServicio.vb" />
     <Compile Include="Servicios\EmpleadoServicio.vb" />
+    <Compile Include="Servicios\EnvioServicio.vb" />
     <Compile Include="Servicios\Estado_EnvioServicio.vb" />
     <Compile Include="Servicios\Estado_OrdenServicio.vb" />
     <Compile Include="Servicios\Estado_Orden_CompraServicio.vb" />
@@ -155,6 +156,7 @@
     <Compile Include="Servicios\SeguimientoEnvioServicio.vb" />
     <Compile Include="Servicios\SesionServicio.vb" />
     <Compile Include="Servicios\Tarifa_EnvioServicio.vb" />
+    <Compile Include="Servicios\TarjetaClienteServicio.vb" />
     <Compile Include="Servicios\Tipo_EntregaServicio.vb" />
     <Compile Include="Servicios\Tipo_PromocionServicio.vb" />
     <Compile Include="Servicios\Unidad_MedidaServicio.vb" />

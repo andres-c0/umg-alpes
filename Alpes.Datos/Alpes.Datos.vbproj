@@ -135,6 +135,7 @@
     <Compile Include="Repositorios\DepartamentoDatos.vb" />
     <Compile Include="Repositorios\DevolucionDatos.vb" />
     <Compile Include="Repositorios\EmpleadoDatos.vb" />
+    <Compile Include="Repositorios\EnvioDatos.vb" />
     <Compile Include="Repositorios\Estado_EnvioDatos.vb" />
     <Compile Include="Repositorios\Estado_OrdenDatos.vb" />
     <Compile Include="Repositorios\Estado_Orden_CompraDatos.vb" />
@@ -193,6 +194,7 @@
     <Compile Include="Repositorios\SeguimientoEnvioDatos.vb" />
     <Compile Include="Repositorios\SesionDatos.vb" />
     <Compile Include="Repositorios\Tarifa_EnvioDatos.vb" />
+    <Compile Include="Repositorios\TarjetaClienteDatos.vb" />
     <Compile Include="Repositorios\Tipo_EntregaDatos.vb" />
     <Compile Include="Repositorios\Tipo_PromocionDatos.vb" />
     <Compile Include="Repositorios\Unidad_MedidaDatos.vb" />

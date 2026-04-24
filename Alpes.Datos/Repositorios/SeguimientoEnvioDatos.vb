@@ -1,10 +1,11 @@
 ﻿Option Strict On
 Option Explicit On
 
+Imports System.Collections.Generic
 Imports System.Data
 Imports Oracle.ManagedDataAccess.Client
 Imports Alpes.Datos.Conexion
-Imports Alpes.Entidades.Envios
+Imports Alpes.Entidades.Ventas
 
 Namespace Repositorios
     Public Class SeguimientoEnvioDatos
@@ -16,91 +17,117 @@ Namespace Repositorios
         End Sub
 
         Public Function Insertar(ByVal entidad As SeguimientoEnvio) As Integer
-            Dim idGenerado As Integer = 0
+            Using conexion As OracleConnection = _conexionOracle.ObtenerConexion()
+                If conexion.State = ConnectionState.Closed Then
+                    conexion.Open()
+                End If
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_INSERTAR_SEGUIMIENTO_ENVIO", cn)
-                    cmd.CommandType = CommandType.StoredProcedure
+                Using transaccion As OracleTransaction = conexion.BeginTransaction()
+                    Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_INSERTAR_SEGUIMIENTO_ENVIO", conexion)
+                        cmd.CommandType = CommandType.StoredProcedure
+                        cmd.Transaction = transaccion
 
-                    cmd.Parameters.Add("P_ENVIO_ID", OracleDbType.Int32).Value = entidad.EnvioId
-                    cmd.Parameters.Add("P_ESTADO_ENVIO_ID", OracleDbType.Int32).Value = entidad.EstadoEnvioId
-                    cmd.Parameters.Add("P_EVENTO_AT", OracleDbType.TimeStamp).Value = entidad.EventoAt
+                        cmd.Parameters.Add("P_ENVIO_ID", OracleDbType.Int32).Value = entidad.EnvioId
+                        cmd.Parameters.Add("P_ESTADO_ENVIO_ID", OracleDbType.Int32).Value = entidad.EstadoEnvioId
 
-                    If String.IsNullOrWhiteSpace(entidad.UbicacionTexto) Then
-                        cmd.Parameters.Add("P_UBICACION_TEXTO", OracleDbType.Varchar2).Value = DBNull.Value
-                    Else
-                        cmd.Parameters.Add("P_UBICACION_TEXTO", OracleDbType.Varchar2).Value = entidad.UbicacionTexto
-                    End If
+                        Dim pEventoAt As New OracleParameter("P_EVENTO_AT", OracleDbType.TimeStamp)
+                        pEventoAt.Value = If(entidad.EventoAt.HasValue, CType(entidad.EventoAt.Value, Object), DBNull.Value)
+                        cmd.Parameters.Add(pEventoAt)
 
-                    If String.IsNullOrWhiteSpace(entidad.Observacion) Then
-                        cmd.Parameters.Add("P_OBSERVACION", OracleDbType.Varchar2).Value = DBNull.Value
-                    Else
-                        cmd.Parameters.Add("P_OBSERVACION", OracleDbType.Varchar2).Value = entidad.Observacion
-                    End If
+                        Dim pUbicacion As New OracleParameter("P_UBICACION_TEXTO", OracleDbType.Varchar2)
+                        pUbicacion.Value = If(String.IsNullOrWhiteSpace(entidad.UbicacionTexto), CType(DBNull.Value, Object), entidad.UbicacionTexto)
+                        cmd.Parameters.Add(pUbicacion)
 
-                    cmd.Parameters.Add("P_SEG_ENVIO_ID", OracleDbType.Int32).Direction = ParameterDirection.Output
+                        Dim pObservacion As New OracleParameter("P_OBSERVACION", OracleDbType.Varchar2)
+                        pObservacion.Value = If(String.IsNullOrWhiteSpace(entidad.Observacion), CType(DBNull.Value, Object), entidad.Observacion)
+                        cmd.Parameters.Add(pObservacion)
 
-                    cmd.ExecuteNonQuery()
+                        Dim pId As New OracleParameter("P_SEG_ENVIO_ID", OracleDbType.Int32)
+                        pId.Direction = ParameterDirection.Output
+                        cmd.Parameters.Add(pId)
 
-                    idGenerado = Convert.ToInt32(cmd.Parameters("P_SEG_ENVIO_ID").Value.ToString())
+                        cmd.ExecuteNonQuery()
+                        transaccion.Commit()
+
+                        Return Convert.ToInt32(pId.Value.ToString())
+                    End Using
                 End Using
             End Using
-
-            Return idGenerado
         End Function
 
-        Public Sub Actualizar(ByVal entidad As SeguimientoEnvio)
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_ACTUALIZAR_SEGUIMIENTO_ENVIO", cn)
-                    cmd.CommandType = CommandType.StoredProcedure
+        Public Function Actualizar(ByVal entidad As SeguimientoEnvio) As Boolean
+            Using conexion As OracleConnection = _conexionOracle.ObtenerConexion()
+                If conexion.State = ConnectionState.Closed Then
+                    conexion.Open()
+                End If
 
-                    cmd.Parameters.Add("P_SEG_ENVIO_ID", OracleDbType.Int32).Value = entidad.SegEnvioId
-                    cmd.Parameters.Add("P_ENVIO_ID", OracleDbType.Int32).Value = entidad.EnvioId
-                    cmd.Parameters.Add("P_ESTADO_ENVIO_ID", OracleDbType.Int32).Value = entidad.EstadoEnvioId
-                    cmd.Parameters.Add("P_EVENTO_AT", OracleDbType.TimeStamp).Value = entidad.EventoAt
+                Using transaccion As OracleTransaction = conexion.BeginTransaction()
+                    Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_ACTUALIZAR_SEGUIMIENTO_ENVIO", conexion)
+                        cmd.CommandType = CommandType.StoredProcedure
+                        cmd.Transaction = transaccion
 
-                    If String.IsNullOrWhiteSpace(entidad.UbicacionTexto) Then
-                        cmd.Parameters.Add("P_UBICACION_TEXTO", OracleDbType.Varchar2).Value = DBNull.Value
-                    Else
-                        cmd.Parameters.Add("P_UBICACION_TEXTO", OracleDbType.Varchar2).Value = entidad.UbicacionTexto
-                    End If
+                        cmd.Parameters.Add("P_SEG_ENVIO_ID", OracleDbType.Int32).Value = entidad.SegEnvioId
+                        cmd.Parameters.Add("P_ENVIO_ID", OracleDbType.Int32).Value = entidad.EnvioId
+                        cmd.Parameters.Add("P_ESTADO_ENVIO_ID", OracleDbType.Int32).Value = entidad.EstadoEnvioId
 
-                    If String.IsNullOrWhiteSpace(entidad.Observacion) Then
-                        cmd.Parameters.Add("P_OBSERVACION", OracleDbType.Varchar2).Value = DBNull.Value
-                    Else
-                        cmd.Parameters.Add("P_OBSERVACION", OracleDbType.Varchar2).Value = entidad.Observacion
-                    End If
+                        Dim pEventoAt As New OracleParameter("P_EVENTO_AT", OracleDbType.TimeStamp)
+                        pEventoAt.Value = If(entidad.EventoAt.HasValue, CType(entidad.EventoAt.Value, Object), DBNull.Value)
+                        cmd.Parameters.Add(pEventoAt)
 
-                    cmd.ExecuteNonQuery()
+                        Dim pUbicacion As New OracleParameter("P_UBICACION_TEXTO", OracleDbType.Varchar2)
+                        pUbicacion.Value = If(String.IsNullOrWhiteSpace(entidad.UbicacionTexto), CType(DBNull.Value, Object), entidad.UbicacionTexto)
+                        cmd.Parameters.Add(pUbicacion)
+
+                        Dim pObservacion As New OracleParameter("P_OBSERVACION", OracleDbType.Varchar2)
+                        pObservacion.Value = If(String.IsNullOrWhiteSpace(entidad.Observacion), CType(DBNull.Value, Object), entidad.Observacion)
+                        cmd.Parameters.Add(pObservacion)
+
+                        cmd.ExecuteNonQuery()
+                        transaccion.Commit()
+
+                        Return True
+                    End Using
                 End Using
             End Using
-        End Sub
+        End Function
 
-        Public Sub Eliminar(ByVal id As Integer)
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_ELIMINAR_SEGUIMIENTO_ENVIO", cn)
-                    cmd.CommandType = CommandType.StoredProcedure
+        Public Function Eliminar(ByVal segEnvioId As Integer) As Boolean
+            Using conexion As OracleConnection = _conexionOracle.ObtenerConexion()
+                If conexion.State = ConnectionState.Closed Then
+                    conexion.Open()
+                End If
 
-                    cmd.Parameters.Add("P_SEG_ENVIO_ID", OracleDbType.Int32).Value = id
+                Using transaccion As OracleTransaction = conexion.BeginTransaction()
+                    Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_ELIMINAR_SEGUIMIENTO_ENVIO", conexion)
+                        cmd.CommandType = CommandType.StoredProcedure
+                        cmd.Transaction = transaccion
 
-                    cmd.ExecuteNonQuery()
+                        cmd.Parameters.Add("P_SEG_ENVIO_ID", OracleDbType.Int32).Value = segEnvioId
+                        cmd.ExecuteNonQuery()
+                        transaccion.Commit()
+
+                        Return True
+                    End Using
                 End Using
             End Using
-        End Sub
+        End Function
 
-        Public Function ObtenerPorId(ByVal id As Integer) As SeguimientoEnvio
+        Public Function ObtenerPorId(ByVal segEnvioId As Integer) As SeguimientoEnvio
             Dim entidad As SeguimientoEnvio = Nothing
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_OBTENER_SEGUIMIENTO_ENVIO", cn)
-                    cmd.CommandType = CommandType.StoredProcedure
+            Using conexion As OracleConnection = _conexionOracle.ObtenerConexion()
+                If conexion.State = ConnectionState.Closed Then
+                    conexion.Open()
+                End If
 
-                    cmd.Parameters.Add("P_SEG_ENVIO_ID", OracleDbType.Int32).Value = id
+                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_OBTENER_SEGUIMIENTO_ENVIO", conexion)
+                    cmd.CommandType = CommandType.StoredProcedure
+                    cmd.Parameters.Add("P_SEG_ENVIO_ID", OracleDbType.Int32).Value = segEnvioId
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
                         If dr.Read() Then
-                            entidad = MapearSeguimientoEnvio(dr)
+                            entidad = Mapear(dr)
                         End If
                     End Using
                 End Using
@@ -112,15 +139,18 @@ Namespace Repositorios
         Public Function Listar() As List(Of SeguimientoEnvio)
             Dim lista As New List(Of SeguimientoEnvio)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_LISTAR_SEGUIMIENTO_ENVIO", cn)
-                    cmd.CommandType = CommandType.StoredProcedure
+            Using conexion As OracleConnection = _conexionOracle.ObtenerConexion()
+                If conexion.State = ConnectionState.Closed Then
+                    conexion.Open()
+                End If
 
+                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_LISTAR_SEGUIMIENTO_ENVIO", conexion)
+                    cmd.CommandType = CommandType.StoredProcedure
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
                         While dr.Read()
-                            lista.Add(MapearSeguimientoEnvio(dr))
+                            lista.Add(Mapear(dr))
                         End While
                     End Using
                 End Using
@@ -132,17 +162,20 @@ Namespace Repositorios
         Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of SeguimientoEnvio)
             Dim lista As New List(Of SeguimientoEnvio)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_BUSCAR_SEGUIMIENTO_ENVIO", cn)
-                    cmd.CommandType = CommandType.StoredProcedure
+            Using conexion As OracleConnection = _conexionOracle.ObtenerConexion()
+                If conexion.State = ConnectionState.Closed Then
+                    conexion.Open()
+                End If
 
+                Using cmd As New OracleCommand("PKG_SEGUIMIENTO_ENVIO.SP_BUSCAR_SEGUIMIENTO_ENVIO", conexion)
+                    cmd.CommandType = CommandType.StoredProcedure
                     cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = criterio
                     cmd.Parameters.Add("P_VALOR", OracleDbType.Varchar2).Value = valor
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
                         While dr.Read()
-                            lista.Add(MapearSeguimientoEnvio(dr))
+                            lista.Add(Mapear(dr))
                         End While
                     End Using
                 End Using
@@ -151,18 +184,29 @@ Namespace Repositorios
             Return lista
         End Function
 
-        Private Function MapearSeguimientoEnvio(ByVal dr As OracleDataReader) As SeguimientoEnvio
+        Private Function Mapear(ByVal dr As OracleDataReader) As SeguimientoEnvio
             Dim entidad As New SeguimientoEnvio()
 
             entidad.SegEnvioId = Convert.ToInt32(dr("SEG_ENVIO_ID"))
             entidad.EnvioId = Convert.ToInt32(dr("ENVIO_ID"))
             entidad.EstadoEnvioId = Convert.ToInt32(dr("ESTADO_ENVIO_ID"))
-            entidad.EventoAt = Convert.ToDateTime(dr("EVENTO_AT"))
-            entidad.UbicacionTexto = If(IsDBNull(dr("UBICACION_TEXTO")), Nothing, dr("UBICACION_TEXTO").ToString())
-            entidad.Observacion = If(IsDBNull(dr("OBSERVACION")), Nothing, dr("OBSERVACION").ToString())
-            entidad.CreatedAt = If(IsDBNull(dr("CREATED_AT")), CType(Nothing, DateTime?), Convert.ToDateTime(dr("CREATED_AT")))
-            entidad.UpdatedAt = If(IsDBNull(dr("UPDATED_AT")), CType(Nothing, DateTime?), Convert.ToDateTime(dr("UPDATED_AT")))
-            entidad.Estado = If(IsDBNull(dr("ESTADO")), Nothing, dr("ESTADO").ToString())
+
+            If Not dr("EVENTO_AT") Is DBNull.Value Then
+                entidad.EventoAt = Convert.ToDateTime(dr("EVENTO_AT"))
+            End If
+
+            entidad.UbicacionTexto = If(dr("UBICACION_TEXTO") Is DBNull.Value, String.Empty, dr("UBICACION_TEXTO").ToString())
+            entidad.Observacion = If(dr("OBSERVACION") Is DBNull.Value, String.Empty, dr("OBSERVACION").ToString())
+
+            If Not dr("CREATED_AT") Is DBNull.Value Then
+                entidad.CreatedAt = Convert.ToDateTime(dr("CREATED_AT"))
+            End If
+
+            If Not dr("UPDATED_AT") Is DBNull.Value Then
+                entidad.UpdatedAt = Convert.ToDateTime(dr("UPDATED_AT"))
+            End If
+
+            entidad.Estado = If(dr("ESTADO") Is DBNull.Value, String.Empty, dr("ESTADO").ToString())
 
             Return entidad
         End Function

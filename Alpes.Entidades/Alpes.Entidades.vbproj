@@ -144,6 +144,7 @@
     <Compile Include="Ventas\CarritoDetalle.vb" />
     <Compile Include="Ventas\Cuotas_Pago.vb" />
     <Compile Include="Ventas\Devolucion.vb" />
+    <Compile Include="Ventas\Envio.vb" />
     <Compile Include="Ventas\Estado_Orden.vb" />
     <Compile Include="Ventas\Factura.vb" />
     <Compile Include="Ventas\Factura_Detalle.vb" />
@@ -161,6 +162,7 @@
     <Compile Include="Ventas\Regla_Promocion.vb" />
     <Compile Include="Ventas\Resena_Comentario.vb" />
     <Compile Include="Ventas\Tarifa_Envio.vb" />
+    <Compile Include="Ventas\TarjetaCliente.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
