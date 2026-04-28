@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1765DD41-0A9E-4EE1-9394-F0758B4AB44A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Alpes.Entidades</RootNamespace>
+    <AssemblyName>Alpes.Entidades</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <MyType>Windows</MyType>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>Alpes.Entidades.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>Alpes.Entidades.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionCompare>Binary</OptionCompare>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionStrict>Off</OptionStrict>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.Data" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Linq" />
+    <Import Include="System.Xml.Linq" />
+    <Import Include="System.Threading.Tasks" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Class1.vb" />
+    <Compile Include="Clientes\Cliente.vb" />
+    <Compile Include="Clientes\FAQ.vb" />
+    <Compile Include="Compras\Abastecimiento.vb" />
+    <Compile Include="Compras\CondicionPago.vb" />
+    <Compile Include="Compras\ContratoProveedor.vb" />
+    <Compile Include="Compras\Control_Calidad.vb" />
+    <Compile Include="Compras\CuentaPagarProveedor.vb" />
+    <Compile Include="Compras\Estado_Orden_Compra.vb" />
+    <Compile Include="Compras\ExpedienteProveedor.vb" />
+    <Compile Include="Compras\HistoricoPrecioMateriaPrimaProveedor.vb" />
+    <Compile Include="Compras\Orden_Compra.vb" />
+    <Compile Include="Compras\Orden_Compra_Detalle.vb" />
+    <Compile Include="Compras\PagoProveedor..vb" />
+    <Compile Include="Compras\Proveedor.vb" />
+    <Compile Include="Compras\Recepcion_Material.vb" />
+    <Compile Include="Compras\Ruta_Entrega.vb" />
+    <Compile Include="Envios\Estado_Envio.vb" />
+    <Compile Include="Envios\Politica_Envio.vb" />
+    <Compile Include="Envios\SeguimientoEnvio.vb" />
+    <Compile Include="Envios\Tipo_Entrega.vb" />
+    <Compile Include="Envios\Zona_Envio.vb" />
+    <Compile Include="Inventario\Categoria.vb" />
+    <Compile Include="Inventario\Inventario_Producto.vb" />
+    <Compile Include="Inventario\Movimiento_Inventario.vb" />
+    <Compile Include="Inventario\Precio_Historico.vb" />
+    <Compile Include="Inventario\Producto.vb" />
+    <Compile Include="Inventario\Unidad_Medida.vb" />
+    <Compile Include="Inventario\Vehiculo.vb" />
+    <Compile Include="Marketing\Campana_Marketing.vb" />
+    <Compile Include="Marketing\Cupon.vb" />
+    <Compile Include="Marketing\Tipo_Promocion.vb" />
+    <Compile Include="My Project\AssemblyInfo.vb" />
+    <Compile Include="My Project\Application.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Produccion\ConsumoMateriaPrima.vb" />
+    <Compile Include="Produccion\Estado_Produccion.vb" />
+    <Compile Include="Produccion\Herramienta.vb" />
+    <Compile Include="Produccion\Inventario_Materia_Prima.vb" />
+    <Compile Include="Produccion\ListaMateriales.vb" />
+    <Compile Include="Produccion\ListaMaterialesDetalle.vb" />
+    <Compile Include="Produccion\MantenimientoHerramienta.vb" />
+    <Compile Include="Produccion\Materia_Prima.vb" />
+    <Compile Include="Produccion\Movimiento_Materia_Prima.vb" />
+    <Compile Include="Produccion\OrdenProduccion.vb" />
+    <Compile Include="Produccion\OrdenProduccionTarea.vb" />
+    <Compile Include="Produccion\PlanProduccion.vb" />
+    <Compile Include="Produccion\ProduccionResultados.vb" />
+    <Compile Include="RRHH\Cargo.vb" />
+    <Compile Include="RRHH\Departamento.vb" />
+    <Compile Include="RRHH\Empleado.vb" />
+    <Compile Include="RRHH\Evaluacion.vb" />
+    <Compile Include="RRHH\Expediente_Empleado.vb" />
+    <Compile Include="RRHH\HistorialLaboral.vb" />
+    <Compile Include="RRHH\Incidente_Laboral.vb" />
+    <Compile Include="RRHH\Nomina.vb" />
+    <Compile Include="RRHH\Nomina_Detalle.vb" />
+    <Compile Include="RRHH\Rol_Empleado.vb" />
+    <Compile Include="Seguridad\Historial_Cambio_Contrasena.vb" />
+    <Compile Include="Seguridad\Permiso.vb" />
+    <Compile Include="Seguridad\Rol.vb" />
+    <Compile Include="Seguridad\Rol_Permiso.vb" />
+    <Compile Include="Seguridad\Sesion.vb" />
+    <Compile Include="Seguridad\Usuario.vb" />
+    <Compile Include="Ventas\Carrito.vb" />
+    <Compile Include="Ventas\CarritoDetalle.vb" />
+    <Compile Include="Ventas\Cuotas_Pago.vb" />
+    <Compile Include="Ventas\Devolucion.vb" />
+    <Compile Include="Ventas\Envio.vb" />
+    <Compile Include="Ventas\Estado_Orden.vb" />
+    <Compile Include="Ventas\Factura.vb" />
+    <Compile Include="Ventas\Factura_Detalle.vb" />
+    <Compile Include="Ventas\Historial_Compra.vb" />
+    <Compile Include="Ventas\Historial_Promocion.vb" />
+    <Compile Include="Ventas\ListaDeseos.vb" />
+    <Compile Include="Ventas\Metodo_Pago.vb" />
+    <Compile Include="Ventas\Orden_Venta.vb" />
+    <Compile Include="Ventas\Orden_Venta_Detalle.vb" />
+    <Compile Include="Ventas\Pago.vb" />
+    <Compile Include="Ventas\PreferenciaCliente.vb" />
+    <Compile Include="Ventas\Promocion.vb" />
+    <Compile Include="Ventas\Promocion_Producto.vb" />
+    <Compile Include="Ventas\Regla_Envio_Gratis.vb" />
+    <Compile Include="Ventas\Regla_Promocion.vb" />
+    <Compile Include="Ventas\Resena_Comentario.vb" />
+    <Compile Include="Ventas\Tarifa_Envio.vb" />
+    <Compile Include="Ventas\TarjetaCliente.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="My Project\Resources.resx">
+      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+</Project>
