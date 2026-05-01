@@ -321,6 +321,7 @@
     <Content Include="Scripts\admin-produccion.js" />
     <Content Include="Scripts\admin-productos.js" />
     <Content Include="Scripts\admin-proveedores.js" />
+    <Content Include="Scripts\admin-reportes.js" />
     <Content Include="Scripts\alpes.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -387,6 +388,7 @@
     <Content Include="Views\Admin\Marketing.vbhtml" />
     <Content Include="Views\Admin\Produccion.vbhtml" />
     <Content Include="Views\Admin\Configuracion.vbhtml" />
+    <Content Include="Views\Admin\Reportes.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />

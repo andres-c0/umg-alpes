@@ -60,6 +60,8 @@ Namespace Controllers
                     .Apellidos = c.Apellidos,
                     .NombreCompleto = ((If(c.Nombres, "") & " " & If(c.Apellidos, "")).Trim()),
                     .Email = c.Email,
+                    .TelResidencia = c.TelResidencia,
+                    .TelCelular = c.TelCelular,
                     .Direccion = c.Direccion,
                     .Ciudad = c.Ciudad,
                     .Departamento = c.Departamento,
