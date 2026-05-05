@@ -2,6 +2,7 @@
     var ordenes = [];
     var productos = [];
     var clientes = [];
+    var estadoFiltro = 0;
 
     $(document).ready(function () {
         enlazarEventos();
@@ -11,25 +12,19 @@
     });
 
     function enlazarEventos() {
-        $('#btnRecargarOrden').on('click', function () {
-            cargarOrdenes();
-        });
+        $('#btnRecargarOrden').on('click', cargarOrdenes);
 
         $('#txtBuscarOrden').on('input', function () {
-            renderTabla();
+            renderCards();
         });
 
         $('#btnNuevaOrden').on('click', function () {
             alert('El formulario de nueva orden será el siguiente paso.');
         });
 
-        $('#btnCerrarDetalleOrden, #btnCerrarDetalleOrdenFooter, #modalDetalleOrden .modal-a__backdrop').on('click', function () {
-            cerrarDetalle();
-        });
+        $('#btnCerrarDetalleOrden, #btnCerrarDetalleOrdenFooter, #modalDetalleOrden .modal-a__backdrop').on('click', cerrarDetalle);
 
-        $('#btnActualizarEstadoOrden').on('click', function () {
-            actualizarEstadoOrden();
-        });
+        $('#btnActualizarEstadoOrden').on('click', actualizarEstadoOrden);
     }
 
     function cargarCatalogos() {
@@ -49,15 +44,18 @@
     }
 
     function cargarOrdenes() {
-        $('#ordenBody').html('<tr><td colspan="7" class="table-empty">Cargando órdenes...</td></tr>');
+        $('#ordenContainer').html('<div class="table-empty">Cargando órdenes...</div>');
 
         $.getJSON('/Orden_Venta/Index')
             .done(function (res) {
+                console.log('ORDENES RESPONSE:', res);
                 ordenes = normalizarLista(res);
-                renderTabla();
+                console.log('ORDENES NORMALIZADAS:', ordenes);
+                renderCards();
             })
-            .fail(function () {
-                $('#ordenBody').html('<tr><td colspan="7" class="table-empty">Error al cargar órdenes.</td></tr>');
+            .fail(function (xhr) {
+                console.error('ERROR ORDENES:', xhr.responseText);
+                $('#ordenContainer').html('<div class="table-empty">Error al cargar órdenes.</div>');
             });
     }
 
@@ -67,39 +65,108 @@
         return [];
     }
 
-    function renderTabla() {
+    function renderCards() {
         var filtro = ($('#txtBuscarOrden').val() || '').toLowerCase().trim();
 
         var lista = ordenes.filter(function (o) {
             var num = valor(o.NumOrden).toLowerCase();
             var cliente = nombreCliente(o.CliId).toLowerCase();
-            return !filtro || num.indexOf(filtro) >= 0 || cliente.indexOf(filtro) >= 0;
+            var obs = valor(o.Observaciones).toLowerCase();
+
+            var cumpleTexto = !filtro ||
+                num.indexOf(filtro) >= 0 ||
+                cliente.indexOf(filtro) >= 0 ||
+                obs.indexOf(filtro) >= 0;
+
+            var cumpleEstado = estadoFiltro === 0 || entero(o.EstadoOrdenId) === estadoFiltro;
+
+            return cumpleTexto && cumpleEstado;
         });
 
+        actualizarResumen(lista);
+
         if (!lista.length) {
-            $('#ordenBody').html('<tr><td colspan="7" class="table-empty">No hay órdenes para mostrar.</td></tr>');
+            $('#ordenContainer').html('<div class="table-empty">No hay órdenes para mostrar.</div>');
             return;
         }
 
         var html = '';
 
         lista.forEach(function (o) {
-            html += '<tr>';
-            html += '<td>' + valor(o.OrdenVentaId) + '</td>';
-            html += '<td>' + valor(o.NumOrden) + '</td>';
-            html += '<td>' + valor(nombreCliente(o.CliId)) + '</td>';
-            html += '<td>' + formatearFecha(o.FechaOrden) + '</td>';
-            html += '<td>Q ' + formatearMonto(o.Total) + '</td>';
-            html += '<td>' + badgeEstadoPorId(o.EstadoOrdenId) + '</td>';
-            html += '<td>';
-            html += '<div class="table-actions">';
-            html += '<button class="btn-icon" onclick="AdminOrdenes.verDetalle(' + o.OrdenVentaId + ')"><i class="bi bi-eye"></i></button>';
-            html += '</div>';
-            html += '</td>';
-            html += '</tr>';
+            var estado = estadoConfig(o.EstadoOrdenId);
+            var cliente = nombreCliente(o.CliId);
+            var total = formatearMonto(o.Total);
+            var subtotal = formatearMonto(o.Subtotal);
+            var impuesto = formatearMonto(o.Impuesto);
+            var descuento = formatearMonto(o.Descuento);
+            var fecha = formatearFecha(o.FechaOrden);
+            var direccion = valor(o.DireccionEnvioSnapshot);
+            var items = entero(o.Items || o.CantidadItems || 1);
+            var lineas = entero(o.Lineas || o.CantidadLineas || 1);
+
+            html += ''
+                + '<div class="orden-card" onclick="AdminOrdenes.verDetalle(' + o.OrdenVentaId + ')">'
+                + '  <div class="orden-card__main">'
+                + '    <div class="orden-card__icon"><i class="bi bi-receipt"></i></div>'
+                + '    <div class="orden-card__info">'
+                + '      <div class="orden-card__title">' + valor(o.NumOrden) + '</div>'
+                + '      <div class="orden-card__client">' + cliente + '</div>'
+                + '      <div class="orden-card__date"><i class="bi bi-calendar3"></i> ' + fecha + '</div>'
+                + '      <div class="orden-card__chips">'
+                + '        <span class="orden-chip"><i class="bi bi-bag"></i> ' + items + ' item' + (items === 1 ? '' : 's') + '</span>'
+                + '        <span class="orden-chip"><i class="bi bi-list-ul"></i> ' + lineas + ' línea' + (lineas === 1 ? '' : 's') + '</span>'
+                + '      </div>'
+                + '    </div>'
+                + '    <div class="orden-card__right">'
+                + '      <div class="orden-card__total">Q ' + total + '</div>'
+                + '      <span class="orden-badge ' + estado.clase + '">' + estado.texto + '</span>'
+                + '      <i class="bi bi-chevron-right orden-card__arrow"></i>'
+                + '    </div>'
+                + '  </div>'
+                + '  <div class="orden-card__amounts">'
+                + '    <div><span>Subtotal</span><strong>Q ' + subtotal + '</strong></div>'
+                + '    <div><span>Impuesto</span><strong>Q ' + impuesto + '</strong></div>'
+                + '    <div><span>Descuento</span><strong>Q ' + descuento + '</strong></div>'
+                + '  </div>'
+                + (direccion ? '<div class="orden-card__address"><i class="bi bi-geo-alt"></i> Envío &nbsp; ' + direccion + '</div>' : '')
+                + '</div>';
         });
 
-        $('#ordenBody').html(html);
+        $('#ordenContainer').html(html);
+    }
+
+    function actualizarResumen(lista) {
+        var totalVentas = 0;
+        var pendientes = 0;
+        var canceladas = 0;
+        var itemsVisibles = lista.length;
+
+        lista.forEach(function (o) {
+            totalVentas += decimal(o.Total);
+            if (entero(o.EstadoOrdenId) === 30) pendientes++;
+            if (entero(o.EstadoOrdenId) === 35) canceladas++;
+        });
+
+        $('#resumenVentasFiltradas').text('Q ' + formatearMonto(totalVentas));
+        $('#resumenPendientes').text(pendientes);
+        $('#resumenItemsVisibles').text(itemsVisibles);
+        $('#resumenCanceladas').text(canceladas);
+        $('#ordenTotalTexto').text(lista.length + ' orden' + (lista.length === 1 ? '' : 'es'));
+
+        $('#countTodos').text(ordenes.length);
+        $('#countPendiente').text(ordenes.filter(function (x) { return entero(x.EstadoOrdenId) === 30; }).length);
+        $('#countProceso').text(ordenes.filter(function (x) { return entero(x.EstadoOrdenId) === 32; }).length);
+        $('#countEntregado').text(ordenes.filter(function (x) { return entero(x.EstadoOrdenId) === 34; }).length);
+        $('#countCancelado').text(ordenes.filter(function (x) { return entero(x.EstadoOrdenId) === 35; }).length);
+    }
+
+    function filtrarEstado(id) {
+        estadoFiltro = entero(id);
+
+        $('.orden-filter-pill').removeClass('active');
+        $('.orden-filter-pill[data-estado="' + estadoFiltro + '"]').addClass('active');
+
+        renderCards();
     }
 
     function cargarDetalleOrden(id) {
@@ -116,11 +183,14 @@
 
                 llenarCabeceraDetalle(orden);
 
-                $.getJSON('/Orden_Venta_Detalle/Buscar', { valor: id })
-                    .done(function (res) {
-                        var detalles = normalizarLista(res);
-                        renderDetalleProductos(detalles);
-                    })
+                $.getJSON('/Orden_Venta_Detalle/Index')
+    .done(function (res) {
+        var detalles = normalizarLista(res).filter(function (d) {
+            return entero(d.OrdenVentaId) === entero(id);
+        });
+
+        renderDetalleProductos(detalles);
+    })
                     .fail(function () {
                         mostrarErrorDetalle('No fue posible cargar el detalle de la orden.');
                         $('#detalleOrdenBody').html('<tr><td colspan="4" class="table-empty">No fue posible cargar el detalle.</td></tr>');
@@ -132,13 +202,22 @@
     }
 
     function llenarCabeceraDetalle(orden) {
+        var estadoId = entero(orden.EstadoOrdenId);
+        var estadoTexto = textoEstadoPorId(estadoId);
+
         $('#detalleOrdenTitulo').text('Orden #' + valor(orden.OrdenVentaId));
         $('#detalleNumOrden').text(valor(orden.NumOrden));
         $('#detalleFechaOrden').text(formatearFecha(orden.FechaOrden));
+
+        $('#detalleSubtotalOrden').text('Q ' + formatearMonto(orden.Subtotal));
+        $('#detalleImpuestoOrden').text('Q ' + formatearMonto(orden.Impuesto));
+        $('#detalleDescuentoOrden').text('Q ' + formatearMonto(orden.Descuento));
         $('#detalleTotalOrden').text('Q ' + formatearMonto(orden.Total));
-        $('#detalleClienteOrden').val(nombreCliente(orden.CliId));
-        $('#detalleEstadoOrden').html(badgeEstadoPorId(orden.EstadoOrdenId));
-        $('#detalleNuevoEstado').val(textoEstadoPorId(orden.EstadoOrdenId));
+
+        $('#detalleDireccionOrden').text(valor(orden.DireccionEnvioSnapshot) || 'Sin dirección');
+        $('#detalleEstadoOrden').html(badgeEstadoPorId(estadoId));
+        $('#detalleNuevoEstado').val(estadoTexto);
+        $('#detalleTimelineOrden').html(renderTimelineEstado(estadoId));
 
         $('#detalleOrdenId').val(orden.OrdenVentaId || 0);
         $('#detalleOrdenCliId').val(orden.CliId || 0);
@@ -154,6 +233,41 @@
         $('#detalleOrdenEstadoRegistro').val(orden.Estado || '');
     }
 
+
+    function renderTimelineEstado(estadoActualId) {
+        var actual = entero(estadoActualId);
+
+        var estados = [
+            { id: 30, texto: 'Pendiente', icono: 'bi-clock' },
+            { id: 32, texto: 'En proceso', icono: 'bi-tools' },
+            { id: 34, texto: 'Entregada', icono: 'bi-check-circle' },
+            { id: 35, texto: 'Cancelada', icono: 'bi-x-circle' }
+        ];
+
+        var ordenActual = estados.findIndex(function (e) { return e.id === actual; });
+
+        var html = '';
+
+        estados.forEach(function (e, index) {
+            var completado = ordenActual >= index && actual !== 35;
+            var activo = e.id === actual;
+            var cancelado = actual === 35 && e.id === 35;
+
+            var clase = '';
+            if (completado) clase = 'is-done';
+            if (activo) clase += ' is-active';
+            if (cancelado) clase += ' is-cancelled';
+
+            html += ''
+                + '<button type="button" class="orden-timeline__step ' + clase + '" onclick="AdminOrdenes.seleccionarEstadoDetalle(\'' + textoEstadoPorId(e.id) + '\')">'
+                + '  <span class="orden-timeline__dot"><i class="bi ' + e.icono + '"></i></span>'
+                + '  <span class="orden-timeline__label">' + e.texto + '</span>'
+                + '</button>';
+        });
+
+        return html;
+    }
+
     function cerrarDetalle() {
         $('#modalDetalleOrden').hide();
         $('#detalleOrdenBody').html('<tr><td colspan="4" class="table-empty">Cargando detalle...</td></tr>');
@@ -165,11 +279,15 @@
         var estadoTexto = ($('#detalleNuevoEstado').val() || '').toUpperCase();
 
         var estadoMap = {
-            "PENDIENTE": 1,
-            "COMPLETADA": 2
+            PENDIENTE: 30,
+            CONFIRMADO: 31,
+            EN_PROCESO: 32,
+            ENVIADO: 33,
+            ENTREGADO: 34,
+            CANCELADO: 35
         };
 
-        var estadoOrdenId = estadoMap[estadoTexto] || 1;
+        var estadoOrdenId = estadoMap[estadoTexto] || 30;
 
         if (!ordenId) {
             mostrarErrorDetalle('No se encontró el ID de la orden.');
@@ -205,12 +323,10 @@
                 }
 
                 var orden = ordenes.find(function (x) { return x.OrdenVentaId == ordenId; });
-                if (orden) {
-                    orden.EstadoOrdenId = estadoOrdenId;
-                }
+                if (orden) orden.EstadoOrdenId = estadoOrdenId;
 
                 $('#detalleEstadoOrden').html(badgeEstadoPorId(estadoOrdenId));
-                renderTabla();
+                renderCards();
                 ocultarErrorDetalle();
                 alert('Estado actualizado correctamente.');
             })
@@ -221,21 +337,30 @@
 
     function renderDetalleProductos(detalles) {
         if (!detalles || !detalles.length) {
-            $('#detalleOrdenBody').html('<tr><td colspan="4" class="table-empty">La orden no tiene productos.</td></tr>');
+            $('#detalleProductosTitulo').text('Productos (0)');
+            $('#detalleOrdenBody').html('<div class="table-empty">La orden no tiene productos.</div>');
             return;
         }
+
+        $('#detalleProductosTitulo').text('Productos (' + detalles.length + ')');
 
         var html = '';
 
         detalles.forEach(function (d) {
-            var nombreProd = nombreProducto(d.ProductoId);
+            var nombreProd = nombreProducto(d.ProductoId) || ('Producto #' + valor(d.ProductoId));
+            var cantidad = entero(d.Cantidad);
+            var precio = formatearMonto(d.PrecioUnitarioSnapshot);
+            var subtotal = formatearMonto(d.SubtotalLinea);
 
-            html += '<tr>';
-            html += '<td>' + valor(nombreProd || ('Producto #' + valor(d.ProductoId))) + '</td>';
-            html += '<td>' + valor(d.Cantidad) + '</td>';
-            html += '<td>Q ' + formatearMonto(d.PrecioUnitarioSnapshot) + '</td>';
-            html += '<td>Q ' + formatearMonto(d.SubtotalLinea) + '</td>';
-            html += '</tr>';
+            html += ''
+                + '<div class="orden-product-item">'
+                + '  <div class="orden-product-item__icon"><i class="bi bi-box-seam"></i></div>'
+                + '  <div class="orden-product-item__info">'
+                + '    <div class="orden-product-item__name">' + nombreProd + '</div>'
+                + '    <div class="orden-product-item__meta">Cantidad: ' + cantidad + ' &nbsp; · &nbsp; Precio unit: Q ' + precio + '</div>'
+                + '  </div>'
+                + '  <div class="orden-product-item__total">Q ' + subtotal + '</div>'
+                + '</div>';
         });
 
         $('#detalleOrdenBody').html(html);
@@ -247,23 +372,34 @@
         return item.NombreCompleto || ((item.Nombres || '') + ' ' + (item.Apellidos || '')).trim();
     }
 
+    function estadoConfig(id) {
+        id = entero(id);
+
+        var estados = {
+            30: { texto: 'Pendiente', clase: 'orden-badge--pendiente' },
+            31: { texto: 'Confirmado', clase: 'orden-badge--confirmado' },
+            32: { texto: 'En proceso', clase: 'orden-badge--proceso' },
+            33: { texto: 'Enviado', clase: 'orden-badge--proceso' },
+            34: { texto: 'Entregado', clase: 'orden-badge--entregado' },
+            35: { texto: 'Cancelado', clase: 'orden-badge--cancelado' }
+        };
+
+        return estados[id] || { texto: 'Sin estado', clase: 'orden-badge--pendiente' };
+    }
+
     function textoEstadoPorId(id) {
-        if (entero(id) === 2) return 'COMPLETADA';
+        id = entero(id);
+        if (id === 31) return 'CONFIRMADO';
+        if (id === 32) return 'EN_PROCESO';
+        if (id === 33) return 'ENVIADO';
+        if (id === 34) return 'ENTREGADO';
+        if (id === 35) return 'CANCELADO';
         return 'PENDIENTE';
     }
 
     function badgeEstadoPorId(id) {
-        id = entero(id);
-
-        if (id === 1) {
-            return '<span class="badge-stock badge-stock--warn">Pendiente</span>';
-        }
-
-        if (id === 2) {
-            return '<span class="badge-stock badge-stock--ok">Completada</span>';
-        }
-
-        return '<span class="badge-stock badge-stock--warn">Sin estado</span>';
+        var estado = estadoConfig(id);
+        return '<span class="orden-badge ' + estado.clase + '">' + estado.texto + '</span>';
     }
 
     function formatearMonto(valorMonto) {
@@ -329,6 +465,11 @@
     }
 
     window.AdminOrdenes = {
-        verDetalle: cargarDetalleOrden
+        verDetalle: cargarDetalleOrden,
+        seleccionarEstadoDetalle: function (estadoTexto) {
+            $('#detalleNuevoEstado').val(estadoTexto);
+        }
     };
+
+    window.filtrarEstado = filtrarEstado;
 })();

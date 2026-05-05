@@ -142,5 +142,5 @@ End Code
 
 
 @section scripts
-    <script src="~/Scripts/admin-inventario.js?v=13"></script>s
+    <script src="~/Scripts/admin-inventario.js?v=14"></script>
 End Section
