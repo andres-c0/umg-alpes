@@ -1,97 +1,90 @@
-@Code
-    ViewData("Title") = "Mis Tarjetas"
-    Layout = "~/Views/Shared/_PortalClientePerfilLayout.vbhtml"
-
-    Dim cliIdTexto As String = System.Convert.ToString(ViewData("CliId"))
+﻿@Code
+    ViewData("Title") = "Mis tarjetas"
+    Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 End Code
 
-<div class="pt-page" data-cli-id="@cliIdTexto">
-    <div class="pt-top">
-        <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pt-back">
-            <i class="bi bi-chevron-left"></i>
-        </a>
-
-        <div class="pt-title">MIS TARJETAS</div>
-
-        <div class="pt-empty"></div>
+<section class="pc-section pc-cards-page" id="tarjetasClientePage">
+    <div class="pc-hero pc-cards-hero">
+        <div>
+            <span class="pc-eyebrow">Pagos guardados</span>
+            <h1>Mis tarjetas</h1>
+            <p>Consulta, registra y administra tus tarjetas para comprar más rápido.</p>
+        </div>
+        <button type="button" class="pc-btn pc-btn-gold" id="btnAbrirTarjeta">
+            <i class="bi bi-plus-lg"></i>
+            Agregar tarjeta
+        </button>
     </div>
 
-    <div class="pt-content">
-        <div class="pt-cards-list" id="ptCardsList">
-            <div class="pt-card-wrapper">
-                <div class="pt-card pt-card-empty">
-                    <div class="pt-number">Cargando tarjetas...</div>
-                    <div class="pt-holder">Espera un momento mientras se consulta la base de datos.</div>
-                </div>
+    <div class="pc-card">
+        <div class="pc-card-header">
+            <div>
+                <span class="pc-eyebrow">Desde base de datos</span>
+                <h2>Tarjetas registradas</h2>
             </div>
+            <button type="button" class="pc-btn pc-btn-outline pc-btn-sm" id="btnActualizarTarjetas">
+                Actualizar
+            </button>
+        </div>
+
+        <div class="pc-payment-grid" id="tarjetasLista">
+            <div class="pc-loading-card">Cargando tarjetas...</div>
         </div>
     </div>
+</section>
 
-    <button type="button" class="pt-add-btn" id="btnAbrirAgregarTarjeta">
-        <i class="bi bi-plus-lg"></i>
-    </button>
+<div class="pc-modal-backdrop" id="tarjetaModal">
+    <div class="pc-modal pc-card-modal">
+        <button type="button" class="pc-modal-close" id="btnCerrarTarjeta" aria-label="Cerrar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <span class="pc-eyebrow">Nueva tarjeta</span>
+        <h2>Registrar método de pago</h2>
 
-    <div class="pt-overlay" id="ptOverlay">
-        <div class="pt-modal">
-            <div class="pt-modal-handle"></div>
-            <div class="pt-modal-title">Nueva tarjeta</div>
-
-            <form id="ptForm">
-                <div class="pt-field">
-                    <label>Numero de tarjeta</label>
-                    <input type="text" id="ptNumero" placeholder="0000 0000 0000 0000" />
-                </div>
-
-                <div class="pt-field">
-                    <label>Nombre del titular</label>
-                    <input type="text" id="ptTitular" placeholder="Nombre del titular" />
-                </div>
-
-                <div class="pt-field">
-                    <label>Marca</label>
-                    <select id="ptMarca" class="pt-select">
+        <form id="tarjetaForm" class="pc-form">
+            <div class="pc-form-grid">
+                <label class="pc-form-wide">
+                    <span>Titular</span>
+                    <input type="text" id="tarjetaTitular" required placeholder="Nombre como aparece en la tarjeta" />
+                </label>
+                <label class="pc-form-wide">
+                    <span>Número</span>
+                    <input type="text" id="tarjetaNumero" required maxlength="19" placeholder="0000 0000 0000 0000" />
+                </label>
+                <label>
+                    <span>Marca</span>
+                    <select id="tarjetaMarca">
                         <option value="VISA">VISA</option>
                         <option value="MASTERCARD">MASTERCARD</option>
                         <option value="AMEX">AMEX</option>
-                        <option value="TARJETA">OTRA</option>
+                        <option value="OTRA">OTRA</option>
                     </select>
-                </div>
+                </label>
+                <label>
+                    <span>Mes</span>
+                    <input type="number" id="tarjetaMes" min="1" max="12" required placeholder="12" />
+                </label>
+                <label>
+                    <span>Año</span>
+                    <input type="number" id="tarjetaAnio" min="2026" max="2050" required placeholder="2029" />
+                </label>
+                <label>
+                    <span>Alias</span>
+                    <input type="text" id="tarjetaAlias" placeholder="Principal" />
+                </label>
+                <label class="pc-check-line pc-form-wide">
+                    <input type="checkbox" id="tarjetaPredeterminada" />
+                    <span>Usar como tarjeta predeterminada</span>
+                </label>
+            </div>
 
-                <div class="pt-grid">
-                    <div class="pt-field">
-                        <label>Mes</label>
-                        <input type="text" id="ptMes" placeholder="MM" />
-                    </div>
-
-                    <div class="pt-field">
-                        <label>Anio</label>
-                        <input type="text" id="ptAnio" placeholder="AAAA" />
-                    </div>
-                </div>
-
-                <div class="pt-field">
-                    <label>Alias (opcional)</label>
-                    <input type="text" id="ptAlias" placeholder="Ej. Tarjeta personal" />
-                </div>
-
-                <div class="pt-switch-row">
-                    <span>Marcar como predeterminada</span>
-                    <label class="pt-switch">
-                        <input type="checkbox" id="ptPredeterminada" />
-                        <span class="pt-slider"></span>
-                    </label>
-                </div>
-
-                <button type="submit" class="pt-save">GUARDAR TARJETA</button>
-            </form>
-
-            <button type="button" class="pt-close" id="btnCerrarAgregarTarjeta">
-                <i class="bi bi-x-lg"></i>
+            <button type="submit" class="pc-btn pc-btn-primary pc-btn-full" id="btnGuardarTarjeta">
+                Registrar tarjeta
             </button>
-        </div>
+        </form>
     </div>
 </div>
 
-@section scripts
-    <script src="@Url.Content("~/Scripts/portal-tarjetas.js?v=3")"></script>
+@Section scripts
+    <script src="@Url.Content("~/Scripts/portal-tarjetas.js?v=16")"></script>
 End Section

@@ -8,14 +8,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var orderId = page.getAttribute('data-order-id');
     if (!orderId || orderId === '0') {
-        content.innerHTML = '<div class="trk-error">No se recibio el id de la orden.</div>';
+        content.innerHTML = '<div class="trk-error">No se recibió el id del pedido.</div>';
         return;
     }
 
     var endpoint = '/PortalCliente/ObtenerTrackingOrdenData?ordenVentaId=' + encodeURIComponent(orderId);
 
     function escapeHtml(value) {
-        return String(value || '')
+        return String(value === null || value === undefined ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function normalizarRespuesta(payload) {
         if (!payload) {
-            return { ok: false, data: null, message: 'Respuesta vacia del servidor.' };
+            return { ok: false, data: null, message: 'Respuesta vacía del servidor.' };
         }
 
         if (payload.ok !== undefined) {
@@ -58,7 +58,21 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'trk-step current';
         }
 
-        return 'trk-step';
+        return 'trk-step pending';
+    }
+
+    function iconoPaso(estadoPaso) {
+        var valor = String(estadoPaso || '').toLowerCase();
+
+        if (valor === 'done') {
+            return 'fa-check';
+        }
+
+        if (valor === 'current') {
+            return 'fa-truck-fast';
+        }
+
+        return 'fa-circle';
     }
 
     function render(data) {
@@ -71,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             htmlPasos += ''
                 + '<div class="' + escapeHtml(obtenerClasePaso(paso.EstadoPaso)) + '">'
-                + '  <div class="trk-dot"></div>'
+                + '  <div class="trk-dot"><i class="fa-solid ' + escapeHtml(iconoPaso(paso.EstadoPaso)) + '"></i></div>'
                 + '  <div class="trk-info">'
                 + '      <strong>' + escapeHtml(paso.Titulo || ('Paso ' + (i + 1))) + '</strong>'
                 + '      <small>' + escapeHtml(paso.Subtitulo || '') + '</small>'
@@ -80,28 +94,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (htmlPasos === '') {
-            htmlPasos = '<div class="trk-empty">No hay eventos de tracking disponibles para esta orden.</div>';
+            htmlPasos = '<div class="trk-empty">No hay eventos de seguimiento disponibles para este pedido.</div>';
         }
 
         content.innerHTML = ''
-            + '<div class="trk-header">'
-            + '  <div class="trk-order">' + escapeHtml(data.NumOrden || ('ORD-' + data.OrdenVentaId)) + '</div>'
-            + '  <div class="trk-code">' + escapeHtml(data.TrackingCodigo || 'Tracking no disponible') + '</div>'
-            + '</div>'
-            + '<div class="trk-boxes">'
-            + '  <div class="trk-mini-card">'
-            + '      <div class="trk-mini-title">Estado actual</div>'
-            + '      <div class="trk-mini-text">' + escapeHtml(data.EstadoUi || 'PENDIENTE') + '</div>'
+            + '<section class="trk-summary-new">'
+            + '  <div>'
+            + '      <span class="orders-kicker">Pedido</span>'
+            + '      <h2>' + escapeHtml(data.NumOrden || ('ORD-' + data.OrdenVentaId)) + '</h2>'
+            + '      <p>' + escapeHtml(data.TrackingCodigo || 'Tracking no disponible') + '</p>'
             + '  </div>'
-            + '  <div class="trk-mini-card">'
-            + '      <div class="trk-mini-title">Entrega estimada</div>'
-            + '      <div class="trk-mini-text">' + escapeHtml(data.FechaEntregaEstimadaTexto || 'No disponible') + '</div>'
+            + '  <div class="trk-status-card">'
+            + '      <span>Estado actual</span>'
+            + '      <strong>' + escapeHtml(data.EstadoUi || 'PENDIENTE') + '</strong>'
+            + '      <small>Entrega estimada: ' + escapeHtml(data.FechaEntregaEstimadaTexto || 'No disponible') + '</small>'
             + '  </div>'
-            + '</div>'
-            + '<div class="trk-section">'
-            + '  <div class="trk-section-title">Linea de tiempo</div>'
+            + '</section>'
+            + '<section class="trk-panel-new">'
+            + '  <div class="trk-section-title">Línea de tiempo</div>'
             + htmlPasos
-            + '</div>'
+            + '</section>'
             + '<div class="trk-actions">'
             + '  <a class="od-btn od-btn--ghost" href="/PortalCliente/MisOrdenes">Volver</a>'
             + '  <a class="od-btn od-btn--primary" href="/PortalCliente/DetalleOrden?id=' + encodeURIComponent(data.OrdenVentaId) + '">Ver detalle</a>'
@@ -117,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })
         .then(function (response) {
             if (!response.ok) {
-                throw new Error('No se pudo obtener la informacion de tracking.');
+                throw new Error('No se pudo obtener la información de seguimiento.');
             }
             return response.json();
         })
@@ -125,12 +137,12 @@ document.addEventListener('DOMContentLoaded', function () {
             var respuesta = normalizarRespuesta(payload);
 
             if (!respuesta.ok || !respuesta.data) {
-                throw new Error(respuesta.message || 'No se pudo obtener la informacion de tracking.');
+                throw new Error(respuesta.message || 'No se pudo obtener la información de seguimiento.');
             }
 
             render(respuesta.data);
         })
         .catch(function (error) {
-            content.innerHTML = '<div class="trk-error">' + escapeHtml(error.message || 'Ocurrio un error al cargar el tracking.') + '</div>';
+            content.innerHTML = '<div class="trk-error">' + escapeHtml(error.message || 'Ocurrió un error al cargar el seguimiento.') + '</div>';
         });
 });

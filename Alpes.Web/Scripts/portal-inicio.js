@@ -19,18 +19,6 @@
 
     var catalogoCompleto = [];
 
-    function formatoMonedaGTQ(valor) {
-        var numero = Number(valor || 0);
-        return 'Q' + numero.toFixed(2);
-    }
-
-    function setTexto(id, valor) {
-        var el = document.getElementById(id);
-        if (el) {
-            el.textContent = valor;
-        }
-    }
-
     if (!recomendacionesContainer || !catalogoContainer) {
         return;
     }
@@ -73,18 +61,145 @@
             };
         }
 
-        return {
-            ok: true,
-            data: payload,
-            message: ''
-        };
+        return { ok: true, data: payload, message: '' };
+    }
+
+    function mostrarToast(mensaje, tipo) {
+        var toast = document.createElement('div');
+        toast.className = 'pc-toast ' + (tipo === 'success' ? 'pc-toast--success' : 'pc-toast--error');
+        toast.textContent = mensaje || 'Operacion realizada.';
+        document.body.appendChild(toast);
+        window.setTimeout(function () { toast.classList.add('show'); }, 20);
+        window.setTimeout(function () {
+            toast.classList.remove('show');
+            window.setTimeout(function () { toast.remove(); }, 220);
+        }, 3200);
     }
 
     function renderEmpty(container, message) {
-        container.innerHTML = '<div class="pi-empty-card"><i class="bi bi-box-seam"></i><span>' + escapeHtml(message) + '</span></div>';
+        container.innerHTML = '<div class="pi-empty-card">' + escapeHtml(message) + '</div>';
     }
 
-    function cargarStatsCliente() {
+    function getProductoDesdeItem(item) {
+        return item && item.Producto ? item.Producto : (item || {});
+    }
+
+    function valorProducto(producto, nombres, defecto) {
+        var i;
+        for (i = 0; i < nombres.length; i += 1) {
+            if (producto[nombres[i]] !== undefined && producto[nombres[i]] !== null && producto[nombres[i]] !== '') {
+                return producto[nombres[i]];
+            }
+        }
+        return defecto;
+    }
+
+    function formatearMoneda(valor) {
+        var numero = Number(valor || 0);
+        return 'Q' + numero.toFixed(2);
+    }
+
+    function imagenValida(url) {
+        var texto = String(url || '').trim();
+        if (texto === '') { return false; }
+        return texto.indexOf('http://') === 0 || texto.indexOf('https://') === 0 || texto.indexOf('/') === 0 || texto.indexOf('data:image') === 0;
+    }
+
+    function construirImagen(producto) {
+        var imagen = valorProducto(producto, ['ImagenUrl', 'imagenUrl', 'Imagen', 'UrlImagen'], '');
+        if (imagenValida(imagen)) {
+            return '<img src="' + escapeHtml(imagen) + '" alt="' + escapeHtml(producto.Nombre || 'Producto') + '" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'sin-imagen\');">';
+        }
+        return '<div class="pi-no-image"><i class="bi bi-lamp"></i><span>Muebles de los Alpes</span></div>';
+    }
+
+    function construirCard(item, mostrarScore) {
+        var producto = getProductoDesdeItem(item);
+        var descripcion = producto.Descripcion || producto.Tipo || 'Mueble artesanal guatemalteco con detalles de calidad.';
+        var productoId = producto.ProductoId || producto.PRODUCTO_ID || 0;
+        var precio = valorProducto(producto, ['PrecioActual', 'Precio', 'PrecioUnitario', 'precio'], 0);
+        var stock = valorProducto(producto, ['StockDisponible', 'Stock', 'Existencia'], null);
+        var categoria = producto.CategoriaNombre || producto.Categoria || producto.Tipo || 'Producto';
+        var esFavorito = item.EsFavorito === true || item.EsFavorito === 1 || item.EsFavorito === '1';
+        var listaDeseosId = item.ListaDeseosId || 0;
+
+        var scoreHtml = '';
+        if (mostrarScore && item.Score !== undefined && item.Score !== null) {
+            scoreHtml = '<span><i class="bi bi-stars"></i> Afinidad ' + escapeHtml(item.Score) + '</span>';
+        }
+
+        return ''
+            + '<article class="pi-card" data-producto-id="' + escapeHtml(productoId) + '">'
+            + '  <div class="pi-card-image">'
+            + '      <button type="button" class="pi-heart-btn ' + (esFavorito ? 'active' : '') + '" data-action="' + (esFavorito ? 'quitar' : 'agregar') + '" data-id="' + escapeHtml(productoId) + '" data-lista-deseos-id="' + escapeHtml(listaDeseosId) + '">'
+            + '          <i class="bi ' + (esFavorito ? 'bi-heart-fill' : 'bi-heart') + '"></i>'
+            + '      </button>'
+            + construirImagen(producto)
+            + '  </div>'
+            + '  <div class="pi-card-body">'
+            + '      <div class="pi-category">' + escapeHtml(categoria) + '</div>'
+            + '      <h3 class="pi-card-title">' + escapeHtml(producto.Nombre || 'Producto sin nombre') + '</h3>'
+            + '      <p class="pi-card-desc">' + escapeHtml(descripcion) + '</p>'
+            + '      <div class="pi-card-meta">'
+            + (producto.Referencia ? '<span><i class="bi bi-tag"></i>' + escapeHtml(producto.Referencia) + '</span>' : '')
+            + (producto.Material ? '<span>' + escapeHtml(producto.Material) + '</span>' : '')
+            + (producto.Color ? '<span>' + escapeHtml(producto.Color) + '</span>' : '')
+            + scoreHtml
+            + '      </div>'
+            + '      <div class="pi-price-row">'
+            + '          <strong>' + formatearMoneda(precio) + '</strong>'
+            + '          <span>' + (stock !== null ? escapeHtml(stock) + ' disp.' : 'Disponible') + '</span>'
+            + '      </div>'
+            + '      <div class="pi-card-actions">'
+            + '          <a class="pi-detail-btn" href="/PortalCliente/DetalleProducto/' + escapeHtml(productoId) + '">Ver detalle</a>'
+            + '          <button type="button" class="pi-cart-btn" data-action="carrito" data-id="' + escapeHtml(productoId) + '"><i class="bi bi-cart-plus"></i> Agregar</button>'
+            + '      </div>'
+            + '  </div>'
+            + '</article>';
+    }
+
+    function renderCards(container, items, mostrarScore, emptyText) {
+        if (!items || !items.length) {
+            renderEmpty(container, emptyText);
+            return;
+        }
+        container.innerHTML = items.map(function (item) { return construirCard(item, mostrarScore); }).join('');
+    }
+
+    function cargarRecomendados() {
+        fetch(endpointRecomendados, { method: 'GET', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) { return response.json(); })
+            .then(function (payload) {
+                var respuesta = normalizarRespuesta(payload);
+                if (!respuesta.ok) { throw new Error(respuesta.message || 'No se pudieron cargar las recomendaciones.'); }
+                renderCards(recomendacionesContainer, respuesta.data || [], true, 'Aun no hay productos recomendados disponibles.');
+            })
+            .catch(function (error) { renderEmpty(recomendacionesContainer, error.message || 'Ocurrio un error al consultar las recomendaciones.'); });
+    }
+
+    function cargarCatalogo() {
+        fetch(endpointCatalogo, { method: 'GET', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) { return response.json(); })
+            .then(function (payload) {
+                var respuesta = normalizarRespuesta(payload);
+                if (!respuesta.ok) { throw new Error(respuesta.message || 'No se pudo obtener el catalogo.'); }
+                catalogoCompleto = respuesta.data || [];
+                cargarOpcionesFiltros(catalogoCompleto);
+                aplicarFiltrosLocales();
+            })
+            .catch(function (error) { renderEmpty(catalogoContainer, error.message || 'Ocurrio un error al cargar el catalogo.'); });
+    }
+
+
+    function setText(id, value) {
+        var el = document.getElementById(id);
+        if (el) { el.textContent = String(value); }
+    }
+
+    function cargarEstadisticasInicio() {
+        var totalEl = document.getElementById('ciPedidosTotal');
+        if (!totalEl) { return; }
+
         fetch(endpointOrdenes, {
             method: 'GET',
             credentials: 'same-origin',
@@ -93,163 +208,32 @@
             .then(function (response) { return response.ok ? response.json() : null; })
             .then(function (payload) {
                 var respuesta = normalizarRespuesta(payload);
-                var ordenes = respuesta.ok && respuesta.data ? respuesta.data : [];
-                var total = 0;
+                var lista = respuesta.ok && Array.isArray(respuesta.data) ? respuesta.data : [];
+                var total = lista.length;
                 var activos = 0;
                 var entregados = 0;
-                var gastado = 0;
+                var comprado = 0;
 
-                ordenes.forEach(function (o) {
-                    var estado = String(o.EstadoUi || o.estadoUi || '').toUpperCase();
-                    total += 1;
-                    gastado += Number(o.Total || o.total || 0);
+                lista.forEach(function (item) {
+                    var estado = String(item.EstadoUi || item.Estado || '').toUpperCase();
+                    comprado += Number(item.Total || 0);
                     if (estado === 'ENTREGADA' || estado === 'ENTREGADO') {
                         entregados += 1;
-                    }
-                    if (estado !== 'ENTREGADA' && estado !== 'ENTREGADO' && estado !== 'CANCELADA' && estado !== 'CANCELADO') {
+                    } else if (estado !== 'CANCELADA' && estado !== 'CANCELADO') {
                         activos += 1;
                     }
                 });
 
-                setTexto('ciStatPedidos', String(total));
-                setTexto('ciStatActivos', String(activos));
-                setTexto('ciStatEntregados', String(entregados));
-                setTexto('ciStatGastado', formatoMonedaGTQ(gastado));
+                setText('ciPedidosTotal', total);
+                setText('ciPedidosActivos', activos);
+                setText('ciPedidosEntregados', entregados);
+                setText('ciTotalComprado', formatearMoneda(comprado));
             })
             .catch(function () {
-                setTexto('ciStatPedidos', '0');
-                setTexto('ciStatActivos', '0');
-                setTexto('ciStatEntregados', '0');
-                setTexto('ciStatGastado', 'Q0.00');
-            });
-    }
-
-    function getProductoDesdeItem(item) {
-        return item && item.Producto ? item.Producto : {};
-    }
-
-    function construirCard(item, mostrarScore) {
-        var producto = getProductoDesdeItem(item);
-        var imagen = producto.ImagenUrl ? escapeHtml(producto.ImagenUrl) : '';
-        var descripcion = producto.Descripcion || producto.Tipo || 'Producto disponible';
-        var productoId = producto.ProductoId || 0;
-        var esFavorito = item.EsFavorito === true || item.EsFavorito === 1 || item.EsFavorito === '1';
-        var listaDeseosId = item.ListaDeseosId || 0;
-        var textoBoton = esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos';
-        var claseBoton = esFavorito ? 'pi-fav-btn pi-fav-btn--active' : 'pi-fav-btn';
-
-        var scoreHtml = '';
-        if (mostrarScore && item.Score !== undefined && item.Score !== null) {
-            scoreHtml = '<div class="pi-score">Afinidad: ' + escapeHtml(item.Score) + '</div>';
-        }
-
-        return ''
-            + '<div class="pi-card" data-producto-id="' + escapeHtml(productoId) + '">'
-            + '  <div class="pi-card-image">'
-            + (imagen !== ''
-                ? '<img src="' + imagen + '" alt="' + escapeHtml(producto.Nombre || 'Producto') + '">'
-                : '<div class="pi-no-image"><i class="bi bi-lamp"></i><span>Sin imagen</span></div>')
-            + '  </div>'
-            + '  <div class="pi-card-body">'
-            + '      <div class="pi-card-title">' + escapeHtml(producto.Nombre || 'Producto sin nombre') + '</div>'
-            + '      <div class="pi-card-desc">' + escapeHtml(descripcion) + '</div>'
-            + '      <div class="pi-card-meta">'
-            + '          <span>' + escapeHtml(producto.Referencia || '') + '</span>'
-            + '          <span>' + escapeHtml(producto.Material || '') + '</span>'
-            + '          <span>' + escapeHtml(producto.Color || '') + '</span>'
-            + '      </div>'
-            + scoreHtml
-            + '      <div class="pi-card-actions">'
-            + '          <a class="pi-detail-btn" href="/PortalCliente/DetalleProducto/' + escapeHtml(productoId) + '">Ver detalle</a>'
-            + '          <button type="button" class="pi-cart-btn" data-action="carrito" data-id="' + escapeHtml(productoId) + '"><i class="bi bi-cart-plus"></i> Agregar</button>'
-            + '          <button type="button"'
-            + '                  class="' + claseBoton + '"'
-            + '                  data-action="' + (esFavorito ? 'quitar' : 'agregar') + '"'
-            + '                  data-id="' + escapeHtml(productoId) + '"'
-            + '                  data-lista-deseos-id="' + escapeHtml(listaDeseosId) + '">'
-            + textoBoton
-            + '          </button>'
-            + '      </div>'
-            + '  </div>'
-            + '</div>';
-    }
-
-    function renderCards(container, items, mostrarScore, emptyText) {
-        if (!items || !items.length) {
-            renderEmpty(container, emptyText);
-            return;
-        }
-
-        var html = '';
-        var i;
-
-        for (i = 0; i < items.length; i += 1) {
-            html += construirCard(items[i], mostrarScore);
-        }
-
-        container.innerHTML = html;
-    }
-
-    function cargarRecomendados() {
-        fetch(endpointRecomendados, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudieron cargar las recomendaciones.');
-                }
-                return response.json();
-            })
-            .then(function (payload) {
-                var respuesta = normalizarRespuesta(payload);
-
-                if (!respuesta.ok) {
-                    throw new Error(respuesta.message || 'No se pudieron cargar las recomendaciones.');
-                }
-
-                renderCards(
-                    recomendacionesContainer,
-                    respuesta.data || [],
-                    true,
-                    'Aun no hay productos recomendados disponibles.'
-                );
-            })
-            .catch(function (error) {
-                renderEmpty(recomendacionesContainer, error.message || 'Ocurrio un error al consultar las recomendaciones.');
-            });
-    }
-
-    function cargarCatalogo() {
-        fetch(endpointCatalogo, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudo obtener el catalogo.');
-                }
-                return response.json();
-            })
-            .then(function (payload) {
-                var respuesta = normalizarRespuesta(payload);
-
-                if (!respuesta.ok) {
-                    throw new Error(respuesta.message || 'No se pudo obtener el catalogo.');
-                }
-
-                catalogoCompleto = respuesta.data || [];
-                cargarOpcionesFiltros(catalogoCompleto);
-                aplicarFiltrosLocales();
-            })
-            .catch(function (error) {
-                renderEmpty(catalogoContainer, error.message || 'Ocurrio un error al cargar el catalogo.');
+                setText('ciPedidosTotal', '0');
+                setText('ciPedidosActivos', '0');
+                setText('ciPedidosEntregados', '0');
+                setText('ciTotalComprado', 'Q0.00');
             });
     }
 
@@ -261,73 +245,29 @@
     }
 
     function cargarOpcionesFiltros(items) {
-        if (!filtroCategoria || !filtroTipo || !filtroColor || !filtroMaterial) {
-            return;
-        }
-
-        var categorias = {};
-        var tipos = {};
-        var colores = {};
-        var materiales = {};
-        var i;
-
+        if (!filtroCategoria || !filtroTipo || !filtroColor || !filtroMaterial) { return; }
+        var categorias = {}, tipos = {}, colores = {}, materiales = {};
         filtroCategoria.innerHTML = '<option value="">Todas las categorias</option>';
         filtroTipo.innerHTML = '<option value="">Todos los tipos</option>';
         filtroColor.innerHTML = '<option value="">Todos los colores</option>';
         filtroMaterial.innerHTML = '<option value="">Todos los materiales</option>';
-
-        for (i = 0; i < items.length; i += 1) {
-            var producto = getProductoDesdeItem(items[i]);
-
-            if (producto.CategoriaId !== undefined && producto.CategoriaId !== null && producto.CategoriaId !== '') {
-                categorias[String(producto.CategoriaId)] = 'Categoria ' + producto.CategoriaId;
-            }
-
-            if (String(producto.Tipo || '').trim() !== '') {
-                tipos[String(producto.Tipo)] = String(producto.Tipo);
-            }
-
-            if (String(producto.Color || '').trim() !== '') {
-                colores[String(producto.Color)] = String(producto.Color);
-            }
-
-            if (String(producto.Material || '').trim() !== '') {
-                materiales[String(producto.Material)] = String(producto.Material);
-            }
-        }
-
-        Object.keys(categorias).sort().forEach(function (key) {
-            agregarOpcion(filtroCategoria, key, categorias[key]);
+        items.forEach(function (item) {
+            var p = getProductoDesdeItem(item);
+            if (p.CategoriaId) { categorias[String(p.CategoriaId)] = p.CategoriaNombre || ('Categoria ' + p.CategoriaId); }
+            if (String(p.Tipo || '').trim() !== '') { tipos[String(p.Tipo)] = String(p.Tipo); }
+            if (String(p.Color || '').trim() !== '') { colores[String(p.Color)] = String(p.Color); }
+            if (String(p.Material || '').trim() !== '') { materiales[String(p.Material)] = String(p.Material); }
         });
-
-        Object.keys(tipos).sort().forEach(function (key) {
-            agregarOpcion(filtroTipo, key, tipos[key]);
-        });
-
-        Object.keys(colores).sort().forEach(function (key) {
-            agregarOpcion(filtroColor, key, colores[key]);
-        });
-
-        Object.keys(materiales).sort().forEach(function (key) {
-            agregarOpcion(filtroMaterial, key, materiales[key]);
-        });
+        Object.keys(categorias).sort().forEach(function (key) { agregarOpcion(filtroCategoria, key, categorias[key]); });
+        Object.keys(tipos).sort().forEach(function (key) { agregarOpcion(filtroTipo, key, tipos[key]); });
+        Object.keys(colores).sort().forEach(function (key) { agregarOpcion(filtroColor, key, colores[key]); });
+        Object.keys(materiales).sort().forEach(function (key) { agregarOpcion(filtroMaterial, key, materiales[key]); });
     }
 
     function coincideBusqueda(producto, texto) {
         var q = normalizarTexto(texto);
-        if (q === '') {
-            return true;
-        }
-
-        var fuente = [
-            producto.Nombre,
-            producto.Referencia,
-            producto.Descripcion,
-            producto.Tipo,
-            producto.Material,
-            producto.Color
-        ].join(' ');
-
+        if (q === '') { return true; }
+        var fuente = [producto.Nombre, producto.Referencia, producto.Descripcion, producto.Tipo, producto.Material, producto.Color].join(' ');
         return normalizarTexto(fuente).indexOf(q) >= 0;
     }
 
@@ -337,197 +277,95 @@
         var tipo = filtroTipo ? filtroTipo.value : '';
         var color = filtroColor ? filtroColor.value : '';
         var material = filtroMaterial ? filtroMaterial.value : '';
+        var filtrados = catalogoCompleto.filter(function (item) {
+            var p = getProductoDesdeItem(item);
+            return coincideBusqueda(p, q)
+                && (categoria === '' || String(p.CategoriaId) === String(categoria))
+                && (tipo === '' || normalizarTexto(p.Tipo) === normalizarTexto(tipo))
+                && (color === '' || normalizarTexto(p.Color) === normalizarTexto(color))
+                && (material === '' || normalizarTexto(p.Material) === normalizarTexto(material));
+        });
+        renderCards(catalogoContainer, filtrados, false, 'No se encontraron productos con los filtros seleccionados.');
+    }
 
-        var filtrados = [];
-        var i;
-
-        for (i = 0; i < catalogoCompleto.length; i += 1) {
-            var item = catalogoCompleto[i];
-            var producto = getProductoDesdeItem(item);
-
-            if (!coincideBusqueda(producto, q)) {
-                continue;
-            }
-
-            if (categoria !== '' && String(producto.CategoriaId) !== String(categoria)) {
-                continue;
-            }
-
-            if (tipo !== '' && normalizarTexto(producto.Tipo) !== normalizarTexto(tipo)) {
-                continue;
-            }
-
-            if (color !== '' && normalizarTexto(producto.Color) !== normalizarTexto(color)) {
-                continue;
-            }
-
-            if (material !== '' && normalizarTexto(producto.Material) !== normalizarTexto(material)) {
-                continue;
-            }
-
-            filtrados.push(item);
+    function notificarCarritoActualizado() {
+        try {
+            document.dispatchEvent(new CustomEvent('pc:cart-updated'));
+        } catch (e) {
+            var evt = document.createEvent('Event');
+            evt.initEvent('pc:cart-updated', true, true);
+            document.dispatchEvent(evt);
         }
-
-        renderCards(
-            catalogoContainer,
-            filtrados,
-            false,
-            'No se encontraron productos con los filtros seleccionados.'
-        );
     }
 
     function postJson(url, payload) {
         return fetch(url, {
             method: 'POST',
             credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+            headers: { 'Content-Type': 'application/json; charset=utf-8', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify(payload)
         })
             .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudo procesar la solicitud.');
-                }
-                return response.json();
-            })
-            .then(function (payloadRespuesta) {
-                var respuesta = normalizarRespuesta(payloadRespuesta);
-
-                if (!respuesta.ok) {
-                    throw new Error(respuesta.message || 'No se pudo procesar la solicitud.');
-                }
-
-                return respuesta;
+                return response.text().then(function (text) {
+                    var data = null;
+                    try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+                    var respuesta = normalizarRespuesta(data);
+                    if (!response.ok || !respuesta.ok) {
+                        throw new Error(respuesta.message || respuesta.mensaje || text || 'No se pudo procesar la solicitud.');
+                    }
+                    return respuesta;
+                });
             });
     }
 
-    function agregarFavorito(productoId) {
-        return postJson(endpointAgregarFavorito, { productoId: Number(productoId) });
-    }
+    function refrescarTodo() { cargarCatalogo(); cargarRecomendados(); }
 
-    function quitarFavorito(listaDeseosId, productoId) {
-        var payload = {};
-
-        if (listaDeseosId && Number(listaDeseosId) > 0) {
-            payload.listaDeseosId = Number(listaDeseosId);
-        } else {
-            payload.productoId = Number(productoId);
-        }
-
-        return postJson(endpointQuitarFavorito, payload);
-    }
-
-    function agregarAlCarrito(productoId) {
-        return postJson(endpointAgregarCarrito, {
-            productoId: Number(productoId),
-            cantidad: 1
-        });
-    }
-
-    function refrescarTodo() {
-        cargarCatalogo();
-        cargarRecomendados();
-    }
-
-    function manejarClickFavorito(e) {
+    function manejarClick(e) {
         var button = e.target.closest('button[data-action]');
-        if (!button) {
-            return;
-        }
-
+        if (!button) { return; }
         var action = button.getAttribute('data-action');
         var productoId = button.getAttribute('data-id');
         var listaDeseosId = button.getAttribute('data-lista-deseos-id');
-
-        if (!productoId) {
-            return;
-        }
-
+        if (!productoId) { return; }
         button.disabled = true;
-        button.textContent = 'Procesando...';
-
-        var promesa = null;
-
+        var promesa;
         if (action === 'agregar') {
-            promesa = agregarFavorito(productoId);
+            promesa = postJson(endpointAgregarFavorito, { productoId: Number(productoId) });
         } else if (action === 'quitar') {
-            promesa = quitarFavorito(listaDeseosId, productoId);
+            promesa = postJson(endpointQuitarFavorito, listaDeseosId && Number(listaDeseosId) > 0 ? { listaDeseosId: Number(listaDeseosId) } : { productoId: Number(productoId) });
         } else if (action === 'carrito') {
-            promesa = agregarAlCarrito(productoId);
-        }
-
-        if (!promesa) {
+            promesa = postJson(endpointAgregarCarrito, { productoId: Number(productoId), cantidad: 1 });
+        } else {
             button.disabled = false;
             return;
         }
-
-        promesa
-            .then(function (respuesta) {
-                alert(respuesta.message || 'Operacion realizada correctamente.');
-                refrescarTodo();
-            })
-            .catch(function (error) {
-                alert(error.message || 'No se pudo completar la operacion.');
-            })
-            .finally(function () {
-                button.disabled = false;
-            });
+        promesa.then(function (r) {
+            mostrarToast(r.message || 'Operacion realizada correctamente.', 'success');
+            if (action === 'carrito') { notificarCarritoActualizado(); }
+            if (action !== 'carrito') { refrescarTodo(); }
+        }).catch(function (err) {
+            mostrarToast(err.message || 'No se pudo completar la operacion.', 'error');
+        }).finally(function () { button.disabled = false; });
     }
 
-    if (btnBuscar) {
-        btnBuscar.addEventListener('click', aplicarFiltrosLocales);
-    }
-
+    if (btnBuscar) { btnBuscar.addEventListener('click', aplicarFiltrosLocales); }
     if (btnLimpiar) {
         btnLimpiar.addEventListener('click', function () {
-            if (inputBuscar) {
-                inputBuscar.value = '';
-            }
-            if (filtroCategoria) {
-                filtroCategoria.value = '';
-            }
-            if (filtroTipo) {
-                filtroTipo.value = '';
-            }
-            if (filtroColor) {
-                filtroColor.value = '';
-            }
-            if (filtroMaterial) {
-                filtroMaterial.value = '';
-            }
-
+            if (inputBuscar) { inputBuscar.value = ''; }
+            if (filtroCategoria) { filtroCategoria.value = ''; }
+            if (filtroTipo) { filtroTipo.value = ''; }
+            if (filtroColor) { filtroColor.value = ''; }
+            if (filtroMaterial) { filtroMaterial.value = ''; }
             aplicarFiltrosLocales();
         });
     }
+    if (inputBuscar) { inputBuscar.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); aplicarFiltrosLocales(); } }); }
+    [filtroCategoria, filtroTipo, filtroColor, filtroMaterial].forEach(function (select) { if (select) { select.addEventListener('change', aplicarFiltrosLocales); } });
 
-    if (inputBuscar) {
-        inputBuscar.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                aplicarFiltrosLocales();
-            }
-        });
-    }
+    recomendacionesContainer.addEventListener('click', manejarClick);
+    catalogoContainer.addEventListener('click', manejarClick);
 
-    if (filtroCategoria) {
-        filtroCategoria.addEventListener('change', aplicarFiltrosLocales);
-    }
-    if (filtroTipo) {
-        filtroTipo.addEventListener('change', aplicarFiltrosLocales);
-    }
-    if (filtroColor) {
-        filtroColor.addEventListener('change', aplicarFiltrosLocales);
-    }
-    if (filtroMaterial) {
-        filtroMaterial.addEventListener('change', aplicarFiltrosLocales);
-    }
-
-    recomendacionesContainer.addEventListener('click', manejarClickFavorito);
-    catalogoContainer.addEventListener('click', manejarClickFavorito);
-
-    cargarStatsCliente();
     cargarCatalogo();
     cargarRecomendados();
+    cargarEstadisticasInicio();
 });

@@ -1,80 +1,85 @@
-document.addEventListener('DOMContentLoaded', function () {
-    var page = document.getElementById('cfgPage');
-    var chkNotificaciones = document.getElementById('cfgNotificaciones');
-    var chkModoOscuro = document.getElementById('cfgModoOscuro');
-    var idiomaBtn = document.getElementById('cfgIdiomaBtn');
-    var idiomaTexto = document.getElementById('cfgIdiomaTexto');
-    var privacidadBtn = document.getElementById('cfgPrivacidadBtn');
-    var message = document.getElementById('cfgMessage');
+(function () {
+    'use strict';
 
-    if (!page) return;
+    function $(id) { return document.getElementById(id); }
+    var page = $('configuracionCliente');
+    var chkNotificaciones = $('cfgNotificaciones');
+    var chkModoOscuro = $('cfgModoOscuro');
+    var idiomaBtn = $('cfgIdiomaBtn');
+    var idiomaTexto = $('cfgIdiomaTexto');
+    var privacidadBtn = $('cfgPrivacidadBtn');
+    var overlayIdioma = $('cfgOverlayIdioma');
+    var overlayPrivacidad = $('cfgOverlayPrivacidad');
+    var cerrarIdioma = $('cfgCerrarIdioma');
+    var cerrarPrivacidad = $('cfgCerrarPrivacidad');
+    var aceptarPrivacidad = $('cfgAceptarPrivacidad');
 
-    function showMessage(text) {
-        if (!message) return;
-        message.textContent = text;
-        message.classList.add('show');
-
-        setTimeout(function () {
-            message.classList.remove('show');
-        }, 2500);
-    }
-
-    var savedNotifications = localStorage.getItem('cfg_notificaciones');
-    var savedDarkMode = localStorage.getItem('cfg_modo_oscuro');
-    var savedLanguage = localStorage.getItem('cfg_idioma');
-
-    if (savedNotifications !== null && chkNotificaciones) {
-        chkNotificaciones.checked = savedNotifications === 'true';
-    }
-
-    if (savedDarkMode !== null && chkModoOscuro) {
-        chkModoOscuro.checked = savedDarkMode === 'true';
-    }
-
-    if (savedLanguage && idiomaTexto) {
-        idiomaTexto.textContent = savedLanguage;
+    function toast(message, type) {
+        var existing = document.querySelector('.pc-toast');
+        if (existing) existing.remove();
+        var el = document.createElement('div');
+        el.className = 'pc-toast ' + (type === 'error' ? 'pc-toast-error' : 'pc-toast-success');
+        el.textContent = message;
+        document.body.appendChild(el);
+        setTimeout(function () { el.classList.add('show'); }, 10);
+        setTimeout(function () { el.classList.remove('show'); }, 2300);
+        setTimeout(function () { el.remove(); }, 2700);
     }
 
     function applyDarkMode() {
-        if (!chkModoOscuro) return;
+        if (!page || !chkModoOscuro) return;
+        page.classList.toggle('pc-config-dark', chkModoOscuro.checked);
+    }
 
-        if (chkModoOscuro.checked) {
-            page.classList.add('dark');
-        } else {
-            page.classList.remove('dark');
+    function openModal(modal) { if (modal) modal.classList.add('show'); }
+    function closeModal(modal) { if (modal) modal.classList.remove('show'); }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var savedNotifications = localStorage.getItem('pc_cfg_notificaciones');
+        var savedDarkMode = localStorage.getItem('pc_cfg_modo_oscuro');
+        var savedLanguage = localStorage.getItem('pc_cfg_idioma');
+
+        if (savedNotifications !== null && chkNotificaciones) chkNotificaciones.checked = savedNotifications === 'true';
+        if (savedDarkMode !== null && chkModoOscuro) chkModoOscuro.checked = savedDarkMode === 'true';
+        if (savedLanguage && idiomaTexto) idiomaTexto.textContent = savedLanguage;
+        applyDarkMode();
+
+        if (chkNotificaciones) {
+            chkNotificaciones.addEventListener('change', function () {
+                localStorage.setItem('pc_cfg_notificaciones', chkNotificaciones.checked);
+                toast(chkNotificaciones.checked ? 'Notificaciones activadas' : 'Notificaciones desactivadas');
+            });
         }
-    }
 
-    applyDarkMode();
+        if (chkModoOscuro) {
+            chkModoOscuro.addEventListener('change', function () {
+                localStorage.setItem('pc_cfg_modo_oscuro', chkModoOscuro.checked);
+                applyDarkMode();
+                toast(chkModoOscuro.checked ? 'Modo oscuro activado' : 'Modo oscuro desactivado');
+            });
+        }
 
-    if (chkNotificaciones) {
-        chkNotificaciones.addEventListener('change', function () {
-            localStorage.setItem('cfg_notificaciones', chkNotificaciones.checked);
-            showMessage(chkNotificaciones.checked ? 'Notificaciones activadas' : 'Notificaciones desactivadas');
+        if (idiomaBtn) idiomaBtn.addEventListener('click', function () { openModal(overlayIdioma); });
+        if (privacidadBtn) privacidadBtn.addEventListener('click', function () { openModal(overlayPrivacidad); });
+        if (cerrarIdioma) cerrarIdioma.addEventListener('click', function () { closeModal(overlayIdioma); });
+        if (cerrarPrivacidad) cerrarPrivacidad.addEventListener('click', function () { closeModal(overlayPrivacidad); });
+        if (aceptarPrivacidad) aceptarPrivacidad.addEventListener('click', function () { closeModal(overlayPrivacidad); });
+
+        document.querySelectorAll('.pc-modal-option').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var idioma = btn.getAttribute('data-idioma') || 'EspaÃ±ol';
+                if (idiomaTexto) idiomaTexto.textContent = idioma;
+                localStorage.setItem('pc_cfg_idioma', idioma);
+                closeModal(overlayIdioma);
+                toast('Idioma cambiado a ' + idioma);
+            });
         });
-    }
 
-    if (chkModoOscuro) {
-        chkModoOscuro.addEventListener('change', function () {
-            localStorage.setItem('cfg_modo_oscuro', chkModoOscuro.checked);
-            applyDarkMode();
-            showMessage(chkModoOscuro.checked ? 'Modo oscuro activado' : 'Modo oscuro desactivado');
+        [overlayIdioma, overlayPrivacidad].forEach(function (modal) {
+            if (!modal) return;
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) closeModal(modal);
+            });
         });
-    }
-
-    if (idiomaBtn && idiomaTexto) {
-        idiomaBtn.addEventListener('click', function () {
-            var current = idiomaTexto.textContent.trim();
-            var next = current === 'Español' ? 'Inglés' : 'Español';
-            idiomaTexto.textContent = next;
-            localStorage.setItem('cfg_idioma', next);
-            showMessage('Idioma cambiado a ' + next);
-        });
-    }
-
-    if (privacidadBtn) {
-        privacidadBtn.addEventListener('click', function () {
-            showMessage('Opciones de privacidad disponibles próximamente');
-        });
-    }
-});
+    });
+}());

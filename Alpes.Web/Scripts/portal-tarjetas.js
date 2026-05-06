@@ -1,320 +1,223 @@
-document.addEventListener('DOMContentLoaded', function () {
-    var btnAbrir = document.getElementById('btnAbrirAgregarTarjeta');
-    var btnCerrar = document.getElementById('btnCerrarAgregarTarjeta');
-    var overlay = document.getElementById('ptOverlay');
-    var form = document.getElementById('ptForm');
-    var cardsList = document.getElementById('ptCardsList');
+(function () {
+    'use strict';
 
-    var inputTitular = document.getElementById('ptTitular');
-    var inputNumero = document.getElementById('ptNumero');
-    var inputMarca = document.getElementById('ptMarca');
-    var inputMes = document.getElementById('ptMes');
-    var inputAnio = document.getElementById('ptAnio');
-    var inputAlias = document.getElementById('ptAlias');
-    var inputPredeterminada = document.getElementById('ptPredeterminada');
-
-    var endpointListar = '/PortalCliente/ObtenerTarjetasData';
-    var endpointCrear = '/PortalCliente/CrearTarjetaData';
-    var endpointPredeterminada = '/PortalCliente/MarcarTarjetaPredeterminadaData';
-    var endpointDesactivar = '/PortalCliente/DesactivarTarjetaData';
-
-    if (!btnAbrir || !overlay || !form || !cardsList) {
-        return;
-    }
-
-    function abrirModal() {
-        overlay.classList.add('show');
-    }
-
-    function cerrarModal() {
-        overlay.classList.remove('show');
-    }
-
-    function setLoading(loading) {
-        var submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = loading;
-            submitBtn.textContent = loading ? 'GUARDANDO...' : 'GUARDAR';
-        }
-    }
+    function $(id) { return document.getElementById(id); }
 
     function escapeHtml(value) {
-        return String(value || '')
+        return String(value === null || value === undefined ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+            .replace(/'/g, '&#039;');
     }
 
-    function normalizarRespuesta(payload) {
-        if (!payload) {
-            return { ok: false, data: null, message: 'Respuesta vacía del servidor.' };
-        }
-
-        if (payload.ok !== undefined) {
-            return {
-                ok: payload.ok === true,
-                data: payload.data || null,
-                message: payload.message || payload.mensaje || ''
-            };
-        }
-
-        if (payload.success !== undefined) {
-            return {
-                ok: payload.success === true,
-                data: payload.data || null,
-                message: payload.message || payload.mensaje || ''
-            };
-        }
-
-        return {
-            ok: true,
-            data: payload,
-            message: ''
-        };
-    }
-
-    function obtenerValor(obj, posiblesNombres) {
-        var i;
-        for (i = 0; i < posiblesNombres.length; i += 1) {
-            if (obj && obj[posiblesNombres[i]] !== undefined && obj[posiblesNombres[i]] !== null) {
-                return obj[posiblesNombres[i]];
-            }
+    function getValue(obj, keys) {
+        for (var i = 0; i < keys.length; i += 1) {
+            if (obj && obj[keys[i]] !== undefined && obj[keys[i]] !== null) return obj[keys[i]];
         }
         return '';
     }
 
-    function numeroMascaradoDesdeData(tarjeta) {
-        var numeroMascarado = obtenerValor(tarjeta, ['NumeroMascarado', 'numeroMascarado', 'NumeroEnmascarado', 'numeroEnmascarado']);
-        var ultimos4 = obtenerValor(tarjeta, ['Ultimos4', 'ultimos4']);
-
-        if (String(numeroMascarado).trim() !== '') {
-            return String(numeroMascarado);
+    function normalize(payload) {
+        if (!payload) return { ok: false, data: null, message: 'Respuesta vacÃ­a.' };
+        if (payload.ok !== undefined || payload.success !== undefined) {
+            return {
+                ok: payload.ok === true || payload.success === true,
+                data: payload.data || null,
+                message: payload.message || payload.mensaje || ''
+            };
         }
-
-        if (String(ultimos4).trim() !== '') {
-            return '•••• •••• •••• ' + String(ultimos4).trim();
-        }
-
-        return '•••• •••• •••• 0000';
+        return { ok: true, data: payload, message: '' };
     }
 
-    function renderEmptyState() {
-        cardsList.innerHTML = ''
-            + '<div class="pt-card-wrapper">'
-            + '  <div class="pt-card pt-card-empty">'
-            + '    <div class="pt-number">No hay tarjetas registradas.</div>'
-            + '    <div class="pt-holder">Agrega una tarjeta desde la base de datos.</div>'
-            + '  </div>'
-            + '</div>';
+    function showToast(message, type) {
+        var existing = document.querySelector('.pc-toast');
+        if (existing) existing.remove();
+        var toast = document.createElement('div');
+        toast.className = 'pc-toast ' + (type === 'error' ? 'pc-toast-error' : 'pc-toast-success');
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(function () { toast.classList.add('show'); }, 20);
+        setTimeout(function () {
+            toast.classList.remove('show');
+            setTimeout(function () { toast.remove(); }, 250);
+        }, 3500);
     }
 
-    function renderTarjetas(tarjetas) {
-        if (!tarjetas || !tarjetas.length) {
-            renderEmptyState();
-            return;
-        }
-
-        var html = '';
-        var i;
-
-        for (i = 0; i < tarjetas.length; i += 1) {
-            var tarjeta = tarjetas[i];
-            var tarjetaId = obtenerValor(tarjeta, ['TarjetaClienteId', 'tarjetaClienteId', 'TarjetaId', 'tarjetaId']);
-            var titular = obtenerValor(tarjeta, ['Titular', 'titular', 'NombreTitular', 'nombreTitular']);
-            var marca = obtenerValor(tarjeta, ['Marca', 'marca', 'Franquicia', 'franquicia']);
-            var alias = obtenerValor(tarjeta, ['Alias', 'alias']);
-            var mes = obtenerValor(tarjeta, ['MesExpiracion', 'mesExpiracion', 'Mes', 'mes']);
-            var anio = obtenerValor(tarjeta, ['AnioExpiracion', 'anioExpiracion', 'Anio', 'anio']);
-            var tipoTarjeta = obtenerValor(tarjeta, ['TipoTarjeta', 'tipoTarjeta', 'Tipo', 'tipo']) || 'Crédito';
-            var predeterminada = obtenerValor(tarjeta, ['EsPredeterminada', 'esPredeterminada', 'Predeterminada', 'predeterminada']) === true ||
-                obtenerValor(tarjeta, ['EsPredeterminada', 'esPredeterminada', 'Predeterminada', 'predeterminada']) === 1 ||
-                obtenerValor(tarjeta, ['EsPredeterminada', 'esPredeterminada', 'Predeterminada', 'predeterminada']) === '1' ||
-                String(obtenerValor(tarjeta, ['EsPredeterminada', 'esPredeterminada', 'Predeterminada', 'predeterminada'])).toUpperCase() === 'S';
-
-            html += ''
-                + '<div class="pt-card-wrapper" data-tarjeta-id="' + escapeHtml(tarjetaId) + '">'
-                + (predeterminada ? '<div class="pt-chip-row"><span class="pt-default">Predeterminada</span></div>' : '')
-                + '  <div class="pt-card">'
-                + '      <div class="pt-brand">' + escapeHtml(marca || 'Tarjeta') + '</div>'
-                + '      <div class="pt-number">' + escapeHtml(numeroMascaradoDesdeData(tarjeta)) + '</div>'
-                + '      <div class="pt-holder-label">TITULAR</div>'
-                + '      <div class="pt-holder">' + escapeHtml(titular) + '</div>'
-                + (String(alias).trim() !== '' ? '<div class="pt-alias">' + escapeHtml(alias) + '</div>' : '')
-                + '      <div class="pt-footer">'
-                + '          <div>'
-                + '              <div class="pt-footer-label">TIPO</div>'
-                + '              <div class="pt-footer-value">' + escapeHtml(tipoTarjeta) + '</div>'
-                + '          </div>'
-                + '          <div class="pt-expire-box">'
-                + '              <div class="pt-footer-label">VENCE</div>'
-                + '              <div class="pt-expire">' + escapeHtml(String(mes)) + '/' + escapeHtml(String(anio)) + '</div>'
-                + '          </div>'
-                + '      </div>'
-                + '      <div class="pt-actions">'
-                + (predeterminada ? '' : '<button type="button" class="pt-action-btn" data-action="predeterminada" data-id="' + escapeHtml(tarjetaId) + '">Marcar predeterminada</button>')
-                + '          <button type="button" class="pt-action-btn pt-action-btn--danger" data-action="desactivar" data-id="' + escapeHtml(tarjetaId) + '">Eliminar</button>'
-                + '      </div>'
-                + '  </div>'
-                + '</div>';
-        }
-
-        cardsList.innerHTML = html;
-    }
-
-    function cargarTarjetas() {
-        fetch(endpointListar, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudieron obtener las tarjetas.');
-                }
-                return response.json();
-            })
-            .then(function (payload) {
-                var respuesta = normalizarRespuesta(payload);
-
-                if (!respuesta.ok) {
-                    throw new Error(respuesta.message || 'No se pudieron obtener las tarjetas.');
-                }
-
-                renderTarjetas(respuesta.data || []);
-            })
-            .catch(function (error) {
-                console.error(error);
-                renderEmptyState();
+    function requestJson(url, options) {
+        options = options || {};
+        options.credentials = 'same-origin';
+        options.headers = options.headers || {};
+        options.headers['X-Requested-With'] = 'XMLHttpRequest';
+        return fetch(url, options).then(function (res) {
+            return res.json().catch(function () { return null; }).then(function (payload) {
+                var normalized = normalize(payload);
+                if (!res.ok || !normalized.ok) throw new Error(normalized.message || 'No se pudo procesar la solicitud.');
+                return normalized;
             });
-    }
-
-    function postJson(url, payload) {
-        return fetch(url, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(payload)
-        })
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudo procesar la solicitud.');
-                }
-                return response.json();
-            })
-            .then(function (payloadRespuesta) {
-                var respuesta = normalizarRespuesta(payloadRespuesta);
-
-                if (!respuesta.ok) {
-                    throw new Error(respuesta.message || 'No se pudo procesar la solicitud.');
-                }
-
-                return respuesta;
-            });
-    }
-
-    btnAbrir.addEventListener('click', function () {
-        abrirModal();
-    });
-
-    if (btnCerrar) {
-        btnCerrar.addEventListener('click', function () {
-            cerrarModal();
         });
     }
 
-    overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) {
-            cerrarModal();
-        }
-    });
+    function formatCardNumber(tarjeta) {
+        var masked = getValue(tarjeta, ['NumeroMascarado', 'numeroMascarado', 'NumeroEnmascarado', 'numeroEnmascarado']);
+        var last4 = getValue(tarjeta, ['Ultimos4', 'ultimos4']);
+        if (String(masked).trim() !== '') return masked;
+        return '**** **** **** ' + (String(last4).trim() || '0000');
+    }
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            cerrarModal();
-        }
-    });
+    function isDefault(tarjeta) {
+        var val = getValue(tarjeta, ['EsPredeterminada', 'esPredeterminada', 'Predeterminada', 'predeterminada']);
+        return val === true || val === 1 || val === '1' || String(val).toUpperCase() === 'S' || String(val).toUpperCase() === 'TRUE';
+    }
 
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
+    function renderEmpty() {
+        var list = $('tarjetasLista');
+        if (!list) return;
+        list.innerHTML = '<div class="pc-empty-state pc-empty-state-wide">'
+            + '<i class="bi bi-credit-card"></i>'
+            + '<h3>No tienes tarjetas registradas</h3>'
+            + '<p>Agrega una tarjeta para usarla en el checkout.</p>'
+            + '</div>';
+    }
 
-        var payload = {
-            titular: inputTitular ? inputTitular.value.trim() : '',
-            numero: inputNumero ? inputNumero.value.trim() : '',
-            marca: inputMarca ? inputMarca.value : '',
-            mesExpiracion: inputMes ? inputMes.value.trim() : '',
-            anioExpiracion: inputAnio ? inputAnio.value.trim() : '',
-            alias: inputAlias ? inputAlias.value.trim() : '',
-            predeterminada: inputPredeterminada ? inputPredeterminada.checked : false
-        };
-
-        if (payload.titular === '' || payload.numero === '' || payload.mesExpiracion === '' || payload.anioExpiracion === '') {
-            alert('Completa los campos obligatorios.');
+    function renderCards(tarjetas) {
+        var list = $('tarjetasLista');
+        if (!list) return;
+        if (!tarjetas || tarjetas.length === 0) {
+            renderEmpty();
             return;
         }
 
-        setLoading(true);
+        list.innerHTML = tarjetas.map(function (tarjeta) {
+            var id = getValue(tarjeta, ['TarjetaClienteId', 'tarjetaClienteId', 'TarjetaId', 'tarjetaId']);
+            var titular = getValue(tarjeta, ['Titular', 'titular', 'NombreTitular', 'nombreTitular']) || 'Titular no registrado';
+            var marca = String(getValue(tarjeta, ['Marca', 'marca', 'Franquicia', 'franquicia']) || 'TARJETA').toUpperCase();
+            var alias = getValue(tarjeta, ['Alias', 'alias']);
+            var mes = getValue(tarjeta, ['MesExpiracion', 'mesExpiracion', 'Mes', 'mes']);
+            var anio = getValue(tarjeta, ['AnioExpiracion', 'anioExpiracion', 'Anio', 'anio']);
+            var pred = isDefault(tarjeta);
 
-        postJson(endpointCrear, payload)
-            .then(function (respuesta) {
-                form.reset();
-                cerrarModal();
-                cargarTarjetas();
-                alert(respuesta.message || 'Tarjeta registrada correctamente.');
-            })
-            .catch(function (error) {
-                alert(error.message || 'No se pudo registrar la tarjeta.');
-            })
-            .finally(function () {
-                setLoading(false);
+            return '<article class="pc-payment-card ' + (marca.indexOf('MASTER') >= 0 ? 'pc-payment-master' : 'pc-payment-visa') + '" data-id="' + escapeHtml(id) + '">'
+                + '<div class="pc-payment-top">'
+                + '<span>' + escapeHtml(marca) + '</span>'
+                + (pred ? '<strong>Predeterminada</strong>' : '')
+                + '</div>'
+                + '<div class="pc-payment-number">' + escapeHtml(formatCardNumber(tarjeta)) + '</div>'
+                + '<div class="pc-payment-bottom">'
+                + '<div><small>TITULAR</small><b>' + escapeHtml(titular) + '</b></div>'
+                + '<div><small>VENCE</small><b>' + escapeHtml(mes || '--') + '/' + escapeHtml(anio || '--') + '</b></div>'
+                + '</div>'
+                + (String(alias).trim() !== '' ? '<p class="pc-payment-alias">' + escapeHtml(alias) + '</p>' : '')
+                + '<div class="pc-payment-actions">'
+                + (pred ? '' : '<button type="button" data-action="default" data-id="' + escapeHtml(id) + '">Predeterminada</button>')
+                + '<button type="button" data-action="delete" data-id="' + escapeHtml(id) + '" class="danger">Eliminar</button>'
+                + '</div>'
+                + '</article>';
+        }).join('');
+    }
+
+    function loadCards() {
+        var list = $('tarjetasLista');
+        if (list) list.innerHTML = '<div class="pc-loading-card">Cargando tarjetas...</div>';
+        requestJson('/PortalCliente/ObtenerTarjetasData', { method: 'GET' })
+            .then(function (res) { renderCards(res.data || []); })
+            .catch(function (err) {
+                console.error(err);
+                renderEmpty();
+                showToast(err.message || 'No se pudieron cargar las tarjetas.', 'error');
             });
-    });
+    }
 
-    cardsList.addEventListener('click', function (e) {
-        var button = e.target.closest('button[data-action]');
-        if (!button) {
-            return;
+    function openModal() {
+        var modal = $('tarjetaModal');
+        if (modal) modal.classList.add('show');
+    }
+
+    function closeModal() {
+        var modal = $('tarjetaModal');
+        if (modal) modal.classList.remove('show');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var page = $('tarjetasClientePage');
+        if (!page) return;
+
+        var btnOpen = $('btnAbrirTarjeta');
+        var btnClose = $('btnCerrarTarjeta');
+        var btnRefresh = $('btnActualizarTarjetas');
+        var modal = $('tarjetaModal');
+        var form = $('tarjetaForm');
+        var list = $('tarjetasLista');
+
+        if (btnOpen) btnOpen.addEventListener('click', openModal);
+        if (btnClose) btnClose.addEventListener('click', closeModal);
+        if (btnRefresh) btnRefresh.addEventListener('click', loadCards);
+        if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+        var inputNumber = $('tarjetaNumero');
+        if (inputNumber) {
+            inputNumber.addEventListener('input', function () {
+                var digits = inputNumber.value.replace(/\D/g, '').substring(0, 16);
+                inputNumber.value = digits.replace(/(.{4})/g, '$1 ').trim();
+            });
         }
 
-        var action = button.getAttribute('data-action');
-        var tarjetaId = button.getAttribute('data-id');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var btn = $('btnGuardarTarjeta');
+                if (btn) { btn.disabled = true; btn.textContent = 'Registrando...'; }
 
-        if (!tarjetaId) {
-            return;
-        }
+                var payload = {
+                    titular: $('tarjetaTitular').value.trim(),
+                    numero: $('tarjetaNumero').value.trim(),
+                    marca: $('tarjetaMarca').value,
+                    mesExpiracion: $('tarjetaMes').value,
+                    anioExpiracion: $('tarjetaAnio').value,
+                    alias: $('tarjetaAlias').value.trim(),
+                    predeterminada: $('tarjetaPredeterminada').checked ? 'true' : 'false'
+                };
 
-        if (action === 'predeterminada') {
-            postJson(endpointPredeterminada, { tarjetaId: tarjetaId })
-                .then(function (respuesta) {
-                    cargarTarjetas();
-                    alert(respuesta.message || 'Tarjeta marcada como predeterminada.');
-                })
-                .catch(function (error) {
-                    alert(error.message || 'No se pudo actualizar la tarjeta.');
+                requestJson('/PortalCliente/CrearTarjetaData', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify(payload)
+                }).then(function (res) {
+                    form.reset();
+                    closeModal();
+                    loadCards();
+                    showToast(res.message || 'Tarjeta registrada correctamente.', 'success');
+                }).catch(function (err) {
+                    showToast(err.message || 'No se pudo registrar la tarjeta.', 'error');
+                }).finally(function () {
+                    if (btn) { btn.disabled = false; btn.textContent = 'Registrar tarjeta'; }
                 });
+            });
         }
 
-        if (action === 'desactivar') {
-            if (!window.confirm('¿Deseas eliminar esta tarjeta?')) {
-                return;
-            }
+        if (list) {
+            list.addEventListener('click', function (e) {
+                var btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+                var id = btn.getAttribute('data-id');
+                var action = btn.getAttribute('data-action');
+                var endpoint = action === 'default' ? '/PortalCliente/MarcarTarjetaPredeterminadaData' : '/PortalCliente/DesactivarTarjetaData';
 
-            postJson(endpointDesactivar, { tarjetaId: tarjetaId })
-                .then(function (respuesta) {
-                    cargarTarjetas();
-                    alert(respuesta.message || 'Tarjeta eliminada correctamente.');
-                })
-                .catch(function (error) {
-                    alert(error.message || 'No se pudo eliminar la tarjeta.');
+                requestJson(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify({ tarjetaId: id })
+                }).then(function (res) {
+                    loadCards();
+                    showToast(res.message || 'Tarjeta actualizada.', 'success');
+                }).catch(function (err) {
+                    showToast(err.message || 'No se pudo actualizar la tarjeta.', 'error');
                 });
+            });
         }
-    });
 
-    cargarTarjetas();
-});
+        loadCards();
+    });
+}());

@@ -10,7 +10,7 @@
     Dim cliIdTexto As String = System.Convert.ToString(ViewData("CliId"))
 End Code
 
-<div class="ci-page" data-cli-id="@cliIdTexto" id="catalogo">
+<div class="ci-page" data-cli-id="@cliIdTexto">
     <div class="ci-hero">
         <div class="ci-hero-text">
             <div class="ci-badge">Portal cliente</div>
@@ -21,58 +21,52 @@ End Code
         </div>
 
         <div class="ci-hero-actions">
-            <a href="#catalogo" class="ci-hero-btn ci-hero-btn--gold">
-                <i class="bi bi-grid"></i>
-                Ver catálogo
+            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="ci-hero-btn ci-hero-btn--light">
+                <i class="bi bi-heart"></i>
+                Mis favoritos
             </a>
-            <a href="@Url.Action("Carrito", "PortalCliente")" class="ci-hero-btn ci-hero-btn--light">
-                <i class="bi bi-cart3"></i>
-                Mi carrito
+            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="ci-hero-btn">
+                <i class="bi bi-person-circle"></i>
+                Mi perfil
             </a>
         </div>
     </div>
 
-    <div class="ci-stats" id="ciStatsCliente">
-        <div class="ci-stat-card">
-            <div class="ci-stat-top">
-                <div>
-                    <div class="ci-stat-number" id="ciStatPedidos">0</div>
-                    <div class="ci-stat-label">Pedidos</div>
-                </div>
-                <div class="ci-stat-icon"><i class="bi bi-receipt"></i></div>
-            </div>
-        </div>
 
-        <div class="ci-stat-card">
-            <div class="ci-stat-top">
-                <div>
-                    <div class="ci-stat-number" id="ciStatActivos">0</div>
-                    <div class="ci-stat-label">Activos</div>
-                </div>
-                <div class="ci-stat-icon ci-gold"><i class="bi bi-truck"></i></div>
-            </div>
-        </div>
 
-        <div class="ci-stat-card">
-            <div class="ci-stat-top">
-                <div>
-                    <div class="ci-stat-number" id="ciStatEntregados">0</div>
-                    <div class="ci-stat-label">Entregados</div>
-                </div>
-                <div class="ci-stat-icon ci-green"><i class="bi bi-check2-circle"></i></div>
+    <section class="ci-stats ci-stats--home" aria-label="Resumen del cliente">
+        <article class="ci-stat-card">
+            <div class="ci-stat-copy">
+                <div class="ci-stat-number" id="ciPedidosTotal">0</div>
+                <div class="ci-stat-label">Pedidos</div>
             </div>
-        </div>
+            <div class="ci-stat-icon"><i class="bi bi-receipt"></i></div>
+        </article>
 
-        <div class="ci-stat-card">
-            <div class="ci-stat-top">
-                <div>
-                    <div class="ci-stat-number" id="ciStatGastado">Q0.00</div>
-                    <div class="ci-stat-label">Total comprado</div>
-                </div>
-                <div class="ci-stat-icon ci-money"><i class="bi bi-cash-stack"></i></div>
+        <article class="ci-stat-card">
+            <div class="ci-stat-copy">
+                <div class="ci-stat-number" id="ciPedidosActivos">0</div>
+                <div class="ci-stat-label">Activos</div>
             </div>
-        </div>
-    </div>
+            <div class="ci-stat-icon ci-gold"><i class="bi bi-truck"></i></div>
+        </article>
+
+        <article class="ci-stat-card">
+            <div class="ci-stat-copy">
+                <div class="ci-stat-number" id="ciPedidosEntregados">0</div>
+                <div class="ci-stat-label">Entregados</div>
+            </div>
+            <div class="ci-stat-icon ci-green"><i class="bi bi-check-circle"></i></div>
+        </article>
+
+        <article class="ci-stat-card">
+            <div class="ci-stat-copy">
+                <div class="ci-stat-number" id="ciTotalComprado">Q0.00</div>
+                <div class="ci-stat-label">Total comprado</div>
+            </div>
+            <div class="ci-stat-icon ci-money"><i class="bi bi-cash-stack"></i></div>
+        </article>
+    </section>
 
     <div class="ci-section">
         <div class="ci-section-title">Accesos rápidos</div>
@@ -163,6 +157,6 @@ End Code
     </div>
 </div>
 
-@section scripts
-    <script src="@Url.Content("~/Scripts/portal-inicio.js?v=7")"></script>
+@Section scripts
+    <script src="@Url.Content("~/Scripts/portal-inicio.js?v=16")"></script>
 End Section

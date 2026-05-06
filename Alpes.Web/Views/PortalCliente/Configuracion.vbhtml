@@ -1,209 +1,127 @@
-@Code
+﻿@Code
     ViewData("Title") = "Configuración"
-    Layout = "~/Views/Shared/_PortalClientePerfilLayout.vbhtml"
+    Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 End Code
 
-<div class="cfg-page" id="cfgPage">
-
-    <div class="cfg-top">
-        <a href="@Url.Action("MiPerfil", "PortalCliente")" class="cfg-back">
-            <i class="bi bi-chevron-left"></i>
-        </a>
-
-        <div class="cfg-title">Configuración</div>
-    </div>
-
-    <div class="cfg-section">
-        <div class="cfg-item">
-            <div>
-                <strong>Notificaciones</strong>
-                <small>Activar o desactivar alertas</small>
-            </div>
-            <label class="cfg-switch">
-                <input type="checkbox" id="cfgNotificaciones" checked />
-                <span class="cfg-slider"></span>
-            </label>
+<section class="pc-section pc-config-page" id="configuracionCliente">
+    <div class="pc-hero pc-hero-compact">
+        <div>
+            <span class="pc-eyebrow">Cuenta</span>
+            <h1>Configuración</h1>
+            <p>Administra preferencias visuales, notificaciones y accesos de privacidad del panel cliente.</p>
         </div>
-
-        <div class="cfg-item">
-            <div>
-                <strong>Modo oscuro</strong>
-                <small>Cambiar apariencia</small>
-            </div>
-            <label class="cfg-switch">
-                <input type="checkbox" id="cfgModoOscuro" />
-                <span class="cfg-slider"></span>
-            </label>
-        </div>
-
-        <button type="button" class="cfg-item cfg-item-btn" id="cfgIdiomaBtn">
-            <div>
-                <strong>Idioma</strong>
-                <small id="cfgIdiomaTexto">Español</small>
-            </div>
-            <i class="bi bi-chevron-right"></i>
-        </button>
-
-        <button type="button" class="cfg-item cfg-item-btn" id="cfgPrivacidadBtn">
-            <div>
-                <strong>Privacidad</strong>
-                <small>Administrar datos</small>
-            </div>
-            <i class="bi bi-chevron-right"></i>
-        </button>
-    </div>
-
-    <div class="cfg-message" id="cfgMessage"></div>
-
-    <div class="cfg-overlay" id="cfgOverlayIdioma">
-        <div class="cfg-modal">
-            <div class="cfg-modal-title">Seleccionar idioma</div>
-
-            <button type="button" class="cfg-modal-option" data-idioma="Español">
-                Español
-            </button>
-
-            <button type="button" class="cfg-modal-option" data-idioma="Inglés">
-                Inglés
-            </button>
-
-            <button type="button" class="cfg-modal-close" id="cfgCerrarIdioma">
-                Cerrar
-            </button>
+        <div class="pc-hero-actions">
+            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-btn pc-btn-gold">
+                <i class="bi bi-person"></i>
+                Mi perfil
+            </a>
         </div>
     </div>
 
-    <div class="cfg-overlay" id="cfgOverlayPrivacidad">
-        <div class="cfg-modal">
-            <div class="cfg-modal-title">Privacidad</div>
-            <p class="cfg-modal-text">
-                Aquí podrás administrar tus datos, permisos y preferencias de privacidad.
-            </p>
+    <div class="pc-config-grid">
+        <div class="pc-card">
+            <div class="pc-card-header">
+                <div>
+                    <h2>Preferencias</h2>
+                    <p>Estas opciones se guardan en este navegador.</p>
+                </div>
+            </div>
 
-            <button type="button" class="cfg-modal-close" id="cfgCerrarPrivacidad">
-                Entendido
-            </button>
+            <div class="pc-config-list">
+                <div class="pc-config-item">
+                    <div class="pc-config-icon"><i class="bi bi-bell"></i></div>
+                    <div class="pc-config-text">
+                        <strong>Notificaciones</strong>
+                        <small>Mostrar avisos de pedidos y carrito.</small>
+                    </div>
+                    <label class="pc-switch">
+                        <input type="checkbox" id="cfgNotificaciones" checked />
+                        <span></span>
+                    </label>
+                </div>
+
+                <div class="pc-config-item">
+                    <div class="pc-config-icon"><i class="bi bi-moon-stars"></i></div>
+                    <div class="pc-config-text">
+                        <strong>Modo oscuro del panel</strong>
+                        <small>Apariencia oscura para las secciones de cuenta.</small>
+                    </div>
+                    <label class="pc-switch">
+                        <input type="checkbox" id="cfgModoOscuro" />
+                        <span></span>
+                    </label>
+                </div>
+
+                <button type="button" class="pc-config-item pc-config-button" id="cfgIdiomaBtn">
+                    <div class="pc-config-icon"><i class="bi bi-translate"></i></div>
+                    <div class="pc-config-text">
+                        <strong>Idioma</strong>
+                        <small id="cfgIdiomaTexto">Español</small>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <button type="button" class="pc-config-item pc-config-button" id="cfgPrivacidadBtn">
+                    <div class="pc-config-icon"><i class="bi bi-shield-lock"></i></div>
+                    <div class="pc-config-text">
+                        <strong>Privacidad</strong>
+                        <small>Consulta cómo se usan tus datos del panel.</small>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="pc-card pc-config-account-card">
+            <div class="pc-card-header">
+                <div>
+                    <h2>Accesos rápidos</h2>
+                    <p>Funciones principales de tu cuenta.</p>
+                </div>
+            </div>
+
+            <div class="pc-config-actions">
+                <a href="@Url.Action("Notificaciones", "PortalCliente")" class="pc-support-link">
+                    <span><i class="bi bi-bell"></i> Ver notificaciones</span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="@Url.Action("Soporte", "PortalCliente")" class="pc-support-link">
+                    <span><i class="bi bi-headset"></i> Contactar soporte</span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="@Url.Action("MisTarjetas", "PortalCliente")" class="pc-support-link">
+                    <span><i class="bi bi-credit-card"></i> Tarjetas guardadas</span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="@Url.Action("Logout", "Home")" class="pc-support-link danger">
+                    <span><i class="bi bi-box-arrow-left"></i> Cerrar sesión</span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var page = document.getElementById('cfgPage');
-        var chkNotificaciones = document.getElementById('cfgNotificaciones');
-        var chkModoOscuro = document.getElementById('cfgModoOscuro');
-        var idiomaBtn = document.getElementById('cfgIdiomaBtn');
-        var idiomaTexto = document.getElementById('cfgIdiomaTexto');
-        var privacidadBtn = document.getElementById('cfgPrivacidadBtn');
-        var message = document.getElementById('cfgMessage');
+    <div class="pc-modal-overlay" id="cfgOverlayIdioma">
+        <div class="pc-modal pc-small-modal">
+            <button type="button" class="pc-modal-close" id="cfgCerrarIdioma"><i class="bi bi-x-lg"></i></button>
+            <h2>Seleccionar idioma</h2>
+            <p>Actualmente el panel está optimizado para español.</p>
+            <button type="button" class="pc-btn pc-btn-primary pc-modal-option" data-idioma="Español">Español</button>
+            <button type="button" class="pc-btn pc-btn-outline pc-modal-option" data-idioma="Inglés">Inglés</button>
+        </div>
+    </div>
 
-        var overlayIdioma = document.getElementById('cfgOverlayIdioma');
-        var overlayPrivacidad = document.getElementById('cfgOverlayPrivacidad');
-        var cerrarIdioma = document.getElementById('cfgCerrarIdioma');
-        var cerrarPrivacidad = document.getElementById('cfgCerrarPrivacidad');
-        var idiomaOptions = document.querySelectorAll('.cfg-modal-option');
+    <div class="pc-modal-overlay" id="cfgOverlayPrivacidad">
+        <div class="pc-modal pc-small-modal">
+            <button type="button" class="pc-modal-close" id="cfgCerrarPrivacidad"><i class="bi bi-x-lg"></i></button>
+            <h2>Privacidad</h2>
+            <p>El panel cliente consulta únicamente información relacionada con tu sesión: perfil, carrito, pedidos, favoritos y tarjetas registradas.</p>
+            <p>No se muestran datos de otros clientes.</p>
+            <button type="button" class="pc-btn pc-btn-primary" id="cfgAceptarPrivacidad">Entendido</button>
+        </div>
+    </div>
+</section>
 
-        function showMessage(text) {
-            if (!message) return;
-            message.textContent = text;
-            message.classList.add('show');
-
-            setTimeout(function () {
-                message.classList.remove('show');
-            }, 2200);
-        }
-
-        function applyDarkMode() {
-            if (!chkModoOscuro) return;
-
-            if (chkModoOscuro.checked) {
-                page.classList.add('dark');
-            } else {
-                page.classList.remove('dark');
-            }
-        }
-
-        var savedNotifications = localStorage.getItem('cfg_notificaciones');
-        var savedDarkMode = localStorage.getItem('cfg_modo_oscuro');
-        var savedLanguage = localStorage.getItem('cfg_idioma');
-
-        if (savedNotifications !== null && chkNotificaciones) {
-            chkNotificaciones.checked = savedNotifications === 'true';
-        }
-
-        if (savedDarkMode !== null && chkModoOscuro) {
-            chkModoOscuro.checked = savedDarkMode === 'true';
-        }
-
-        if (savedLanguage && idiomaTexto) {
-            idiomaTexto.textContent = savedLanguage;
-        }
-
-        applyDarkMode();
-
-        if (chkNotificaciones) {
-            chkNotificaciones.addEventListener('change', function () {
-                localStorage.setItem('cfg_notificaciones', chkNotificaciones.checked);
-                showMessage(chkNotificaciones.checked ? 'Notificaciones activadas' : 'Notificaciones desactivadas');
-            });
-        }
-
-        if (chkModoOscuro) {
-            chkModoOscuro.addEventListener('change', function () {
-                localStorage.setItem('cfg_modo_oscuro', chkModoOscuro.checked);
-                applyDarkMode();
-                showMessage(chkModoOscuro.checked ? 'Modo oscuro activado' : 'Modo oscuro desactivado');
-            });
-        }
-
-        if (idiomaBtn && overlayIdioma) {
-            idiomaBtn.addEventListener('click', function () {
-                overlayIdioma.classList.add('show');
-            });
-        }
-
-        idiomaOptions.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var idioma = btn.getAttribute('data-idioma');
-                idiomaTexto.textContent = idioma;
-                localStorage.setItem('cfg_idioma', idioma);
-                overlayIdioma.classList.remove('show');
-                showMessage('Idioma cambiado a ' + idioma);
-            });
-        });
-
-        if (cerrarIdioma && overlayIdioma) {
-            cerrarIdioma.addEventListener('click', function () {
-                overlayIdioma.classList.remove('show');
-            });
-        }
-
-        if (privacidadBtn && overlayPrivacidad) {
-            privacidadBtn.addEventListener('click', function () {
-                overlayPrivacidad.classList.add('show');
-            });
-        }
-
-        if (cerrarPrivacidad && overlayPrivacidad) {
-            cerrarPrivacidad.addEventListener('click', function () {
-                overlayPrivacidad.classList.remove('show');
-            });
-        }
-
-        if (overlayIdioma) {
-            overlayIdioma.addEventListener('click', function (e) {
-                if (e.target === overlayIdioma) {
-                    overlayIdioma.classList.remove('show');
-                }
-            });
-        }
-
-        if (overlayPrivacidad) {
-            overlayPrivacidad.addEventListener('click', function (e) {
-                if (e.target === overlayPrivacidad) {
-                    overlayPrivacidad.classList.remove('show');
-                }
-            });
-        }
-    });
-</script>
+@Section scripts
+    <script src="@Url.Content("~/Scripts/portal-configuracion.js?v=16")"></script>
+End Section

@@ -41,13 +41,15 @@
     Dim claseCarrito As String = "pc-nav-item"
     Dim claseMiPerfil As String = "pc-nav-item"
     Dim claseConfiguracion As String = "pc-nav-item"
+    Dim claseResenas As String = "pc-nav-item"
 
     If esPortalCliente Then
         If String.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase) Then
             claseInicio &= " active"
         End If
 
-        If String.Equals(currentAction, "DetalleProducto", StringComparison.OrdinalIgnoreCase) Then
+        If String.Equals(currentAction, "Busqueda", StringComparison.OrdinalIgnoreCase) OrElse
+           String.Equals(currentAction, "DetalleProducto", StringComparison.OrdinalIgnoreCase) Then
             claseCatalogo &= " active"
         End If
 
@@ -74,6 +76,10 @@
         If String.Equals(currentAction, "Configuracion", StringComparison.OrdinalIgnoreCase) Then
             claseConfiguracion &= " active"
         End If
+
+        If String.Equals(currentAction, "MisResenas", StringComparison.OrdinalIgnoreCase) Then
+            claseResenas &= " active"
+        End If
     End If
 End Code
 
@@ -86,23 +92,18 @@ End Code
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     @Styles.Render("~/Content/css")
-    <link rel="stylesheet" href="@Url.Content("~/Content/portal-cliente.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/portal-cliente.css?v=16")" />
 </head>
 <body>
     <div class="pc-layout" data-cli-id="@cliIdTexto">
         <aside class="pc-sidebar" id="pcSidebar">
             <div>
                 <div class="pc-brand">
-                    <div class="pc-brand-row">
-                        <div class="pc-brand-icon"><i class="bi bi-lamp"></i></div>
-                        <div>
-                            <div class="pc-brand-title">Muebles de los Alpes</div>
-                            <div class="pc-brand-subtitle">Artesanía · Calidad · Elegancia</div>
-                        </div>
-                    </div>
+                    <div class="pc-brand-title">Muebles de los Alpes</div>
+                    <div class="pc-brand-subtitle">Panel del cliente</div>
                 </div>
 
                 <div class="pc-nav-group-title">COMERCIAL</div>
@@ -112,9 +113,9 @@ End Code
                         <span>Inicio</span>
                     </a>
 
-                    <a href="@Url.Action("Index", "PortalCliente")#catalogo" class="@claseCatalogo">
+                    <a href="@Url.Action("Busqueda", "PortalCliente")" class="@claseCatalogo">
                         <i class="bi bi-grid"></i>
-                        <span>Catalogo</span>
+                        <span>Catálogo</span>
                     </a>
 
                     <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="@claseFavoritos">
@@ -142,9 +143,14 @@ End Code
                         <span>Perfil</span>
                     </a>
 
+                    <a href="@Url.Action("MisResenas", "PortalCliente")" class="@claseResenas">
+                        <i class="bi bi-star"></i>
+                        <span>Mis reseñas</span>
+                    </a>
+
                     <a href="@Url.Action("Configuracion", "PortalCliente")" class="@claseConfiguracion">
                         <i class="bi bi-gear"></i>
-                        <span>Configuracion</span>
+                        <span>Configuración</span>
                     </a>
                 </nav>
             </div>
@@ -160,7 +166,7 @@ End Code
 
                 <a href="@Url.Action("Logout", "Home")" class="pc-logout">
                     <i class="bi bi-box-arrow-left"></i>
-                    <span>Cerrar sesion</span>
+                    <span>Cerrar sesión</span>
                 </a>
             </div>
         </aside>
@@ -169,17 +175,11 @@ End Code
 
         <main class="pc-main">
             <header class="pc-topbar">
-                <button id="pcMenuButton" class="pc-menu-btn" type="button" aria-label="Abrir menu">
+                <button id="pcMenuButton" class="pc-menu-btn" type="button" aria-label="Abrir menú">
                     <i class="bi bi-list"></i>
                 </button>
 
-                <div class="pc-topbar-brand">
-                    <div class="pc-topbar-mark"><i class="bi bi-lamp"></i></div>
-                    <div>
-                        <div class="pc-topbar-title">@ViewData("Title")</div>
-                        <div class="pc-topbar-subtitle">Muebles de los Alpes</div>
-                    </div>
-                </div>
+                <div class="pc-topbar-title">@ViewData("Title")</div>
 
                 <div class="pc-topbar-actions">
                     <a href="@Url.Action("Notificaciones", "PortalCliente")" class="pc-topbar-icon">
@@ -200,17 +200,32 @@ End Code
             </div>
         </main>
 
-        <nav class="pc-bottom-nav" aria-label="Navegación cliente móvil">
-            <a href="@Url.Action("Index", "PortalCliente")" class="pc-bottom-item @(If(claseInicio.Contains("active"), "active", ""))"><i class="bi bi-house"></i><span>Inicio</span></a>
-            <a href="@Url.Action("Index", "PortalCliente")#catalogo" class="pc-bottom-item @(If(claseCatalogo.Contains("active"), "active", ""))"><i class="bi bi-grid"></i><span>Catálogo</span></a>
-            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="pc-bottom-item @(If(claseFavoritos.Contains("active"), "active", ""))"><i class="bi bi-heart"></i><span>Favoritos</span></a>
-            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="pc-bottom-item @(If(claseMisOrdenes.Contains("active"), "active", ""))"><i class="bi bi-receipt"></i><span>Órdenes</span></a>
-            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-bottom-item @(If(claseMiPerfil.Contains("active"), "active", ""))"><i class="bi bi-person"></i><span>Perfil</span></a>
+        <nav class="pc-bottom-nav" aria-label="Navegación móvil del cliente">
+            <a href="@Url.Action("Index", "PortalCliente")" class="pc-bottom-item @(If(String.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase), "active", ""))">
+                <i class="bi bi-house"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="@Url.Action("Busqueda", "PortalCliente")" class="pc-bottom-item @(If(String.Equals(currentAction, "Busqueda", StringComparison.OrdinalIgnoreCase) OrElse String.Equals(currentAction, "DetalleProducto", StringComparison.OrdinalIgnoreCase), "active", ""))">
+                <i class="bi bi-grid"></i>
+                <span>Catálogo</span>
+            </a>
+            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="pc-bottom-item @(If(String.Equals(currentAction, "MisFavoritos", StringComparison.OrdinalIgnoreCase), "active", ""))">
+                <i class="bi bi-heart"></i>
+                <span>Favoritos</span>
+            </a>
+            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="pc-bottom-item @(If(String.Equals(currentAction, "MisOrdenes", StringComparison.OrdinalIgnoreCase), "active", ""))">
+                <i class="bi bi-receipt"></i>
+                <span>Órdenes</span>
+            </a>
+            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-bottom-item @(If(String.Equals(currentAction, "MiPerfil", StringComparison.OrdinalIgnoreCase), "active", ""))">
+                <i class="bi bi-person"></i>
+                <span>Perfil</span>
+            </a>
         </nav>
     </div>
 
     @Scripts.Render("~/bundles/jquery")
-    <script src="@Url.Content("~/Scripts/portal-cliente.js?v=2")"></script>
+    <script src="@Url.Content("~/Scripts/portal-cliente.js?v=16")"></script>
     @RenderSection("scripts", required:=False)
 </body>
 </html>

@@ -1,177 +1,101 @@
-document.addEventListener('DOMContentLoaded', function () {
-    var chat = document.getElementById('psChat');
-    var input = document.getElementById('psInput');
-    var send = document.getElementById('psSend');
-    var emojiBtn = document.getElementById('psEmojiBtn');
-    var quickButtons = document.querySelectorAll('.ps-quick-btn');
+(function () {
+    'use strict';
 
-    if (!chat || !input || !send) {
-        return;
+    var chat = document.getElementById('soporteChat');
+    var input = document.getElementById('soporteInput');
+    var send = document.getElementById('soporteEnviar');
+    var quickButtons = document.querySelectorAll('.pc-chip-btn');
+    var resumen = { pedidos: 0, activos: 0, carrito: 0 };
+
+    function normalize(value) {
+        return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     }
 
     function getTimeNow() {
         var now = new Date();
-        var hours = now.getHours().toString().padStart(2, '0');
-        var minutes = now.getMinutes().toString().padStart(2, '0');
-        return hours + ':' + minutes;
-    }
-
-    function scrollToBottom() {
-        chat.scrollTop = chat.scrollHeight;
+        return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
     }
 
     function addMessage(text, type) {
-        var wrapper = document.createElement('div');
-        wrapper.className = 'ps-message ' + (type === 'user' ? 'ps-message--user' : 'ps-message--bot');
-
-        var bubble = document.createElement('div');
-        bubble.className = 'ps-bubble';
-        bubble.textContent = text;
-
-        var time = document.createElement('div');
-        time.className = 'ps-time';
-        time.textContent = getTimeNow();
-
-        wrapper.appendChild(bubble);
-        wrapper.appendChild(time);
-        chat.appendChild(wrapper);
-
-        scrollToBottom();
+        if (!chat) return;
+        var row = document.createElement('div');
+        row.className = 'pc-support-message ' + (type === 'user' ? 'user' : 'bot');
+        row.innerHTML = '<div class="pc-support-bubble"></div><span>' + getTimeNow() + '</span>';
+        row.querySelector('.pc-support-bubble').textContent = text;
+        chat.appendChild(row);
+        chat.scrollTop = chat.scrollHeight;
     }
 
     function addTyping() {
-        var wrapper = document.createElement('div');
-        wrapper.className = 'ps-message ps-message--bot';
-        wrapper.id = 'psTypingMessage';
-
-        var bubble = document.createElement('div');
-        bubble.className = 'ps-bubble';
-
-        var typing = document.createElement('div');
-        typing.className = 'ps-typing';
-        typing.innerHTML = '<span></span><span></span><span></span>';
-
-        bubble.appendChild(typing);
-        wrapper.appendChild(bubble);
-        chat.appendChild(wrapper);
-
-        scrollToBottom();
+        var row = document.createElement('div');
+        row.className = 'pc-support-message bot';
+        row.id = 'soporteTyping';
+        row.innerHTML = '<div class="pc-support-bubble pc-support-typing"><span></span><span></span><span></span></div>';
+        chat.appendChild(row);
+        chat.scrollTop = chat.scrollHeight;
     }
 
     function removeTyping() {
-        var typing = document.getElementById('psTypingMessage');
-        if (typing) {
-            typing.remove();
-        }
+        var typing = document.getElementById('soporteTyping');
+        if (typing) typing.remove();
     }
 
-    function normalizeText(value) {
-        return String(value || '')
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .trim();
+    function getReply(message) {
+        var text = normalize(message);
+        if (text.indexOf('hola') >= 0 || text.indexOf('buenas') >= 0) {
+            return 'Hola, con gusto te ayudo. Puedo orientarte sobre pedidos, pagos, envíos, carrito o descuentos.';
+        }
+        if (text.indexOf('pedido') >= 0 || text.indexOf('orden') >= 0 || text.indexOf('compra') >= 0) {
+            return 'Actualmente tienes ' + resumen.pedidos + ' pedido(s), de los cuales ' + resumen.activos + ' están activos. Puedes entrar a Mis pedidos para ver detalle y tracking.';
+        }
+        if (text.indexOf('carrito') >= 0 || text.indexOf('producto') >= 0) {
+            return 'Tu carrito tiene ' + resumen.carrito + ' producto(s). Puedes revisarlo desde el botón Carrito antes de confirmar la compra.';
+        }
+        if (text.indexOf('envio') >= 0 || text.indexOf('entrega') >= 0 || text.indexOf('direccion') >= 0) {
+            return 'Los envíos se consultan desde Tracking. También puedes actualizar tu dirección desde Mi perfil antes de confirmar un pedido.';
+        }
+        if (text.indexOf('pago') >= 0 || text.indexOf('tarjeta') >= 0 || text.indexOf('cobro') >= 0) {
+            return 'Puedes administrar tus tarjetas desde Mis tarjetas. Al confirmar pedido, el pago queda asociado a tu orden.';
+        }
+        if (text.indexOf('cupon') >= 0 || text.indexOf('descuento') >= 0 || text.indexOf('promocion') >= 0) {
+            return 'Los cupones disponibles se validan durante el checkout. Si hay promociones activas, aparecerán en el resumen.';
+        }
+        if (text.indexOf('agente') >= 0 || text.indexOf('asesor') >= 0 || text.indexOf('persona') >= 0) {
+            return 'Un agente puede apoyarte en horario laboral. Mientras tanto, puedes dejar tu consulta aquí.';
+        }
+        return 'Gracias por tu mensaje. Para ayudarte mejor, dime si tu consulta es sobre pedidos, envíos, pagos, carrito o perfil.';
     }
 
-    function getAutoReply(message) {
-        var text = normalizeText(message);
-
-        if (
-            text.includes('hola') ||
-            text.includes('buenas') ||
-            text.includes('buenos dias') ||
-            text.includes('buenas tardes')
-        ) {
-            return 'Hola, con gusto te ayudo. Puedes consultarme sobre pedidos, pagos, envios o descuentos.';
-        }
-
-        if (
-            text.includes('pedido') ||
-            text.includes('orden') ||
-            text.includes('compra')
-        ) {
-            return 'Puedes revisar el estado de tus pedidos en la seccion "Mis pedidos". Si quieres, tambien puedo orientarte sobre tiempos de entrega.';
-        }
-
-        if (
-            text.includes('envio') ||
-            text.includes('direccion') ||
-            text.includes('entrega')
-        ) {
-            return 'Los envios se procesan de lunes a viernes. Tambien puedes gestionar tus direcciones desde tu perfil.';
-        }
-
-        if (
-            text.includes('pago') ||
-            text.includes('tarjeta') ||
-            text.includes('cobro')
-        ) {
-            return 'Si tu pago fue aprobado, deberia reflejarse en tu pedido. Tambien puedes revisar tus metodos de pago desde tu perfil.';
-        }
-
-        if (
-            text.includes('descuento') ||
-            text.includes('cupon') ||
-            text.includes('promocion')
-        ) {
-            return 'Cuando haya promociones activas o cupones disponibles, te apareceran en notificaciones o durante la compra.';
-        }
-
-        if (text.includes('gracias')) {
-            return 'Con gusto. Si necesitas algo mas, aqui estare para ayudarte.';
-        }
-
-        if (
-            text.includes('agente') ||
-            text.includes('asesor') ||
-            text.includes('persona')
-        ) {
-            return 'Un agente puede apoyarte dentro del horario de atencion. Mientras tanto, puedo resolver dudas frecuentes.';
-        }
-
-        return 'Gracias por tu mensaje. Un agente te respondera en breve. Tambien puedes preguntarme por pedidos, pagos, envios o descuentos.';
-    }
-
-    function handleMessage(message) {
-        if (!message || message.trim() === '') {
-            return;
-        }
-
+    function sendMessage(message) {
+        if (!message || !message.trim()) return;
         addMessage(message.trim(), 'user');
-        input.value = '';
-
+        if (input) input.value = '';
         addTyping();
-
         setTimeout(function () {
             removeTyping();
-            var reply = getAutoReply(message);
-            addMessage(reply, 'bot');
-        }, 700);
+            addMessage(getReply(message), 'bot');
+        }, 550);
     }
 
-    send.addEventListener('click', function () {
-        handleMessage(input.value);
-    });
-
-    input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleMessage(input.value);
-        }
-    });
-
-    if (emojiBtn) {
-        emojiBtn.addEventListener('click', function () {
-            input.value += ' ';
-            input.focus();
+    function loadResumen() {
+        Promise.all([
+            fetch('/PortalCliente/ObtenerMisOrdenesData', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).catch(function () { return {}; }),
+            fetch('/PortalCliente/ObtenerCarritoData', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).catch(function () { return {}; })
+        ]).then(function (res) {
+            var ordenes = Array.isArray(res[0].data) ? res[0].data : [];
+            var carrito = res[1].data || [];
+            var items = Array.isArray(carrito.items) ? carrito.items : (Array.isArray(carrito) ? carrito : []);
+            resumen.pedidos = ordenes.length;
+            resumen.activos = ordenes.filter(function (o) {
+                var e = normalize(o.Estado || o.estado || o.EstadoNormalizado || o.estadoNormalizado);
+                return e.indexOf('entregado') < 0 && e.indexOf('cancel') < 0 && e.indexOf('finalizado') < 0;
+            }).length;
+            resumen.carrito = items.length;
         });
     }
 
-    quickButtons.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            handleMessage(btn.textContent);
-        });
-    });
-
-    scrollToBottom();
-});
+    if (send) send.addEventListener('click', function () { sendMessage(input ? input.value : ''); });
+    if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); sendMessage(input.value); } });
+    quickButtons.forEach(function (btn) { btn.addEventListener('click', function () { sendMessage(btn.getAttribute('data-message') || btn.textContent); }); });
+    document.addEventListener('DOMContentLoaded', loadResumen);
+}());
