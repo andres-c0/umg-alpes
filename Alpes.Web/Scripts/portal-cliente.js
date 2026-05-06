@@ -2,154 +2,26 @@
     var button = document.getElementById('pcMenuButton');
     var sidebar = document.getElementById('pcSidebar');
     var overlay = document.getElementById('pcOverlay');
+    var endpointResumen = '/PortalCliente/ObtenerResumenNavegacionData?_=';
 
-    var badgeOrders = document.getElementById('pcBadgeOrders');
-    var badgeCart = document.getElementById('pcBadgeCart');
-    var topbarCartBadge = document.getElementById('pcTopbarCartBadge');
-
-    var endpointResumen = '/PortalCliente/ObtenerResumenNavegacionData';
-
-    function abrirSidebar() {
-        if (!sidebar || !overlay) {
-            return;
-        }
-        sidebar.classList.add('open');
-        overlay.classList.add('show');
-    }
-
-    function cerrarSidebar() {
-        if (!sidebar || !overlay) {
-            return;
-        }
-        sidebar.classList.remove('open');
-        overlay.classList.remove('show');
-    }
-
-    function alternarSidebar() {
-        if (!sidebar || !overlay) {
-            return;
-        }
-
-        if (sidebar.classList.contains('open')) {
-            cerrarSidebar();
-        } else {
-            abrirSidebar();
-        }
-    }
-
-    function normalizarRespuesta(payload) {
-        if (!payload) {
-            return { ok: false, data: null, message: 'Respuesta vacia del servidor.' };
-        }
-
-        if (payload.ok !== undefined) {
-            return {
-                ok: payload.ok === true,
-                data: payload.data || null,
-                message: payload.message || payload.mensaje || ''
-            };
-        }
-
-        if (payload.success !== undefined) {
-            return {
-                ok: payload.success === true,
-                data: payload.data || null,
-                message: payload.message || payload.mensaje || ''
-            };
-        }
-
-        return { ok: true, data: payload, message: '' };
-    }
-
-    function actualizarBadges(data) {
-        var ordenes = data && data.ordenesActivas ? Number(data.ordenesActivas) : 0;
-        var carrito = data && data.carritoItems ? Number(data.carritoItems) : 0;
-
-        if (badgeOrders) {
-            badgeOrders.textContent = String(ordenes);
-        }
-
-        if (badgeCart) {
-            badgeCart.textContent = String(carrito);
-        }
-
-        if (topbarCartBadge) {
-            topbarCartBadge.textContent = String(carrito);
-        }
-    }
-
+    function abrirSidebar() { if (sidebar && overlay) { sidebar.classList.add('open'); overlay.classList.add('show'); document.body.classList.add('pc-sidebar-open'); } }
+    function cerrarSidebar() { if (sidebar && overlay) { sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.classList.remove('pc-sidebar-open'); } }
+    function alternarSidebar() { if (sidebar && sidebar.classList.contains('open')) cerrarSidebar(); else abrirSidebar(); }
+    function normalizar(payload) { if (!payload) return { ok: false, data: null }; if (payload.ok !== undefined) return { ok: payload.ok === true, data: payload.data || null }; if (payload.success !== undefined) return { ok: payload.success === true, data: payload.data || null }; return { ok: true, data: payload }; }
+    function setBadge(id, valor) { var el = document.getElementById(id); if (!el) return; var n = Number(valor || 0); el.textContent = String(n); el.classList.toggle('is-empty', n <= 0); }
     function cargarResumen() {
-        fetch(endpointResumen, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudo obtener el resumen.');
-                }
-                return response.json();
-            })
-            .then(function (payload) {
-                var respuesta = normalizarRespuesta(payload);
-                if (!respuesta.ok || !respuesta.data) {
-                    return;
-                }
-
-                actualizarBadges(respuesta.data);
-            })
-            .catch(function () {
-            });
+        fetch(endpointResumen + Date.now(), { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (p) { var r = normalizar(p); if (!r.ok || !r.data) return; setBadge('pcBadgeOrders', r.data.ordenesActivas); setBadge('pcBadgeCart', r.data.carritoItems); setBadge('pcTopbarCartBadge', r.data.carritoItems); })
+            .catch(function () {});
     }
 
-    if (button) {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            alternarSidebar();
-        });
-    }
+    if (button) button.addEventListener('click', function (e) { e.preventDefault(); alternarSidebar(); });
+    if (overlay) overlay.addEventListener('click', cerrarSidebar);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrarSidebar(); });
+    window.addEventListener('resize', function () { if (window.innerWidth >= 900) cerrarSidebar(); });
+    document.querySelectorAll('.pc-nav-item, .pc-bottom-item').forEach(function (link) { link.addEventListener('click', function () { if (window.innerWidth < 900) cerrarSidebar(); }); });
 
-    if (overlay) {
-        overlay.addEventListener('click', function () {
-            cerrarSidebar();
-        });
-    }
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            cerrarSidebar();
-        }
-    });
-
-    window.addEventListener('resize', function () {
-        if (window.innerWidth >= 992) {
-            cerrarSidebar();
-        }
-    });
-
-
-
-    document.querySelectorAll('.pc-nav-item, .pc-bottom-item').forEach(function (link) {
-        link.addEventListener('click', function () {
-            if (window.innerWidth < 1100) {
-                cerrarSidebar();
-            }
-        });
-    });
-
-    window.PortalCliente = window.PortalCliente || {};
-    window.PortalCliente.actualizarResumen = cargarResumen;
-    window.PortalCliente.actualizarBadges = actualizarBadges;
-
-    document.addEventListener('pc:cart-updated', function () {
-        cargarResumen();
-    });
-
-    document.addEventListener('pc:orders-updated', function () {
-        cargarResumen();
-    });
-
+    window.PortalClienteActualizarBadges = cargarResumen;
     cargarResumen();
 });
