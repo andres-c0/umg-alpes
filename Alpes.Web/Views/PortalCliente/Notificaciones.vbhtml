@@ -1,69 +1,63 @@
-@Code
+﻿@Code
     ViewData("Title") = "Notificaciones"
-    Layout = "~/Views/Shared/_PortalClientePerfilLayout.vbhtml"
+    Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 End Code
 
-<div class="pn-page">
-    <div class="pn-top">
-        <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pn-back">
-            <i class="bi bi-chevron-left"></i>
-        </a>
-
-        <div class="pn-title">Notificaciones (1)</div>
-
-        <a href="#" class="pn-markall">Marcar todo</a>
-    </div>
-
-    <div class="pn-list">
-        <div class="pn-item pn-item--active">
-            <div class="pn-icon">
-                <i class="bi bi-truck"></i>
-            </div>
-            <div class="pn-content">
-                <div class="pn-text">Tu pedido <strong>#ORD-0042</strong> está en camino</div>
-                <div class="pn-time">Hace 2 horas</div>
-            </div>
-            <div class="pn-dot"></div>
+<section class="pc-section pc-notifications-page">
+    <div class="pc-hero pc-hero-compact">
+        <div>
+            <span class="pc-eyebrow">Centro de alertas</span>
+            <h1>Notificaciones</h1>
+            <p>Consulta avisos generados desde tus pedidos, carrito y seguimiento de compras.</p>
         </div>
-
-        <div class="pn-item">
-            <div class="pn-icon">
-                <i class="bi bi-check-circle"></i>
-            </div>
-            <div class="pn-content">
-                <div class="pn-text">Pedido <strong>#ORD-0039</strong> entregado con éxito</div>
-                <div class="pn-time">Ayer</div>
-            </div>
-        </div>
-
-        <div class="pn-item">
-            <div class="pn-icon">
-                <i class="bi bi-tag"></i>
-            </div>
-            <div class="pn-content">
-                <div class="pn-text">Tienes un cupón de descuento del 10%</div>
-                <div class="pn-time">Hace 3 días</div>
-            </div>
-        </div>
-
-        <div class="pn-item">
-            <div class="pn-icon">
-                <i class="bi bi-credit-card"></i>
-            </div>
-            <div class="pn-content">
-                <div class="pn-text">Pago confirmado por Q1,890</div>
-                <div class="pn-time">Hace 5 días</div>
-            </div>
-        </div>
-
-        <div class="pn-item">
-            <div class="pn-icon">
-                <i class="bi bi-star"></i>
-            </div>
-            <div class="pn-content">
-                <div class="pn-text">Califica tu último pedido</div>
-                <div class="pn-time">Hace 7 días</div>
-            </div>
+        <div class="pc-hero-actions">
+            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="pc-btn pc-btn-gold">
+                <i class="bi bi-receipt"></i>
+                Ver pedidos
+            </a>
+            <button type="button" class="pc-btn pc-btn-outline-light" id="btnMarcarNotificaciones">
+                <i class="bi bi-check2-all"></i>
+                Marcar todo
+            </button>
         </div>
     </div>
-</div>
+
+    <div class="pc-notification-summary">
+        <div class="pc-stat-card">
+            <div class="pc-stat-number" id="notifTotal">0</div>
+            <div class="pc-stat-label">Alertas</div>
+            <i class="bi bi-bell"></i>
+        </div>
+        <div class="pc-stat-card">
+            <div class="pc-stat-number" id="notifActivas">0</div>
+            <div class="pc-stat-label">Activas</div>
+            <i class="bi bi-truck"></i>
+        </div>
+        <div class="pc-stat-card">
+            <div class="pc-stat-number" id="notifCarrito">0</div>
+            <div class="pc-stat-label">Carrito</div>
+            <i class="bi bi-cart3"></i>
+        </div>
+    </div>
+
+    <div class="pc-card pc-notification-panel">
+        <div class="pc-card-header">
+            <div>
+                <h2>Actividad reciente</h2>
+                <p>Información consultada desde la base de datos.</p>
+            </div>
+            <button type="button" class="pc-btn pc-btn-outline" id="btnActualizarNotificaciones">
+                <i class="bi bi-arrow-clockwise"></i>
+                Actualizar
+            </button>
+        </div>
+
+        <div class="pc-notification-list" id="notificacionesLista">
+            <div class="pc-loading-card">Cargando notificaciones...</div>
+        </div>
+    </div>
+</section>
+
+@Section scripts
+    <script src="@Url.Content("~/Scripts/portal-notificaciones.js?v=16")"></script>
+End Section

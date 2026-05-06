@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
     var button = document.getElementById('pcMenuButton');
     var sidebar = document.getElementById('pcSidebar');
     var overlay = document.getElementById('pcOverlay');
@@ -127,6 +127,28 @@ document.addEventListener('DOMContentLoaded', function () {
         if (window.innerWidth >= 992) {
             cerrarSidebar();
         }
+    });
+
+
+
+    document.querySelectorAll('.pc-nav-item, .pc-bottom-item').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth < 1100) {
+                cerrarSidebar();
+            }
+        });
+    });
+
+    window.PortalCliente = window.PortalCliente || {};
+    window.PortalCliente.actualizarResumen = cargarResumen;
+    window.PortalCliente.actualizarBadges = actualizarBadges;
+
+    document.addEventListener('pc:cart-updated', function () {
+        cargarResumen();
+    });
+
+    document.addEventListener('pc:orders-updated', function () {
+        cargarResumen();
     });
 
     cargarResumen();

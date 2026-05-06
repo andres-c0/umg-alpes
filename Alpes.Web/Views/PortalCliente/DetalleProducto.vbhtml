@@ -1,4 +1,4 @@
-@Code
+﻿@Code
     ViewData("Title") = "Detalle del producto"
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 
@@ -18,6 +18,6 @@ End Code
     </div>
 </div>
 
-@section scripts
-    <script src="@Url.Content("~/Scripts/portal-detalle-producto.js?v=1")"></script>
+@Section scripts
+    <script src="@Url.Content("~/Scripts/portal-detalle-producto.js?v=16")"></script>
 End Section
