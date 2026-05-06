@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
     var recomendacionesContainer = document.getElementById('piRecomendadosContainer');
     var catalogoContainer = document.getElementById('ciCatalogoContainer');
 
@@ -15,8 +15,21 @@ document.addEventListener('DOMContentLoaded', function () {
     var endpointAgregarFavorito = '/PortalCliente/AgregarFavorito';
     var endpointQuitarFavorito = '/PortalCliente/QuitarFavorito';
     var endpointAgregarCarrito = '/PortalCliente/AgregarAlCarritoData';
+    var endpointOrdenes = '/PortalCliente/ObtenerMisOrdenesData';
 
     var catalogoCompleto = [];
+
+    function formatoMonedaGTQ(valor) {
+        var numero = Number(valor || 0);
+        return 'Q' + numero.toFixed(2);
+    }
+
+    function setTexto(id, valor) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.textContent = valor;
+        }
+    }
 
     if (!recomendacionesContainer || !catalogoContainer) {
         return;
@@ -68,7 +81,47 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderEmpty(container, message) {
-        container.innerHTML = '<div class="pi-empty-card">' + escapeHtml(message) + '</div>';
+        container.innerHTML = '<div class="pi-empty-card"><i class="bi bi-box-seam"></i><span>' + escapeHtml(message) + '</span></div>';
+    }
+
+    function cargarStatsCliente() {
+        fetch(endpointOrdenes, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (payload) {
+                var respuesta = normalizarRespuesta(payload);
+                var ordenes = respuesta.ok && respuesta.data ? respuesta.data : [];
+                var total = 0;
+                var activos = 0;
+                var entregados = 0;
+                var gastado = 0;
+
+                ordenes.forEach(function (o) {
+                    var estado = String(o.EstadoUi || o.estadoUi || '').toUpperCase();
+                    total += 1;
+                    gastado += Number(o.Total || o.total || 0);
+                    if (estado === 'ENTREGADA' || estado === 'ENTREGADO') {
+                        entregados += 1;
+                    }
+                    if (estado !== 'ENTREGADA' && estado !== 'ENTREGADO' && estado !== 'CANCELADA' && estado !== 'CANCELADO') {
+                        activos += 1;
+                    }
+                });
+
+                setTexto('ciStatPedidos', String(total));
+                setTexto('ciStatActivos', String(activos));
+                setTexto('ciStatEntregados', String(entregados));
+                setTexto('ciStatGastado', formatoMonedaGTQ(gastado));
+            })
+            .catch(function () {
+                setTexto('ciStatPedidos', '0');
+                setTexto('ciStatActivos', '0');
+                setTexto('ciStatEntregados', '0');
+                setTexto('ciStatGastado', 'Q0.00');
+            });
     }
 
     function getProductoDesdeItem(item) {
@@ -95,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
             + '  <div class="pi-card-image">'
             + (imagen !== ''
                 ? '<img src="' + imagen + '" alt="' + escapeHtml(producto.Nombre || 'Producto') + '">'
-                : '<div class="pi-no-image">Sin imagen</div>')
+                : '<div class="pi-no-image"><i class="bi bi-lamp"></i><span>Sin imagen</span></div>')
             + '  </div>'
             + '  <div class="pi-card-body">'
             + '      <div class="pi-card-title">' + escapeHtml(producto.Nombre || 'Producto sin nombre') + '</div>'
@@ -108,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
             + scoreHtml
             + '      <div class="pi-card-actions">'
             + '          <a class="pi-detail-btn" href="/PortalCliente/DetalleProducto/' + escapeHtml(productoId) + '">Ver detalle</a>'
-            + '          <button type="button" class="pi-cart-btn" data-action="carrito" data-id="' + escapeHtml(productoId) + '">Agregar al carrito</button>'
+            + '          <button type="button" class="pi-cart-btn" data-action="carrito" data-id="' + escapeHtml(productoId) + '"><i class="bi bi-cart-plus"></i> Agregar</button>'
             + '          <button type="button"'
             + '                  class="' + claseBoton + '"'
             + '                  data-action="' + (esFavorito ? 'quitar' : 'agregar') + '"'
@@ -474,6 +527,7 @@ document.addEventListener('DOMContentLoaded', function () {
     recomendacionesContainer.addEventListener('click', manejarClickFavorito);
     catalogoContainer.addEventListener('click', manejarClickFavorito);
 
+    cargarStatsCliente();
     cargarCatalogo();
     cargarRecomendados();
 });
