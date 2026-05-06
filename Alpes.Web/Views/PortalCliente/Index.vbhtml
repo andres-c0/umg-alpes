@@ -1,162 +1,110 @@
 ﻿@Code
     ViewData("Title") = "Inicio"
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
-
     Dim username As String = System.Convert.ToString(ViewData("Username"))
-    If String.IsNullOrWhiteSpace(username) Then
-        username = "Cliente"
-    End If
-
+    If String.IsNullOrWhiteSpace(username) Then username = "Cliente"
+    Dim primerNombre As String = username
+    If Not String.IsNullOrWhiteSpace(username) AndAlso username.Contains(" ") Then primerNombre = username.Split(" "c)(0)
     Dim cliIdTexto As String = System.Convert.ToString(ViewData("CliId"))
 End Code
 
-<div class="ci-page" data-cli-id="@cliIdTexto">
-    <div class="ci-hero">
-        <div class="ci-hero-text">
-            <div class="ci-badge">Portal cliente</div>
-            <h1 class="ci-title">Bienvenido, @username</h1>
-            <div class="ci-hero-subtitle">
-                Explora productos, guarda tus favoritos y revisa recomendaciones basadas en tus intereses.
-            </div>
+<div class="mhome-page" data-cli-id="@cliIdTexto">
+    <section class="mhome-banner">
+        <div class="mhome-banner-copy">
+            <span class="mhome-kicker" id="mhomeSaludoHora">Bienvenido</span>
+            <h1>@primerNombre</h1>
+            <div class="mhome-status"><span></span> Cliente activo</div>
         </div>
+        <a href="@Url.Action("Busqueda", "PortalCliente")" class="mhome-banner-btn"><i class="bi bi-grid"></i> Ver catálogo</a>
+        <div class="mhome-deco"></div>
+    </section>
 
-        <div class="ci-hero-actions">
-            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="ci-hero-btn ci-hero-btn--light">
-                <i class="bi bi-heart"></i>
-                Mis favoritos
-            </a>
-            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="ci-hero-btn">
-                <i class="bi bi-person-circle"></i>
-                Mi perfil
-            </a>
+    <section class="mhome-search-wrap">
+        <div class="mhome-search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="ciBuscarProducto" placeholder="Buscar muebles, salas, comedores…" autocomplete="off" />
+            <button type="button" id="ciBtnBuscar" aria-label="Buscar"><i class="bi bi-arrow-right"></i></button>
         </div>
-    </div>
+        <div id="mhomeSearchResults" class="mhome-search-results"></div>
+    </section>
 
-
-
-    <section class="ci-stats ci-stats--home" aria-label="Resumen del cliente">
-        <article class="ci-stat-card">
-            <div class="ci-stat-copy">
-                <div class="ci-stat-number" id="ciPedidosTotal">0</div>
-                <div class="ci-stat-label">Pedidos</div>
+    <section class="mhome-stats-block">
+        <div class="mhome-section-head">
+            <div>
+                <span>Resumen de mi cuenta</span>
+                <h2>Actividad reciente</h2>
             </div>
-            <div class="ci-stat-icon"><i class="bi bi-receipt"></i></div>
+            <a href="@Url.Action("MiPerfil", "PortalCliente")">Ver perfil →</a>
+        </div>
+        <div class="mhome-kpis">
+            <article class="mhome-kpi"><div class="mhome-kpi-icon brown"><i class="bi bi-bag-check"></i></div><strong id="ciPedidosTotal">0</strong><span>PEDIDOS<br />TOTALES</span></article>
+            <article class="mhome-kpi"><div class="mhome-kpi-icon green"><i class="bi bi-truck"></i></div><strong id="ciPedidosActivos">0</strong><span>EN<br />CAMINO</span></article>
+            <article class="mhome-kpi"><div class="mhome-kpi-icon gold"><i class="bi bi-check-circle"></i></div><strong id="ciPedidosEntregados">0</strong><span>ENTREGADOS</span></article>
+            <article class="mhome-kpi"><div class="mhome-kpi-icon red"><i class="bi bi-cash"></i></div><strong id="ciTotalComprado">Q0</strong><span>TOTAL<br />GASTADO</span></article>
+        </div>
+    </section>
+
+    <section class="mhome-panels">
+        <article class="mhome-panel mhome-orders-panel">
+            <div class="mhome-panel-head">
+                <div><span>Compras</span><h2>Mis pedidos recientes</h2></div>
+                <a href="@Url.Action("MisOrdenes", "PortalCliente")">Ver todos →</a>
+            </div>
+            <div id="mhomeOrdenesRecientes" class="mhome-orders-list">
+                <div class="mhome-mini-empty">Cargando pedidos...</div>
+            </div>
         </article>
 
-        <article class="ci-stat-card">
-            <div class="ci-stat-copy">
-                <div class="ci-stat-number" id="ciPedidosActivos">0</div>
-                <div class="ci-stat-label">Activos</div>
+        <article class="mhome-panel mhome-track-panel">
+            <div class="mhome-panel-head">
+                <div><span>Seguimiento</span><h2>Último envío</h2></div>
             </div>
-            <div class="ci-stat-icon ci-gold"><i class="bi bi-truck"></i></div>
-        </article>
-
-        <article class="ci-stat-card">
-            <div class="ci-stat-copy">
-                <div class="ci-stat-number" id="ciPedidosEntregados">0</div>
-                <div class="ci-stat-label">Entregados</div>
+            <div id="mhomeTrackingActual" class="mhome-track-card">
+                <div class="mhome-mini-empty">Consultando tracking...</div>
             </div>
-            <div class="ci-stat-icon ci-green"><i class="bi bi-check-circle"></i></div>
-        </article>
-
-        <article class="ci-stat-card">
-            <div class="ci-stat-copy">
-                <div class="ci-stat-number" id="ciTotalComprado">Q0.00</div>
-                <div class="ci-stat-label">Total comprado</div>
-            </div>
-            <div class="ci-stat-icon ci-money"><i class="bi bi-cash-stack"></i></div>
         </article>
     </section>
 
-    <div class="ci-section">
-        <div class="ci-section-title">Accesos rápidos</div>
-
-        <div class="ci-quick-grid">
-            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="ci-quick-card">
-                <i class="bi bi-heart-fill"></i>
-                <span>Favoritos</span>
-            </a>
-
-            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="ci-quick-card">
-                <i class="bi bi-receipt"></i>
-                <span>Mis pedidos</span>
-            </a>
-
-            <a href="@Url.Action("MisTarjetas", "PortalCliente")" class="ci-quick-card">
-                <i class="bi bi-credit-card-2-front"></i>
-                <span>Tarjetas</span>
-            </a>
-
-            <a href="@Url.Action("Tracking", "PortalCliente")" class="ci-quick-card">
-                <i class="bi bi-truck"></i>
-                <span>Tracking</span>
-            </a>
-
-            <a href="@Url.Action("Soporte", "PortalCliente")" class="ci-quick-card">
-                <i class="bi bi-headset"></i>
-                <span>Soporte</span>
-            </a>
-
-            <a href="@Url.Action("Configuracion", "PortalCliente")" class="ci-quick-card">
-                <i class="bi bi-gear"></i>
-                <span>Configuracion</span>
-            </a>
+    <section class="mhome-quick-section">
+        <div class="mhome-section-head">
+            <div><span>Accesos</span><h2>Todo a la mano</h2></div>
         </div>
-    </div>
-
-    <div class="ci-section">
-        <div class="ci-section-title">Recomendados para ti</div>
-        <div class="ci-section-subtitle">Productos sugeridos segun tus favoritos actuales.</div>
-
-        <div id="piRecomendadosContainer" class="pi-grid">
-            <div class="pi-empty-card">Cargando recomendaciones...</div>
+        <div class="mhome-quick-row">
+            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="mhome-quick"><i class="bi bi-heart-fill"></i><span>Favoritos</span></a>
+            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="mhome-quick"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
+            <a href="@Url.Action("MisTarjetas", "PortalCliente")" class="mhome-quick"><i class="bi bi-credit-card"></i><span>Tarjetas</span></a>
+            <a href="@Url.Action("Soporte", "PortalCliente")" class="mhome-quick"><i class="bi bi-headset"></i><span>Soporte</span></a>
         </div>
-    </div>
+    </section>
 
-    <div class="ci-section">
-        <div class="ci-section-title">Catalogo</div>
-        <div class="ci-section-subtitle">Consulta los productos disponibles desde la base de datos.</div>
-
-        <div class="ci-search-card">
-            <div class="ci-search-row">
-                <input type="text" id="ciBuscarProducto" class="ci-input" placeholder="Buscar por nombre, referencia, tipo, material o color" />
-                <button type="button" id="ciBtnBuscar" class="ci-primary-btn">
-                    <i class="bi bi-search"></i>
-                    Buscar
-                </button>
-            </div>
-
-            <div class="ci-filters-grid">
-                <select id="ciFiltroCategoria" class="ci-select">
-                    <option value="">Todas las categorias</option>
-                </select>
-
-                <select id="ciFiltroTipo" class="ci-select">
-                    <option value="">Todos los tipos</option>
-                </select>
-
-                <select id="ciFiltroColor" class="ci-select">
-                    <option value="">Todos los colores</option>
-                </select>
-
-                <select id="ciFiltroMaterial" class="ci-select">
-                    <option value="">Todos los materiales</option>
-                </select>
-            </div>
-
-            <div class="ci-filter-actions">
-                <button type="button" id="ciBtnLimpiar" class="ci-secondary-btn">
-                    Limpiar filtros
-                </button>
-            </div>
+    <section class="mhome-products-section">
+        <div class="mhome-section-head">
+            <div><span>Para ti</span><h2>Recomendados</h2></div>
+            <a href="@Url.Action("Busqueda", "PortalCliente")">Ver catálogo →</a>
         </div>
-
-        <div id="ciCatalogoContainer" class="pi-grid">
-            <div class="pi-empty-card">Cargando catalogo...</div>
+        <div id="piRecomendadosContainer" class="mhome-product-strip">
+            <div class="mhome-mini-empty">Cargando recomendaciones...</div>
         </div>
-    </div>
+    </section>
+
+    <section class="mhome-products-section">
+        <div class="mhome-section-head">
+            <div><span>Tienda</span><h2>Todos los productos</h2></div>
+            <a href="@Url.Action("Busqueda", "PortalCliente")">Ver completo →</a>
+        </div>
+        <div class="mhome-filter-pill-row" aria-label="Filtros rápidos">
+            <select id="ciFiltroCategoria"><option value="">Todas</option></select>
+            <select id="ciFiltroTipo"><option value="">Todos los tipos</option></select>
+            <select id="ciFiltroColor"><option value="">Colores</option></select>
+            <select id="ciFiltroMaterial"><option value="">Materiales</option></select>
+            <button type="button" id="ciBtnLimpiar">Limpiar</button>
+        </div>
+        <div id="ciCatalogoContainer" class="mhome-product-grid">
+            <div class="mhome-mini-empty">Cargando catálogo...</div>
+        </div>
+    </section>
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-inicio.js?v=16")"></script>
+    <script src="@Url.Content("~/Scripts/portal-inicio.js?v=18")"></script>
 End Section
