@@ -1,4 +1,4 @@
-@Code
+﻿@Code
     Dim username As String = System.Convert.ToString(ViewData("Username"))
 
     If String.IsNullOrWhiteSpace(username) AndAlso Session("Username") IsNot Nothing Then
@@ -84,6 +84,9 @@ End Code
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData("Title") - Muebles de los Alpes</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     @Styles.Render("~/Content/css")
     <link rel="stylesheet" href="@Url.Content("~/Content/portal-cliente.css")" />
@@ -93,8 +96,13 @@ End Code
         <aside class="pc-sidebar" id="pcSidebar">
             <div>
                 <div class="pc-brand">
-                    <div class="pc-brand-title">Muebles de los Alpes</div>
-                    <div class="pc-brand-subtitle">Panel del cliente</div>
+                    <div class="pc-brand-row">
+                        <div class="pc-brand-icon"><i class="bi bi-lamp"></i></div>
+                        <div>
+                            <div class="pc-brand-title">Muebles de los Alpes</div>
+                            <div class="pc-brand-subtitle">Artesanía · Calidad · Elegancia</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="pc-nav-group-title">COMERCIAL</div>
@@ -165,7 +173,13 @@ End Code
                     <i class="bi bi-list"></i>
                 </button>
 
-                <div class="pc-topbar-title">@ViewData("Title")</div>
+                <div class="pc-topbar-brand">
+                    <div class="pc-topbar-mark"><i class="bi bi-lamp"></i></div>
+                    <div>
+                        <div class="pc-topbar-title">@ViewData("Title")</div>
+                        <div class="pc-topbar-subtitle">Muebles de los Alpes</div>
+                    </div>
+                </div>
 
                 <div class="pc-topbar-actions">
                     <a href="@Url.Action("Notificaciones", "PortalCliente")" class="pc-topbar-icon">
@@ -185,6 +199,14 @@ End Code
                 @RenderBody()
             </div>
         </main>
+
+        <nav class="pc-bottom-nav" aria-label="Navegación cliente móvil">
+            <a href="@Url.Action("Index", "PortalCliente")" class="pc-bottom-item @(If(claseInicio.Contains("active"), "active", ""))"><i class="bi bi-house"></i><span>Inicio</span></a>
+            <a href="@Url.Action("Index", "PortalCliente")#catalogo" class="pc-bottom-item @(If(claseCatalogo.Contains("active"), "active", ""))"><i class="bi bi-grid"></i><span>Catálogo</span></a>
+            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="pc-bottom-item @(If(claseFavoritos.Contains("active"), "active", ""))"><i class="bi bi-heart"></i><span>Favoritos</span></a>
+            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="pc-bottom-item @(If(claseMisOrdenes.Contains("active"), "active", ""))"><i class="bi bi-receipt"></i><span>Órdenes</span></a>
+            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-bottom-item @(If(claseMiPerfil.Contains("active"), "active", ""))"><i class="bi bi-person"></i><span>Perfil</span></a>
+        </nav>
     </div>
 
     @Scripts.Render("~/bundles/jquery")
