@@ -3,6 +3,12 @@
 @Code
     Layout = Nothing
     ViewData("Title") = "Iniciar sesión"
+
+    Dim returnUrl As String = ""
+
+    If ViewData("ReturnUrl") IsNot Nothing Then
+        returnUrl = ViewData("ReturnUrl").ToString()
+    End If
 End Code
 
 <!DOCTYPE html>
@@ -52,6 +58,9 @@ End Code
 
                 @Using Html.BeginForm("Login", "Home", FormMethod.Post)
                     @Html.AntiForgeryToken()
+
+                    @Html.Hidden("returnUrl", returnUrl)
+                    @Html.Hidden("ReturnUrl", returnUrl)
 
                     @<div class="a-form-group">
                         <label for="Username">Usuario</label>

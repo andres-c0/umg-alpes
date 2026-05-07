@@ -250,10 +250,17 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
+    <Content Include="Content\home-publico.css" />
+    <Content Include="Scripts\carrito-invitado.js" />
+    <Content Include="Scripts\home-publico.js" />
     <Content Include="Scripts\portal-busqueda.js" />
     <Content Include="Scripts\portal-resenas.js" />
+    <Content Include="Scripts\producto-publico-detalle.js" />
     <Content Include="Views\PortalCliente\Busqueda.vbhtml" />
     <Content Include="Views\PortalCliente\MisResenas.vbhtml" />
+    <Content Include="Views\Shared\_PublicLayout.vbhtml" />
+    <Content Include="Views\Home\DetalleProducto.vbhtml" />
+    <Content Include="Views\Home\CarritoInvitado.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

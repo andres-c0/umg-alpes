@@ -4,6 +4,8 @@ Option Explicit On
 Imports System
 Imports System.Linq
 Imports System.Web.Mvc
+Imports System.Collections.Generic
+Imports Alpes.Entidades.Inventario
 Imports Alpes.Servicios.Servicios
 Imports Alpes.Web.Models
 Imports Alpes.Entidades.Seguridad
@@ -14,22 +16,147 @@ Namespace Controllers
         Inherits Controller
 
         Private ReadOnly _usuarioServicio As UsuarioServicio
+        Private ReadOnly _productoServicio As ProductoServicio
+        Private ReadOnly _precioHistoricoServicio As Precio_HistoricoServicio
 
         Public Sub New()
             _usuarioServicio = New UsuarioServicio()
+            _productoServicio = New ProductoServicio()
+            _precioHistoricoServicio = New Precio_HistoricoServicio()
         End Sub
 
         Function Index() As ActionResult
-            Return RedirectToAction("Login", "Home")
+            Return View()
+        End Function
+
+        Function DetalleProducto(ByVal id As Integer) As ActionResult
+            If id <= 0 Then
+                Return RedirectToAction("Index", "Home")
+            End If
+
+            ViewData("ProductoId") = id
+
+            Return View()
+        End Function
+
+        Function CarritoInvitado() As ActionResult
+            Return View()
         End Function
 
         <HttpGet>
-        Function Login() As ActionResult
+        Function ObtenerProductosPublicosData(Optional ByVal tipo As String = "",
+                                              Optional ByVal categoria As String = "",
+                                              Optional ByVal q As String = "",
+                                              Optional ByVal limite As Integer = 0) As ActionResult
+            Try
+                Dim productos As List(Of Producto) = _productoServicio.Listar()
+                Dim precios As List(Of Precio_Historico) = ObtenerPreciosActivosSeguros()
+                Dim resultado As New List(Of Object)()
+
+                If productos Is Nothing Then
+                    productos = New List(Of Producto)()
+                End If
+
+                Dim filtroTipo As String = If(Not String.IsNullOrWhiteSpace(tipo), tipo, categoria)
+
+                If filtroTipo Is Nothing Then
+                    filtroTipo = String.Empty
+                End If
+
+                filtroTipo = filtroTipo.Trim().ToUpperInvariant()
+
+                If filtroTipo = "TODOS" OrElse filtroTipo = "TODO" OrElse filtroTipo = "ALL" Then
+                    filtroTipo = String.Empty
+                End If
+
+                Dim busqueda As String = If(q, String.Empty).Trim()
+
+                For Each producto As Producto In productos
+                    If producto Is Nothing Then
+                        Continue For
+                    End If
+
+                    If Not String.Equals(If(producto.Estado, String.Empty).Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                        Continue For
+                    End If
+
+                    If Not String.IsNullOrWhiteSpace(filtroTipo) Then
+                        If Not String.Equals(If(producto.Tipo, String.Empty).Trim(), filtroTipo, StringComparison.OrdinalIgnoreCase) Then
+                            Continue For
+                        End If
+                    End If
+
+                    If Not CoincideBusquedaProducto(producto, busqueda) Then
+                        Continue For
+                    End If
+
+                    Dim productoCompleto As Producto = ObtenerProductoCompletoSeguro(producto)
+                    resultado.Add(CrearProductoPublicoDto(productoCompleto, precios))
+
+                    If limite > 0 AndAlso resultado.Count >= limite Then
+                        Exit For
+                    End If
+                Next
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .total = resultado.Count,
+                    .data = resultado
+                }, JsonRequestBehavior.AllowGet)
+
+            Catch ex As Exception
+                Return JsonError("No se pudieron obtener los productos públicos: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+        <HttpGet>
+        Function ObtenerProductoPublicoData(ByVal id As Integer) As ActionResult
+            Try
+                If id <= 0 Then
+                    Return JsonError("Debe enviar un producto válido.", 400, JsonRequestBehavior.AllowGet)
+                End If
+
+                Dim producto As Producto = _productoServicio.ObtenerPorId(id)
+
+                If producto Is Nothing OrElse producto.ProductoId <= 0 Then
+                    Return JsonError("No se encontró el producto.", 404, JsonRequestBehavior.AllowGet)
+                End If
+
+                If Not String.Equals(If(producto.Estado, String.Empty).Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                    Return JsonError("El producto no está disponible.", 404, JsonRequestBehavior.AllowGet)
+                End If
+
+                Dim precios As List(Of Precio_Historico) = ObtenerPreciosActivosSeguros()
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .data = CrearProductoPublicoDto(producto, precios)
+                }, JsonRequestBehavior.AllowGet)
+
+            Catch ex As Exception
+                Return JsonError("No se pudo obtener el producto: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+        <HttpGet>
+        Function Login(Optional ByVal returnUrl As String = "") As ActionResult
+            Dim returnUrlSeguro As String = ObtenerReturnUrlSeguro(returnUrl)
+
+            ViewData("ReturnUrl") = returnUrlSeguro
+
             If TempData("Error") IsNot Nothing Then
                 ViewData("Error") = TempData("Error").ToString()
             End If
 
             If Session("UsuarioId") IsNot Nothing Then
+                Dim rolId As Integer = ObtenerRolIdDesdeSesion()
+
+                If Not String.IsNullOrWhiteSpace(returnUrlSeguro) AndAlso EsRolCliente(rolId) Then
+                    Return Redirect(returnUrlSeguro)
+                End If
+
                 Return RedirigirSegunSesionActual()
             End If
 
@@ -38,10 +165,18 @@ Namespace Controllers
 
         <HttpPost>
         <ValidateAntiForgeryToken>
-        Function Login(ByVal model As LoginViewModel) As ActionResult
+        Function Login(ByVal model As LoginViewModel, Optional ByVal returnUrl As String = "") As ActionResult
             If model Is Nothing Then
                 model = New LoginViewModel()
             End If
+
+            Dim returnUrlSeguro As String = ObtenerReturnUrlSeguro(returnUrl)
+
+            If String.IsNullOrWhiteSpace(returnUrlSeguro) Then
+                returnUrlSeguro = ObtenerReturnUrlSeguro(Request.Form("ReturnUrl"))
+            End If
+
+            ViewData("ReturnUrl") = returnUrlSeguro
 
             Dim usernameForm As String = Request.Form("Username")
             If String.IsNullOrWhiteSpace(usernameForm) Then
@@ -79,6 +214,10 @@ Namespace Controllers
 
                 Dim usuarios As List(Of Usuario) = _usuarioServicio.Buscar(usernameIngresado)
 
+                If usuarios Is Nothing Then
+                    usuarios = New List(Of Usuario)()
+                End If
+
                 Dim usuario As Usuario = usuarios.FirstOrDefault(
                     Function(u) u.Username IsNot Nothing AndAlso
                                 String.Equals(u.Username.Trim(), usernameIngresado, StringComparison.OrdinalIgnoreCase)
@@ -103,6 +242,10 @@ Namespace Controllers
                 End If
 
                 GuardarSesionUsuario(usuario)
+
+                If Not String.IsNullOrWhiteSpace(returnUrlSeguro) AndAlso EsRolCliente(usuario.RolId) Then
+                    Return Redirect(returnUrlSeguro)
+                End If
 
                 Return RedirigirSegunRolUsuario(usuario)
 
@@ -163,6 +306,11 @@ Namespace Controllers
 
             Try
                 Dim coincidenciasUsuario As List(Of Usuario) = _usuarioServicio.Buscar(model.Username.Trim())
+
+                If coincidenciasUsuario Is Nothing Then
+                    coincidenciasUsuario = New List(Of Usuario)()
+                End If
+
                 Dim existeUsuario As Boolean = coincidenciasUsuario.Any(
                     Function(u) u.Username IsNot Nothing AndAlso
                                 String.Equals(u.Username.Trim(), model.Username.Trim(), StringComparison.OrdinalIgnoreCase)
@@ -174,6 +322,11 @@ Namespace Controllers
                 End If
 
                 Dim coincidenciasEmail As List(Of Usuario) = _usuarioServicio.Buscar(model.Email.Trim())
+
+                If coincidenciasEmail Is Nothing Then
+                    coincidenciasEmail = New List(Of Usuario)()
+                End If
+
                 Dim existeEmail As Boolean = coincidenciasEmail.Any(
                     Function(u) u.Email IsNot Nothing AndAlso
                                 String.Equals(u.Email.Trim(), model.Email.Trim(), StringComparison.OrdinalIgnoreCase)
@@ -216,7 +369,7 @@ Namespace Controllers
         Function Logout() As ActionResult
             Session.Clear()
             Session.Abandon()
-            Return RedirectToAction("Login")
+            Return RedirectToAction("Index", "Home")
         End Function
 
         Private Sub GuardarSesionUsuario(ByVal usuario As Usuario)
@@ -286,9 +439,6 @@ Namespace Controllers
                 Return False
             End If
 
-            ' REGLA:
-            ' Si el rol es CLIENTE, entra al portal de cliente.
-            ' Si el rol NO es CLIENTE, entra al panel de administración.
             Return Not EsNombreRolCliente(nombreRol)
         End Function
 
@@ -330,6 +480,11 @@ Namespace Controllers
             Try
                 Dim rolSrv As New RolServicio()
                 Dim roles = rolSrv.Buscar(nombreRol.Trim())
+
+                If roles Is Nothing Then
+                    roles = New List(Of Rol)()
+                End If
+
                 Dim rol = roles.FirstOrDefault(
                     Function(r) r.RolNombre IsNot Nothing AndAlso
                                 String.Equals(r.RolNombre.Trim(), nombreRol.Trim(), StringComparison.OrdinalIgnoreCase) AndAlso
@@ -354,6 +509,237 @@ Namespace Controllers
             End If
 
             Return rolId
+        End Function
+
+        <NonAction>
+        Private Function CrearProductoPublicoDto(ByVal producto As Producto,
+                                                 ByVal precios As List(Of Precio_Historico)) As Object
+            Dim precioActual As Decimal = ObtenerPrecioActualProducto(producto.ProductoId, precios)
+            Dim cuota12 As Decimal = 0D
+
+            If precioActual > 0D Then
+                cuota12 = Math.Round(precioActual / 12D, 2)
+            End If
+
+            Return New With {
+                .ProductoId = producto.ProductoId,
+                .Referencia = If(producto.Referencia, String.Empty),
+                .Nombre = If(producto.Nombre, String.Empty),
+                .Descripcion = If(producto.Descripcion, String.Empty),
+                .Tipo = If(producto.Tipo, String.Empty),
+                .Material = If(producto.Material, String.Empty),
+                .Color = If(producto.Color, String.Empty),
+                .AltoCm = If(producto.AltoCm.HasValue, producto.AltoCm.Value, 0D),
+                .AnchoCm = If(producto.AnchoCm.HasValue, producto.AnchoCm.Value, 0D),
+                .ProfundidadCm = If(producto.ProfundidadCm.HasValue, producto.ProfundidadCm.Value, 0D),
+                .PesoGramos = If(producto.PesoGramos.HasValue, producto.PesoGramos.Value, 0D),
+                .ImagenUrl = If(producto.ImagenUrl, String.Empty),
+                .CategoriaId = producto.CategoriaId,
+                .Estado = If(producto.Estado, String.Empty),
+                .PrecioActual = precioActual,
+                .PrecioFormateado = FormatearMoneda(precioActual),
+                .Cuota12 = cuota12,
+                .Cuota12Formateada = FormatearMoneda(cuota12)
+            }
+        End Function
+
+        <NonAction>
+        Private Function ObtenerPreciosActivosSeguros() As List(Of Precio_Historico)
+            Try
+                Dim precios As List(Of Precio_Historico) = _precioHistoricoServicio.Listar()
+
+                If precios Is Nothing Then
+                    Return New List(Of Precio_Historico)()
+                End If
+
+                Return precios
+            Catch
+                Return New List(Of Precio_Historico)()
+            End Try
+        End Function
+
+        <NonAction>
+        Private Function ObtenerPrecioActualProducto(ByVal productoId As Integer,
+                                                     ByVal precios As List(Of Precio_Historico)) As Decimal
+            If productoId <= 0 Then
+                Return 0D
+            End If
+
+            If precios Is Nothing OrElse precios.Count = 0 Then
+                Return 0D
+            End If
+
+            Dim vigente As Precio_Historico = Nothing
+            Dim ahora As DateTime = DateTime.Now
+
+            For Each precio As Precio_Historico In precios
+                If precio Is Nothing Then
+                    Continue For
+                End If
+
+                If precio.ProductoId <> productoId Then
+                    Continue For
+                End If
+
+                If Not String.IsNullOrWhiteSpace(precio.Estado) AndAlso
+                   Not String.Equals(precio.Estado.Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                    Continue For
+                End If
+
+                Dim inicioOk As Boolean = (precio.VigenciaInicio = DateTime.MinValue OrElse ahora >= precio.VigenciaInicio)
+                Dim finOk As Boolean = (Not precio.VigenciaFin.HasValue OrElse ahora <= precio.VigenciaFin.Value)
+
+                If Not inicioOk OrElse Not finOk Then
+                    Continue For
+                End If
+
+                If vigente Is Nothing Then
+                    vigente = precio
+                ElseIf precio.VigenciaInicio > vigente.VigenciaInicio Then
+                    vigente = precio
+                End If
+            Next
+
+            If vigente IsNot Nothing Then
+                Return vigente.Precio
+            End If
+
+            Return 0D
+        End Function
+
+        <NonAction>
+        Private Function CoincideBusquedaProducto(ByVal producto As Producto,
+                                                  ByVal busqueda As String) As Boolean
+            If String.IsNullOrWhiteSpace(busqueda) Then
+                Return True
+            End If
+
+            Dim texto As String = busqueda.Trim()
+
+            If ContieneTexto(producto.Nombre, texto) Then
+                Return True
+            End If
+
+            If ContieneTexto(producto.Referencia, texto) Then
+                Return True
+            End If
+
+            If ContieneTexto(producto.Descripcion, texto) Then
+                Return True
+            End If
+
+            If ContieneTexto(producto.Material, texto) Then
+                Return True
+            End If
+
+            If ContieneTexto(producto.Color, texto) Then
+                Return True
+            End If
+
+            If ContieneTexto(producto.Tipo, texto) Then
+                Return True
+            End If
+
+            Return False
+        End Function
+
+        <NonAction>
+        Private Function ContieneTexto(ByVal origen As String,
+                                       ByVal texto As String) As Boolean
+            If String.IsNullOrWhiteSpace(origen) OrElse String.IsNullOrWhiteSpace(texto) Then
+                Return False
+            End If
+
+            Return origen.IndexOf(texto, StringComparison.OrdinalIgnoreCase) >= 0
+        End Function
+
+        <NonAction>
+        Private Function FormatearMoneda(ByVal monto As Decimal) As String
+            Return "Q " & monto.ToString("N2")
+        End Function
+
+        <NonAction>
+        Private Function JsonError(ByVal message As String,
+                                   Optional ByVal statusCode As Integer = 400,
+                                   Optional ByVal behavior As JsonRequestBehavior = JsonRequestBehavior.DenyGet) As ActionResult
+            Response.StatusCode = statusCode
+
+            Return Json(New With {
+                .ok = False,
+                .success = False,
+                .message = message
+            }, behavior)
+        End Function
+
+        <NonAction>
+        Private Function LimpiarMensaje(ByVal message As String) As String
+            If String.IsNullOrWhiteSpace(message) Then
+                Return "Ocurrió un error inesperado."
+            End If
+
+            Dim partes() As String = message.Replace(vbCrLf, vbLf).Split(ControlChars.Lf)
+            Return partes(0).Trim()
+        End Function
+
+        <NonAction>
+        Private Function ObtenerProductoCompletoSeguro(ByVal productoListado As Producto) As Producto
+            If productoListado Is Nothing OrElse productoListado.ProductoId <= 0 Then
+                Return productoListado
+            End If
+
+            Try
+                Dim productoDetalle As Producto = _productoServicio.ObtenerPorId(productoListado.ProductoId)
+
+                If productoDetalle IsNot Nothing AndAlso productoDetalle.ProductoId > 0 Then
+                    If String.IsNullOrWhiteSpace(productoDetalle.Estado) Then
+                        productoDetalle.Estado = productoListado.Estado
+                    End If
+
+                    If productoDetalle.CategoriaId <= 0 Then
+                        productoDetalle.CategoriaId = productoListado.CategoriaId
+                    End If
+
+                    If String.IsNullOrWhiteSpace(productoDetalle.Tipo) Then
+                        productoDetalle.Tipo = productoListado.Tipo
+                    End If
+
+                    If String.IsNullOrWhiteSpace(productoDetalle.Nombre) Then
+                        productoDetalle.Nombre = productoListado.Nombre
+                    End If
+
+                    If String.IsNullOrWhiteSpace(productoDetalle.Referencia) Then
+                        productoDetalle.Referencia = productoListado.Referencia
+                    End If
+
+                    Return productoDetalle
+                End If
+            Catch
+            End Try
+
+            Return productoListado
+        End Function
+
+        <NonAction>
+        Private Function ObtenerReturnUrlSeguro(ByVal returnUrl As String) As String
+            If String.IsNullOrWhiteSpace(returnUrl) Then
+                Return String.Empty
+            End If
+
+            Dim ruta As String = returnUrl.Trim()
+
+            If ruta.StartsWith("//") OrElse ruta.StartsWith("\") Then
+                Return String.Empty
+            End If
+
+            If Not ruta.StartsWith("/") Then
+                Return String.Empty
+            End If
+
+            If ruta.Contains("://") Then
+                Return String.Empty
+            End If
+
+            Return ruta
         End Function
 
     End Class
