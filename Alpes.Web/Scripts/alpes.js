@@ -71,7 +71,9 @@ var AlpesSession = {
     },
     isAdmin: function () {
         var u = this.get();
-        return u && u.ROL_ID !== 3;
+        if (!u) return false;
+        var rol = u.ROL_ID || u.RolId || u.rol_id || u.rolId || 0;
+        return rol === 27 || rol === 28;
     },
     getClienteId: function () {
         var u = this.get();
@@ -205,7 +207,7 @@ var AlpesSidebar = {
         $(document).on('click', '.a-sidebar__logout, [data-action="logout"]', function () {
             AlpesSession.clear();
             AlpesCarrito.limpiar();
-            window.location.href = '/Home/Login';
+            window.location.href = '/Home/Logout';
         });
     }
 };
@@ -252,11 +254,6 @@ var AlpesUtil = {
 $(function () {
     AlpesSidebar.init();
 
-    // Auth guard
-    var publicPaths = ['/Home/Login', '/Home/Registro', '/Home/Index'];
-    var path = window.location.pathname;
-    var isPublic = publicPaths.some(function (p) { return path.indexOf(p) >= 0; });
-    if (!isPublic && !AlpesSession.isLoggedIn()) {
-        window.location.href = '/Home/Login';
-    }
+    // La validación de acceso se maneja desde MVC con Session.
+    // No redirigimos por localStorage porque el login del proyecto usa Session del servidor.
 });

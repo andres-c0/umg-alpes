@@ -10,34 +10,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function normalizarRespuesta(payload) {
         if (!payload) {
-            return { ok: false, data: null, message: 'Respuesta vacía del servidor.' };
+            return { ok: false, data: [], message: 'Respuesta vacía del servidor.' };
         }
 
-        if (payload.ok !== undefined) {
-            return {
-                ok: payload.ok === true,
-                data: payload.data || null,
-                message: payload.message || payload.mensaje || ''
-            };
+        var data = [];
+        if (Array.isArray(payload)) {
+            data = payload;
+        } else if (Array.isArray(payload.data)) {
+            data = payload.data;
+        } else if (payload.data && Array.isArray(payload.data.favoritos)) {
+            data = payload.data.favoritos;
+        } else if (payload.favoritos && Array.isArray(payload.favoritos)) {
+            data = payload.favoritos;
         }
 
-        if (payload.success !== undefined) {
+        if (payload.ok !== undefined || payload.success !== undefined) {
             return {
-                ok: payload.success === true,
-                data: payload.data || null,
+                ok: payload.ok === true || payload.success === true,
+                data: data,
                 message: payload.message || payload.mensaje || ''
             };
         }
 
         return {
             ok: true,
-            data: payload,
+            data: data,
             message: ''
         };
     }
 
     function escapeHtml(value) {
-        return String(value || '')
+        return String(value === null || value === undefined ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -45,13 +48,46 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/'/g, '&#39;');
     }
 
+    function obtenerValor(obj, nombres, defecto) {
+        var i;
+        if (!obj) {
+            return defecto || '';
+        }
+        for (i = 0; i < nombres.length; i += 1) {
+            if (obj[nombres[i]] !== undefined && obj[nombres[i]] !== null && obj[nombres[i]] !== '') {
+                return obj[nombres[i]];
+            }
+        }
+        return defecto || '';
+    }
+
+    function formatoQuetzal(valor) {
+        var numero = Number(valor || 0);
+        if (Number.isNaN(numero)) {
+            numero = 0;
+        }
+        return 'Q' + numero.toFixed(2);
+    }
+
+    function mostrarToast(mensaje, tipo) {
+        var toast = document.createElement('div');
+        toast.className = 'pc-toast pc-toast--' + (tipo || 'ok');
+        toast.textContent = mensaje;
+        document.body.appendChild(toast);
+        window.setTimeout(function () { toast.classList.add('show'); }, 10);
+        window.setTimeout(function () {
+            toast.classList.remove('show');
+            window.setTimeout(function () { toast.remove(); }, 220);
+        }, 2600);
+    }
+
     function renderVacio(mensaje) {
         container.innerHTML = ''
-            + '<div class="pf-card pf-card-empty">'
-            + '  <div class="pf-info">'
-            + '      <div class="pf-name">Sin favoritos</div>'
-            + '      <div class="pf-desc">' + escapeHtml(mensaje || 'No hay productos favoritos para mostrar.') + '</div>'
-            + '  </div>'
+            + '<div class="fav-empty-card">'
+            + '  <div class="fav-empty-icon"><i class="bi bi-heart"></i></div>'
+            + '  <strong>Sin favoritos</strong>'
+            + '  <span>' + escapeHtml(mensaje || 'No hay productos favoritos para mostrar.') + '</span>'
+            + '  <a href="/PortalCliente/Index#catalogo" class="fav-empty-link">Explorar catálogo</a>'
             + '</div>';
     }
 
@@ -65,47 +101,72 @@ document.addEventListener('DOMContentLoaded', function () {
         var i;
 
         for (i = 0; i < items.length; i += 1) {
-            var item = items[i];
-            var producto = item.Producto || {};
-            var imagen = producto.ImagenUrl ? escapeHtml(producto.ImagenUrl) : '';
-            var imagenHtml = imagen !== ''
-                ? '<div class="pf-image"><img src="' + imagen + '" alt="' + escapeHtml(producto.Nombre || 'Producto') + '"></div>'
-                : '<div class="pf-image pf-image-empty"><span>Sin imagen</span></div>';
+            var item = items[i] || {};
+            var producto = item.Producto || item.producto || item;
+            var listaDeseosId = obtenerValor(item, ['ListaDeseosId', 'LISTA_DESEOS_ID', 'listaDeseosId', 'lista_deseos_id'], '');
+            var productoId = obtenerValor(producto, ['ProductoId', 'PRODUCTO_ID', 'productoId', 'producto_id'], '');
+            var nombre = obtenerValor(producto, ['Nombre', 'NOMBRE', 'nombre'], 'Producto sin nombre');
+            var descripcion = obtenerValor(producto, ['Descripcion', 'DESCRIPCION', 'descripcion', 'Tipo', 'TIPO', 'tipo'], 'Sin descripción disponible');
+            var referencia = obtenerValor(producto, ['Referencia', 'REFERENCIA', 'referencia', 'Codigo', 'CODIGO', 'codigo'], '');
+            var material = obtenerValor(producto, ['Material', 'MATERIAL', 'material'], '');
+            var color = obtenerValor(producto, ['Color', 'COLOR', 'color'], '');
+            var imagen = obtenerValor(producto, ['ImagenUrl', 'IMAGEN_URL', 'imagenUrl', 'imagen_url', 'UrlImagen', 'URL_IMAGEN'], '');
+            var precio = obtenerValor(producto, ['PrecioActual', 'PRECIO_ACTUAL', 'Precio', 'PRECIO', 'precio'], 0);
 
             html += ''
-                + '<div class="pf-card" data-lista-deseos-id="' + escapeHtml(item.ListaDeseosId) + '" data-producto-id="' + escapeHtml(producto.ProductoId) + '">'
-                + imagenHtml
-                + '  <div class="pf-info">'
-                + '      <div class="pf-name">' + escapeHtml(producto.Nombre || 'Producto sin nombre') + '</div>'
-                + '      <div class="pf-desc">' + escapeHtml(producto.Descripcion || producto.Tipo || 'Sin descripción disponible') + '</div>'
-                + '      <div class="pf-meta">'
-                + '          <span>' + escapeHtml(producto.Referencia || '') + '</span>'
-                + '          <span>' + escapeHtml(producto.Material || '') + '</span>'
-                + '          <span>' + escapeHtml(producto.Color || '') + '</span>'
+                + '<article class="fav-card" data-lista-deseos-id="' + escapeHtml(listaDeseosId) + '" data-producto-id="' + escapeHtml(productoId) + '">'
+                + '  <a class="fav-image" href="/PortalCliente/DetalleProducto/' + escapeHtml(productoId) + '">'
+                + (imagen !== ''
+                    ? '<img src="' + escapeHtml(imagen) + '" alt="' + escapeHtml(nombre) + '">'
+                    : '<div class="fav-no-image"><i class="bi bi-image"></i><span>Sin imagen</span></div>')
+                + '  </a>'
+                + '  <div class="fav-body">'
+                + '      <div class="fav-body-top">'
+                + '          <h3>' + escapeHtml(nombre) + '</h3>'
+                + '          <button type="button" class="fav-remove-icon" data-action="remove" data-id="' + escapeHtml(listaDeseosId) + '" aria-label="Quitar favorito"><i class="bi bi-x-lg"></i></button>'
                 + '      </div>'
-                + '      <div class="pf-actions">'
-                + '          <button type="button" class="pf-remove-btn" data-action="remove" data-id="' + escapeHtml(item.ListaDeseosId) + '">Quitar</button>'
+                + '      <p>' + escapeHtml(descripcion) + '</p>'
+                + '      <div class="fav-meta">'
+                + (referencia ? '<span>' + escapeHtml(referencia) + '</span>' : '')
+                + (material ? '<span>' + escapeHtml(material) + '</span>' : '')
+                + (color ? '<span>' + escapeHtml(color) + '</span>' : '')
+                + '      </div>'
+                + '      <div class="fav-footer">'
+                + '          <strong>' + formatoQuetzal(precio) + '</strong>'
+                + '          <a href="/PortalCliente/DetalleProducto/' + escapeHtml(productoId) + '" class="fav-detail-btn">Ver detalle</a>'
                 + '      </div>'
                 + '  </div>'
-                + '</div>';
+                + '</article>';
         }
 
         container.innerHTML = html;
     }
 
     function cargarFavoritos() {
-        fetch(endpointListar, {
+        fetch(endpointListar + '?_=' + Date.now(), {
             method: 'GET',
             credentials: 'same-origin',
+            cache: 'no-store',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
             .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudieron obtener los favoritos.');
-                }
-                return response.json();
+                return response.text().then(function (text) {
+                    var payload = null;
+                    if (text) {
+                        try {
+                            payload = JSON.parse(text);
+                        } catch (e) {
+                            throw new Error('La sesión pudo haber expirado o el servidor devolvió HTML en lugar de JSON.');
+                        }
+                    }
+                    if (!response.ok) {
+                        var msg = payload && (payload.message || payload.mensaje) ? (payload.message || payload.mensaje) : 'No se pudieron obtener los favoritos.';
+                        throw new Error(msg);
+                    }
+                    return payload;
+                });
             })
             .then(function (payload) {
                 var respuesta = normalizarRespuesta(payload);
@@ -155,22 +216,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var listaDeseosId = button.getAttribute('data-id');
-
         if (!listaDeseosId) {
+            mostrarToast('No se encontró el identificador del favorito.', 'error');
             return;
         }
 
-        if (!window.confirm('¿Deseas quitar este producto de tus favoritos?')) {
-            return;
-        }
+        button.disabled = true;
+        button.classList.add('is-loading');
 
         quitarFavorito(listaDeseosId)
             .then(function (respuesta) {
-                alert(respuesta.message || 'Favorito eliminado correctamente.');
+                mostrarToast(respuesta.message || respuesta.mensaje || 'Favorito eliminado correctamente.', 'ok');
                 cargarFavoritos();
             })
             .catch(function (error) {
-                alert(error.message || 'No se pudo eliminar el favorito.');
+                button.disabled = false;
+                button.classList.remove('is-loading');
+                mostrarToast(error.message || 'No se pudo eliminar el favorito.', 'error');
             });
     });
 

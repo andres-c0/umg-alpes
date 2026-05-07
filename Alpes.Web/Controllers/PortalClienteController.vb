@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
 Imports System
@@ -32,6 +32,7 @@ Namespace Controllers
         Private ReadOnly _cuponServicio As CuponServicio
         Private ReadOnly _precioHistoricoServicio As Precio_HistoricoServicio
         Private ReadOnly _estadoOrdenServicio As Estado_OrdenServicio
+        Private ReadOnly _resenaComentarioServicio As ResenaComentarioServicio
 
         Public Sub New()
             _clienteServicio = New ClienteServicio()
@@ -49,9 +50,19 @@ Namespace Controllers
             _cuponServicio = New CuponServicio()
             _precioHistoricoServicio = New Precio_HistoricoServicio()
             _estadoOrdenServicio = New Estado_OrdenServicio()
+            _resenaComentarioServicio = New ResenaComentarioServicio()
         End Sub
 
         Function Index() As ActionResult
+            Dim acceso As ActionResult = ValidarSesionCliente()
+            If acceso IsNot Nothing Then
+                Return acceso
+            End If
+
+            Return View()
+        End Function
+
+        Function Busqueda() As ActionResult
             Dim acceso As ActionResult = ValidarSesionCliente()
             If acceso IsNot Nothing Then
                 Return acceso
@@ -79,6 +90,15 @@ Namespace Controllers
         End Function
 
         Function MisFavoritos() As ActionResult
+            Dim acceso As ActionResult = ValidarSesionCliente()
+            If acceso IsNot Nothing Then
+                Return acceso
+            End If
+
+            Return View()
+        End Function
+
+        Function MisResenas() As ActionResult
             Dim acceso As ActionResult = ValidarSesionCliente()
             If acceso IsNot Nothing Then
                 Return acceso
@@ -232,6 +252,12 @@ Namespace Controllers
                 Dim nombres As String = ObtenerString(body, "nombres", "Nombres", "nombre", "Nombre")
                 Dim apellidos As String = ObtenerString(body, "apellidos", "Apellidos", "apellido", "Apellido")
                 Dim email As String = ObtenerString(body, "email", "Email")
+                Dim telResidencia As String = ObtenerString(body, "telResidencia", "TelResidencia", "telefono", "Telefono")
+                Dim telCelular As String = ObtenerString(body, "telCelular", "TelCelular", "celular", "Celular")
+                Dim direccion As String = ObtenerString(body, "direccion", "Direccion")
+                Dim ciudad As String = ObtenerString(body, "ciudad", "Ciudad")
+                Dim departamento As String = ObtenerString(body, "departamento", "Departamento")
+                Dim pais As String = ObtenerString(body, "pais", "Pais")
 
                 If String.IsNullOrWhiteSpace(nombres) Then
                     Return JsonError("Debe enviar el nombre del cliente.")
@@ -254,6 +280,12 @@ Namespace Controllers
                 clienteActual.Nombres = nombres.Trim()
                 clienteActual.Apellidos = apellidos.Trim()
                 clienteActual.Email = email.Trim()
+                clienteActual.TelResidencia = telResidencia.Trim()
+                clienteActual.TelCelular = telCelular.Trim()
+                clienteActual.Direccion = direccion.Trim()
+                clienteActual.Ciudad = ciudad.Trim()
+                clienteActual.Departamento = departamento.Trim()
+                clienteActual.Pais = If(String.IsNullOrWhiteSpace(pais), "Guatemala", pais.Trim())
 
                 _clienteServicio.Actualizar(clienteActual)
 
@@ -266,7 +298,14 @@ Namespace Controllers
                         .Nombres = clienteActual.Nombres,
                         .Apellidos = clienteActual.Apellidos,
                         .NombreCompleto = (clienteActual.Nombres & " " & clienteActual.Apellidos).Trim(),
-                        .Email = clienteActual.Email
+                        .Email = clienteActual.Email,
+                        .TelResidencia = clienteActual.TelResidencia,
+                        .TelCelular = clienteActual.TelCelular,
+                        .Direccion = clienteActual.Direccion,
+                        .Ciudad = clienteActual.Ciudad,
+                        .Departamento = clienteActual.Departamento,
+                        .Pais = clienteActual.Pais,
+                        .Estado = clienteActual.Estado
                     }
                 })
             Catch ex As Exception
@@ -501,7 +540,8 @@ Namespace Controllers
                                 .Color = p.Color,
                                 .ImagenUrl = p.ImagenUrl,
                                 .CategoriaId = p.CategoriaId,
-                                .Estado = p.Estado
+                                .Estado = p.Estado,
+                                .PrecioActual = ObtenerPrecioActualProducto(p.ProductoId)
                             }
                         })
 
@@ -548,7 +588,8 @@ Namespace Controllers
                                 .Color = item.Producto.Color,
                                 .ImagenUrl = item.Producto.ImagenUrl,
                                 .CategoriaId = item.Producto.CategoriaId,
-                                .Estado = item.Producto.Estado
+                                .Estado = item.Producto.Estado,
+                                .PrecioActual = ObtenerPrecioActualProducto(item.Producto.ProductoId)
                             }
                         })
 
@@ -621,7 +662,8 @@ Namespace Controllers
                             .Color = producto.Color,
                             .ImagenUrl = producto.ImagenUrl,
                             .CategoriaId = producto.CategoriaId,
-                            .Estado = producto.Estado
+                            .Estado = producto.Estado,
+                            .PrecioActual = ObtenerPrecioActualProducto(producto.ProductoId)
                         }
                     })
                 Next
@@ -683,12 +725,171 @@ Namespace Controllers
                             .Color = producto.Color,
                             .ImagenUrl = producto.ImagenUrl,
                             .CategoriaId = producto.CategoriaId,
-                            .Estado = producto.Estado
+                            .Estado = producto.Estado,
+                            .PrecioActual = ObtenerPrecioActualProducto(producto.ProductoId)
                         }
                     }
                 }, JsonRequestBehavior.AllowGet)
             Catch ex As Exception
                 Return JsonError("No se pudo obtener el detalle del producto: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+        <HttpGet>
+        Function ObtenerMisResenasData() As ActionResult
+            Dim cliId As Integer = 0
+
+            If Not TryObtenerCliIdAutenticado(cliId) Then
+                Return JsonError("Sesion no valida.", 401, JsonRequestBehavior.AllowGet)
+            End If
+
+            Try
+                Dim resenas As List(Of ResenaComentario) = _resenaComentarioServicio.Buscar(cliId.ToString())
+                Dim productos As New Dictionary(Of Integer, Producto)()
+
+                Try
+                    For Each producto As Producto In _productoServicio.Listar()
+                        If producto IsNot Nothing AndAlso Not productos.ContainsKey(producto.ProductoId) Then
+                            productos.Add(producto.ProductoId, producto)
+                        End If
+                    Next
+                Catch
+                    productos = New Dictionary(Of Integer, Producto)()
+                End Try
+
+                Dim resultado As New List(Of Object)()
+
+                For Each r As ResenaComentario In resenas
+                    If r Is Nothing OrElse r.CliId <> cliId Then
+                        Continue For
+                    End If
+
+                    Dim producto As Producto = Nothing
+                    If productos.ContainsKey(r.ProductoId) Then
+                        producto = productos(r.ProductoId)
+                    End If
+
+                    resultado.Add(New With {
+                        .ResenaId = r.ResenaId,
+                        .CliId = r.CliId,
+                        .ProductoId = r.ProductoId,
+                        .Calificacion = If(r.Calificacion.HasValue, r.Calificacion.Value, 0D),
+                        .Comentario = If(r.Comentario, String.Empty),
+                        .ResenaAt = r.ResenaAt,
+                        .Estado = r.Estado,
+                        .Producto = If(producto Is Nothing, Nothing, New With {
+                            .ProductoId = producto.ProductoId,
+                            .Nombre = producto.Nombre,
+                            .Referencia = producto.Referencia,
+                            .Descripcion = producto.Descripcion,
+                            .ImagenUrl = producto.ImagenUrl,
+                            .Tipo = producto.Tipo,
+                            .Material = producto.Material,
+                            .Color = producto.Color,
+                            .PrecioActual = ObtenerPrecioActualProducto(producto.ProductoId)
+                        })
+                    })
+                Next
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .data = resultado
+                }, JsonRequestBehavior.AllowGet)
+            Catch ex As Exception
+                Return JsonError("No se pudieron obtener las resenas: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+        <HttpPost>
+        Function CrearResenaData() As ActionResult
+            Dim cliId As Integer = 0
+
+            If Not TryObtenerCliIdAutenticado(cliId) Then
+                Return JsonError("Sesion no valida.", 401)
+            End If
+
+            Try
+                Dim body As JObject = LeerBodyComoJObject()
+                Dim productoId As Integer = ObtenerEntero(body, "productoId", "ProductoId", "PRODUCTO_ID")
+                Dim comentario As String = ObtenerString(body, "comentario", "Comentario")
+                Dim calificacionTexto As String = ObtenerString(body, "calificacion", "Calificacion")
+                Dim calificacion As Decimal = 0D
+
+                Decimal.TryParse(calificacionTexto, calificacion)
+
+                If productoId <= 0 Then
+                    Return JsonError("Debe seleccionar un producto valido.")
+                End If
+
+                If calificacion < 1D OrElse calificacion > 5D Then
+                    Return JsonError("La calificacion debe estar entre 1 y 5 estrellas.")
+                End If
+
+                Dim producto As Producto = _productoServicio.ObtenerPorId(productoId)
+                If producto Is Nothing Then
+                    Return JsonError("No se encontro el producto seleccionado.", 404)
+                End If
+
+                Dim nueva As New ResenaComentario() With {
+                    .CliId = cliId,
+                    .ProductoId = productoId,
+                    .Calificacion = calificacion,
+                    .Comentario = comentario,
+                    .ResenaAt = DateTime.Now,
+                    .Estado = "ACTIVO"
+                }
+
+                Dim idGenerado As Integer = _resenaComentarioServicio.Insertar(nueva)
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .message = "Resena guardada correctamente.",
+                    .data = New With {
+                        .ResenaId = idGenerado
+                    }
+                })
+            Catch ex As Exception
+                Return JsonError("No se pudo guardar la resena: " & LimpiarMensaje(ex.Message), 500)
+            End Try
+        End Function
+
+        <HttpPost>
+        Function EliminarResenaData() As ActionResult
+            Dim cliId As Integer = 0
+
+            If Not TryObtenerCliIdAutenticado(cliId) Then
+                Return JsonError("Sesion no valida.", 401)
+            End If
+
+            Try
+                Dim body As JObject = LeerBodyComoJObject()
+                Dim resenaId As Integer = ObtenerEntero(body, "resenaId", "ResenaId", "RESENA_ID")
+
+                If resenaId <= 0 Then
+                    Return JsonError("Debe enviar una resena valida.")
+                End If
+
+                Dim resena As ResenaComentario = _resenaComentarioServicio.ObtenerPorId(resenaId)
+
+                If resena Is Nothing Then
+                    Return JsonError("No se encontro la resena.", 404)
+                End If
+
+                If resena.CliId <> cliId Then
+                    Return JsonError("No tiene permiso para modificar esta resena.", 403)
+                End If
+
+                _resenaComentarioServicio.Eliminar(resenaId)
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .message = "Resena eliminada correctamente."
+                })
+            Catch ex As Exception
+                Return JsonError("No se pudo eliminar la resena: " & LimpiarMensaje(ex.Message), 500)
             End Try
         End Function
 
@@ -994,7 +1195,7 @@ Namespace Controllers
 
             Try
                 Dim body As JObject = LeerBodyComoJObject()
-                Dim productoId As Integer = ObtenerEntero(body, "productoId", "ProductoId")
+                Dim productoId As Integer = ObtenerEntero(body, "productoId", "ProductoId", "id", "Id")
                 Dim cantidad As Integer = ObtenerEntero(body, "cantidad", "Cantidad")
 
                 If cantidad <= 0 Then
@@ -1005,44 +1206,84 @@ Namespace Controllers
                     Return JsonError("Debe enviar un producto valido.")
                 End If
 
-                Dim carrito As Carrito = ObtenerCarritoActivoCliente(cliId, True)
-                Dim detalles As List(Of CarritoDetalle) = FiltrarDetallesCarrito(_carritoDetalleServicio.Listar(), carrito.CarritoId)
-                Dim existente As CarritoDetalle = Nothing
+                Dim producto As Producto = _productoServicio.ObtenerPorId(productoId)
+                If producto Is Nothing OrElse producto.ProductoId <= 0 Then
+                    Return JsonError("No se encontro el producto seleccionado.", 404)
+                End If
 
+                If Not String.Equals(producto.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                    Return JsonError("El producto seleccionado no esta activo.")
+                End If
+
+                Dim carrito As Carrito = ObtenerCarritoActivoCliente(cliId, True)
+                If carrito Is Nothing OrElse carrito.CarritoId <= 0 Then
+                    Return JsonError("No se pudo crear u obtener el carrito del cliente.", 500)
+                End If
+
+                Dim detalles As List(Of CarritoDetalle)
+                Try
+                    detalles = _carritoDetalleServicio.Buscar("CARRITO_ID", carrito.CarritoId.ToString())
+                Catch
+                    detalles = FiltrarDetallesCarrito(_carritoDetalleServicio.Listar(), carrito.CarritoId)
+                End Try
+
+                Dim existente As CarritoDetalle = Nothing
                 For Each det As CarritoDetalle In detalles
-                    If det.ProductoId = productoId Then
+                    If det IsNot Nothing AndAlso det.ProductoId = productoId AndAlso String.Equals(det.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
                         existente = det
                         Exit For
                     End If
                 Next
 
-                Dim precioActual As Decimal = ObtenerPrecioActualProducto(productoId)
+                Dim precioActual As Decimal = 0D
+                Try
+                    precioActual = ObtenerPrecioActualProducto(productoId)
+                Catch
+                    precioActual = 0D
+                End Try
 
                 If existente IsNot Nothing Then
-                    existente.Cantidad += cantidad
-                    existente.PrecioUnitarioSnapshot = precioActual
+                    existente.Cantidad = existente.Cantidad + cantidad
+                    If precioActual > 0D Then
+                        existente.PrecioUnitarioSnapshot = precioActual
+                    End If
                     _carritoDetalleServicio.Actualizar(existente)
                 Else
                     Dim nuevo As New CarritoDetalle() With {
                         .CarritoId = carrito.CarritoId,
                         .ProductoId = productoId,
                         .Cantidad = cantidad,
-                        .PrecioUnitarioSnapshot = precioActual,
                         .Estado = "ACTIVO"
                     }
+
+                    If precioActual > 0D Then
+                        nuevo.PrecioUnitarioSnapshot = precioActual
+                    Else
+                        nuevo.PrecioUnitarioSnapshot = Nothing
+                    End If
 
                     _carritoDetalleServicio.Insertar(nuevo)
                 End If
 
-                carrito.UltimoCalculoAt = DateTime.Now
-                If String.IsNullOrWhiteSpace(carrito.EstadoCarrito) Then
-                    carrito.EstadoCarrito = "ABIERTO"
-                End If
-                _carritoServicio.Actualizar(carrito)
+                'Actualizar la fecha del carrito no debe bloquear la compra si el package de carrito cambia.
+                Try
+                    carrito.UltimoCalculoAt = DateTime.Now
+                    If String.IsNullOrWhiteSpace(carrito.EstadoCarrito) Then
+                        carrito.EstadoCarrito = "ACTIVO"
+                    End If
+                    _carritoServicio.Actualizar(carrito)
+                Catch
+                End Try
 
                 Return Json(New With {
                     .ok = True,
-                    .message = "Producto agregado al carrito correctamente."
+                    .success = True,
+                    .message = "Producto agregado al carrito correctamente.",
+                    .data = New With {
+                        .ProductoId = productoId,
+                        .CantidadAgregada = cantidad,
+                        .CarritoId = carrito.CarritoId
+                    }
                 })
             Catch ex As Exception
                 Return JsonError("No se pudo agregar al carrito: " & LimpiarMensaje(ex.Message), 500)
@@ -1380,7 +1621,7 @@ Namespace Controllers
 
                 _pagoServicio.Insertar(pago)
 
-                carrito.EstadoCarrito = "CERRADO"
+                carrito.EstadoCarrito = "CONVERTIDO"
                 carrito.UltimoCalculoAt = DateTime.Now
                 _carritoServicio.Actualizar(carrito)
 
@@ -1602,21 +1843,20 @@ Namespace Controllers
         <NonAction>
         Private Function ValidarSesionCliente() As ActionResult
             If Session("UsuarioId") Is Nothing Then
-                TempData("Error") = "Debe iniciar sesion para acceder al portal del cliente."
+                TempData("Error") = "Debe iniciar sesión para acceder al portal del cliente."
                 Return RedirectToAction("Login", "Home")
             End If
 
             Dim rolId As Integer = ObtenerRolIdDesdeSesion()
-            If rolId <> 3 Then
-                TempData("Error") = "No tiene permisos para acceder al portal del cliente."
-                Return RedirectToAction("Login", "Home")
-            End If
-
             Dim cliId As Integer? = ObtenerCliIdDesdeSesion()
-            If Not cliId.HasValue Then
+
+            ' Regla correcta del portal:
+            ' cualquier usuario que tenga CLI_ID asociado puede entrar al portal cliente.
+            ' Así funciona aunque el rol cliente sea 3, 29 u otro código en la base.
+            If Not cliId.HasValue OrElse cliId.Value <= 0 Then
                 Session.Clear()
                 Session.Abandon()
-                TempData("Error") = "La sesion del cliente no es valida porque no tiene CLI_ID asociado."
+                TempData("Error") = "La sesión del cliente no es válida porque no tiene CLI_ID asociado."
                 Return RedirectToAction("Login", "Home")
             End If
 
@@ -1636,12 +1876,8 @@ Namespace Controllers
                 Return False
             End If
 
-            If ObtenerRolIdDesdeSesion() <> 3 Then
-                Return False
-            End If
-
             Dim cliIdSesion As Integer? = ObtenerCliIdDesdeSesion()
-            If Not cliIdSesion.HasValue Then
+            If Not cliIdSesion.HasValue OrElse cliIdSesion.Value <= 0 Then
                 Return False
             End If
 
@@ -1971,7 +2207,13 @@ Namespace Controllers
 
         <NonAction>
         Private Function ObtenerCarritoActivoCliente(ByVal cliId As Integer, ByVal crearSiNoExiste As Boolean) As Carrito
-            Dim carritos As List(Of Carrito) = _carritoServicio.Listar()
+            Dim carritos As List(Of Carrito)
+
+            Try
+                carritos = _carritoServicio.Buscar("CLI_ID", cliId.ToString())
+            Catch
+                carritos = _carritoServicio.Listar()
+            End Try
 
             For Each c As Carrito In carritos
                 If c Is Nothing Then
@@ -1979,7 +2221,7 @@ Namespace Controllers
                 End If
 
                 If c.CliId = cliId AndAlso String.Equals(c.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
-                    If String.IsNullOrWhiteSpace(c.EstadoCarrito) OrElse Not String.Equals(c.EstadoCarrito, "CERRADO", StringComparison.OrdinalIgnoreCase) Then
+                    If String.IsNullOrWhiteSpace(c.EstadoCarrito) OrElse Not String.Equals(c.EstadoCarrito, "CONVERTIDO", StringComparison.OrdinalIgnoreCase) Then
                         Return c
                     End If
                 End If
@@ -1988,13 +2230,15 @@ Namespace Controllers
             If crearSiNoExiste Then
                 Dim nuevo As New Carrito() With {
                     .CliId = cliId,
-                    .EstadoCarrito = "ABIERTO",
+                    .EstadoCarrito = "ACTIVO",
                     .UltimoCalculoAt = DateTime.Now,
                     .Estado = "ACTIVO"
                 }
 
                 Dim idGenerado As Integer = _carritoServicio.Insertar(nuevo)
-                Return _carritoServicio.ObtenerPorId(idGenerado)
+                If idGenerado > 0 Then
+                    Return _carritoServicio.ObtenerPorId(idGenerado)
+                End If
             End If
 
             Return Nothing
@@ -2032,8 +2276,28 @@ Namespace Controllers
 
         <NonAction>
         Private Function ObtenerPrecioActualProducto(ByVal productoId As Integer) As Decimal
-            Dim precios As List(Of Precio_Historico) = _precioHistoricoServicio.Listar()
+            If productoId <= 0 Then
+                Return 0D
+            End If
+
+            Dim precios As New List(Of Precio_Historico)()
+
+            Try
+                precios = _precioHistoricoServicio.Buscar("PRODUCTO_ID", productoId.ToString())
+            Catch
+                precios = New List(Of Precio_Historico)()
+            End Try
+
+            If precios Is Nothing OrElse precios.Count = 0 Then
+                Try
+                    precios = _precioHistoricoServicio.Listar()
+                Catch
+                    precios = New List(Of Precio_Historico)()
+                End Try
+            End If
+
             Dim vigente As Precio_Historico = Nothing
+            Dim ahora As DateTime = DateTime.Now
 
             For Each p As Precio_Historico In precios
                 If p Is Nothing Then
@@ -2044,12 +2308,14 @@ Namespace Controllers
                     Continue For
                 End If
 
-                If Not String.Equals(p.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                If Not String.IsNullOrWhiteSpace(p.Estado) AndAlso Not String.Equals(p.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
                     Continue For
                 End If
 
-                Dim vigenteHoy As Boolean = (DateTime.Now >= p.VigenciaInicio AndAlso (Not p.VigenciaFin.HasValue OrElse DateTime.Now <= p.VigenciaFin.Value))
-                If Not vigenteHoy Then
+                Dim inicioOk As Boolean = (p.VigenciaInicio = DateTime.MinValue OrElse ahora >= p.VigenciaInicio)
+                Dim finOk As Boolean = (Not p.VigenciaFin.HasValue OrElse ahora <= p.VigenciaFin.Value)
+
+                If Not inicioOk OrElse Not finOk Then
                     Continue For
                 End If
 

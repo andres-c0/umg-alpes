@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
     var itemsContainer = document.getElementById('ccItemsContainer');
     var summaryContainer = document.getElementById('ccSummaryContainer');
 
@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var endpointCarrito = '/PortalCliente/ObtenerCarritoData';
     var endpointActualizar = '/PortalCliente/ActualizarCantidadCarritoData';
     var endpointEliminar = '/PortalCliente/EliminarDelCarritoData';
+    var isBusy = false;
 
     function escapeHtml(value) {
         return String(value || '')
@@ -53,7 +54,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 currency: codigo
             }).format(numero);
         } catch (error) {
-            return codigo + ' ' + numero.toFixed(2);
+            return 'Q' + numero.toFixed(2);
+        }
+    }
+
+    function mostrarToast(mensaje, tipo) {
+        var toast = document.createElement('div');
+        toast.className = 'pc-toast pc-toast--' + (tipo || 'success');
+        toast.textContent = mensaje;
+        document.body.appendChild(toast);
+
+        window.setTimeout(function () {
+            toast.classList.add('show');
+        }, 20);
+
+        window.setTimeout(function () {
+            toast.classList.remove('show');
+            window.setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 250);
+        }, 2600);
+    }
+
+    function notificarCarritoActualizado() {
+        try {
+            document.dispatchEvent(new CustomEvent('pc:cart-updated'));
+        } catch (e) {
+            var evt = document.createEvent('Event');
+            evt.initEvent('pc:cart-updated', true, true);
+            document.dispatchEvent(evt);
         }
     }
 
@@ -68,18 +99,40 @@ document.addEventListener('DOMContentLoaded', function () {
             body: JSON.stringify(payload)
         })
             .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudo procesar la solicitud.');
-                }
-                return response.json();
-            })
-            .then(function (payloadRespuesta) {
-                var respuesta = normalizarRespuesta(payloadRespuesta);
-                if (!respuesta.ok) {
-                    throw new Error(respuesta.message || 'No se pudo procesar la solicitud.');
-                }
-                return respuesta;
+                return response.json().catch(function () {
+                    return null;
+                }).then(function (payloadRespuesta) {
+                    if (!response.ok) {
+                        var normalizadaError = normalizarRespuesta(payloadRespuesta);
+                        throw new Error(normalizadaError.message || 'No se pudo procesar la solicitud.');
+                    }
+
+                    var respuesta = normalizarRespuesta(payloadRespuesta);
+                    if (!respuesta.ok) {
+                        throw new Error(respuesta.message || 'No se pudo procesar la solicitud.');
+                    }
+
+                    return respuesta;
+                });
             });
+    }
+
+    function renderEmpty(moneda) {
+        itemsContainer.innerHTML = ''
+            + '<div class="cc-empty">'
+            + '  <div class="cc-empty-icon">shopping_cart</div>'
+            + '  <div class="cc-empty-title">Tu carrito esta vacio</div>'
+            + '  <div class="cc-empty-text">Agrega productos desde el catalogo para continuar con tu compra.</div>'
+            + '  <a class="cc-primary-btn" href="/PortalCliente/Index">Ir al catalogo</a>'
+            + '</div>';
+
+        summaryContainer.innerHTML = ''
+            + '<div class="cc-summary-title">Resumen</div>'
+            + '<div class="cc-summary-row"><span>Subtotal</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>'
+            + '<div class="cc-summary-row"><span>IVA 12%</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>'
+            + '<div class="cc-summary-row"><span>Descuento</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>'
+            + '<div class="cc-summary-row cc-summary-row--total"><span>Total</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>'
+            + '<a href="/PortalCliente/Index" class="cc-secondary-btn cc-primary-btn--full">Seguir comprando</a>';
     }
 
     function render(data) {
@@ -87,48 +140,41 @@ document.addEventListener('DOMContentLoaded', function () {
         var moneda = data.Moneda || 'GTQ';
 
         if (!items.length) {
-            itemsContainer.innerHTML = ''
-                + '<div class="cc-empty">'
-                + '  <div class="cc-empty-title">Tu carrito esta vacio</div>'
-                + '  <div class="cc-empty-text">Agrega productos desde el catalogo o el detalle del producto.</div>'
-                + '  <a class="cc-primary-btn" href="/PortalCliente/Index">Ir al catalogo</a>'
-                + '</div>';
-
-            summaryContainer.innerHTML = ''
-                + '<div class="cc-summary-title">Resumen</div>'
-                + '<div class="cc-summary-row"><span>Subtotal</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>'
-                + '<div class="cc-summary-row"><span>IVA</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>'
-                + '<div class="cc-summary-row"><span>Descuento</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>'
-                + '<div class="cc-summary-row cc-summary-row--total"><span>Total</span><strong>' + escapeHtml(formatearMoneda(0, moneda)) + '</strong></div>';
-
+            renderEmpty(moneda);
+            actualizarBadgeCarrito(0);
             return;
         }
 
         var html = '';
+        var totalCantidad = 0;
         var i;
 
         for (i = 0; i < items.length; i += 1) {
             var item = items[i];
             var imagen = String(item.ImagenUrl || '').trim();
+            var cantidad = Number(item.Cantidad || 0);
+            totalCantidad += cantidad;
 
             html += ''
                 + '<div class="cc-item" data-id="' + escapeHtml(item.CarritoDetId) + '">'
                 + '  <div class="cc-item-image">'
                 + (imagen !== ''
                     ? '<img src="' + escapeHtml(imagen) + '" alt="' + escapeHtml(item.Nombre || 'Producto') + '">'
-                    : '<div class="cc-item-no-image">Sin imagen</div>')
+                    : '<div class="cc-item-no-image">chair</div>')
                 + '  </div>'
                 + '  <div class="cc-item-body">'
+                + '      <div class="cc-item-kicker">Muebles de los Alpes</div>'
                 + '      <div class="cc-item-name">' + escapeHtml(item.Nombre || 'Producto') + '</div>'
-                + '      <div class="cc-item-meta">' + escapeHtml(item.Referencia || '') + ' ' + escapeHtml(item.Material || '') + ' ' + escapeHtml(item.Color || '') + '</div>'
+                + '      <div class="cc-item-meta">' + escapeHtml([item.Referencia, item.Material, item.Color].filter(Boolean).join(' · ')) + '</div>'
                 + '      <div class="cc-item-price">' + escapeHtml(formatearMoneda(item.PrecioUnitario, moneda)) + '</div>'
-                + '      <div class="cc-qty-row">'
-                + '          <button type="button" class="cc-qty-btn" data-action="decrease" data-id="' + escapeHtml(item.CarritoDetId) + '" data-cantidad="' + escapeHtml(item.Cantidad) + '">-</button>'
-                + '          <span class="cc-qty-value">' + escapeHtml(item.Cantidad) + '</span>'
-                + '          <button type="button" class="cc-qty-btn" data-action="increase" data-id="' + escapeHtml(item.CarritoDetId) + '" data-cantidad="' + escapeHtml(item.Cantidad) + '">+</button>'
+                + '      <div class="cc-qty-row" aria-label="Control de cantidad">'
+                + '          <button type="button" class="cc-qty-btn" data-action="decrease" data-id="' + escapeHtml(item.CarritoDetId) + '" data-cantidad="' + escapeHtml(cantidad) + '">-</button>'
+                + '          <span class="cc-qty-value">' + escapeHtml(cantidad) + '</span>'
+                + '          <button type="button" class="cc-qty-btn" data-action="increase" data-id="' + escapeHtml(item.CarritoDetId) + '" data-cantidad="' + escapeHtml(cantidad) + '">+</button>'
                 + '      </div>'
                 + '  </div>'
                 + '  <div class="cc-item-side">'
+                + '      <div class="cc-item-label">Subtotal</div>'
                 + '      <div class="cc-item-subtotal">' + escapeHtml(formatearMoneda(item.SubtotalLinea, moneda)) + '</div>'
                 + '      <button type="button" class="cc-remove-btn" data-action="remove" data-id="' + escapeHtml(item.CarritoDetId) + '">Eliminar</button>'
                 + '  </div>'
@@ -136,14 +182,25 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         itemsContainer.innerHTML = html;
+        actualizarBadgeCarrito(totalCantidad);
 
         summaryContainer.innerHTML = ''
             + '<div class="cc-summary-title">Resumen</div>'
+            + '<div class="cc-summary-row"><span>Productos</span><strong>' + escapeHtml(totalCantidad) + '</strong></div>'
             + '<div class="cc-summary-row"><span>Subtotal</span><strong>' + escapeHtml(formatearMoneda(data.Subtotal, moneda)) + '</strong></div>'
-            + '<div class="cc-summary-row"><span>IVA</span><strong>' + escapeHtml(formatearMoneda(data.Impuesto, moneda)) + '</strong></div>'
+            + '<div class="cc-summary-row"><span>IVA 12%</span><strong>' + escapeHtml(formatearMoneda(data.Impuesto, moneda)) + '</strong></div>'
             + '<div class="cc-summary-row"><span>Descuento</span><strong>' + escapeHtml(formatearMoneda(data.Descuento, moneda)) + '</strong></div>'
             + '<div class="cc-summary-row cc-summary-row--total"><span>Total</span><strong>' + escapeHtml(formatearMoneda(data.Total, moneda)) + '</strong></div>'
-            + '<a href="/PortalCliente/Checkout" class="cc-primary-btn cc-primary-btn--full">Proceder al pago</a>';
+            + '<a href="/PortalCliente/Checkout" class="cc-primary-btn cc-primary-btn--full">Proceder al pago</a>'
+            + '<a href="/PortalCliente/Index" class="cc-secondary-btn cc-primary-btn--full">Seguir comprando</a>';
+    }
+
+    function actualizarBadgeCarrito(total) {
+        var badges = document.querySelectorAll('[data-cart-count], .js-cart-count');
+        Array.prototype.forEach.call(badges, function (badge) {
+            badge.textContent = String(total || 0);
+            badge.style.display = total > 0 ? '' : 'none';
+        });
     }
 
     function cargarCarrito() {
@@ -158,10 +215,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
             .then(function (response) {
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar el carrito.');
-                }
-                return response.json();
+                return response.json().catch(function () {
+                    return null;
+                }).then(function (payload) {
+                    if (!response.ok) {
+                        var normalizadaError = normalizarRespuesta(payload);
+                        throw new Error(normalizadaError.message || 'No se pudo cargar el carrito.');
+                    }
+                    return payload;
+                });
             })
             .then(function (payload) {
                 var respuesta = normalizarRespuesta(payload);
@@ -175,12 +237,13 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function (error) {
                 itemsContainer.innerHTML = '<div class="cc-loading">' + escapeHtml(error.message || 'Error al cargar el carrito.') + '</div>';
                 summaryContainer.innerHTML = '<div class="cc-loading">No disponible</div>';
+                mostrarToast(error.message || 'Error al cargar el carrito.', 'error');
             });
     }
 
     itemsContainer.addEventListener('click', function (e) {
         var button = e.target.closest('button[data-action]');
-        if (!button) {
+        if (!button || isBusy) {
             return;
         }
 
@@ -192,37 +255,44 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        var payload = null;
+        var endpoint = endpointActualizar;
+        var mensajeOk = 'Carrito actualizado.';
+
         if (action === 'increase') {
-            postJson(endpointActualizar, {
-                carritoDetId: id,
-                cantidad: cantidad + 1
-            }).then(function () {
-                cargarCarrito();
-            }).catch(function (error) {
-                alert(error.message || 'No se pudo actualizar la cantidad.');
-            });
+            payload = { carritoDetId: id, cantidad: cantidad + 1 };
         }
 
         if (action === 'decrease') {
-            postJson(endpointActualizar, {
-                carritoDetId: id,
-                cantidad: cantidad - 1
-            }).then(function () {
-                cargarCarrito();
-            }).catch(function (error) {
-                alert(error.message || 'No se pudo actualizar la cantidad.');
-            });
+            payload = { carritoDetId: id, cantidad: cantidad - 1 };
         }
 
         if (action === 'remove') {
-            postJson(endpointEliminar, {
-                carritoDetId: id
-            }).then(function () {
-                cargarCarrito();
-            }).catch(function (error) {
-                alert(error.message || 'No se pudo eliminar el producto.');
-            });
+            endpoint = endpointEliminar;
+            payload = { carritoDetId: id };
+            mensajeOk = 'Producto eliminado del carrito.';
         }
+
+        if (!payload) {
+            return;
+        }
+
+        isBusy = true;
+        button.disabled = true;
+
+        postJson(endpoint, payload)
+            .then(function (respuesta) {
+                mostrarToast(respuesta.message || mensajeOk, 'success');
+                notificarCarritoActualizado();
+                cargarCarrito();
+            })
+            .catch(function (error) {
+                mostrarToast(error.message || 'No se pudo actualizar el carrito.', 'error');
+            })
+            .finally(function () {
+                isBusy = false;
+                button.disabled = false;
+            });
     });
 
     cargarCarrito();

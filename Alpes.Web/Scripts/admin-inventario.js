@@ -94,7 +94,7 @@
             var color = valor(getAny(x, ['Color'], 'Sin color'));
             var descripcion = valor(getAny(x, ['Descripcion', 'Descripción'], 'Sin descripción disponible.'));
             var stock = entero(getAny(x, ['Stock'], 0));
-            var reservado = entero(getAny(x, ['Reservado'], 0));
+            var reservado = entero(getAny(x, ['StockReservado', 'Reservado'], 0));
             var stockMinimo = entero(getAny(x, ['StockMinimo'], 0));
 
             var disponible = Math.max(stock - reservado, 0);
@@ -167,7 +167,7 @@
 
         lista.forEach(function (x) {
             var s = entero(getAny(x, ['Stock'], 0));
-            var r = entero(getAny(x, ['Reservado'], 0));
+            var r = entero(getAny(x, ['StockReservado', 'Reservado'], 0));
             var m = entero(getAny(x, ['StockMinimo'], 0));
             var d = Math.max(s - r, 0);
 
@@ -215,7 +215,7 @@
                 var color = valor(getAny(base, ['Color'], 'Sin color'));
                 var descripcion = valor(getAny(base, ['Descripcion', 'Descripción'], 'Sin descripción disponible.'));
                 var stock = entero(getAny(x, ['Stock'], 0));
-                var reservado = entero(getAny(x, ['Reservado'], 0));
+                var reservado = entero(getAny(x, ['StockReservado', 'Reservado'], 0));
                 var stockMinimo = entero(getAny(x, ['StockMinimo'], 0));
 
                 $('#modalInventarioTitulo').text('Editar inventario');
@@ -247,7 +247,7 @@
             InvProdId: entero($('#hidInventarioId').val()),
             ProductoId: entero($('#txtProductoIdInventario').val()),
             Stock: entero($('#txtStockInventario').val()),
-            Reservado: entero($('#txtReservadoInventario').val()),
+            StockReservado: entero($('#txtReservadoInventario').val()),
             StockMinimo: entero($('#txtStockMinimoInventario').val())
         };
 
@@ -261,7 +261,7 @@
             return;
         }
 
-        if (data.Reservado < 0) {
+        if (data.StockReservado < 0) {
             $('#txtReservadoInventario').addClass('input-error');
             return;
         }

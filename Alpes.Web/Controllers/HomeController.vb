@@ -31,22 +31,6 @@ Namespace Controllers
 
             If Session("UsuarioId") IsNot Nothing Then
                 Return RedirigirSegunSesionActual()
-                Dim rolId As Integer = 0
-
-                If Session("RolId") IsNot Nothing Then
-                    Integer.TryParse(Session("RolId").ToString(), rolId)
-                End If
-
-                Select Case rolId
-                    Case 27, 28
-                        Return RedirectToAction("Index", "Admin")
-                    Case 29
-                        Return RedirectToAction("Index", "Cliente")
-                    Case Else
-                        Session.Clear()
-                        Session.Abandon()
-                        Return View()
-                End Select
             End If
 
             Return View()
@@ -56,8 +40,25 @@ Namespace Controllers
         <ValidateAntiForgeryToken>
         Function Login(ByVal model As LoginViewModel) As ActionResult
             If model Is Nothing Then
-                ViewData("Error") = "Solicitud inválida."
-                Return View(New LoginViewModel())
+                model = New LoginViewModel()
+            End If
+
+            Dim usernameForm As String = Request.Form("Username")
+            If String.IsNullOrWhiteSpace(usernameForm) Then
+                usernameForm = Request.Form("username")
+            End If
+
+            Dim passwordForm As String = Request.Form("Password")
+            If String.IsNullOrWhiteSpace(passwordForm) Then
+                passwordForm = Request.Form("password")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Username) Then
+                model.Username = usernameForm
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Password) Then
+                model.Password = passwordForm
             End If
 
             If String.IsNullOrWhiteSpace(model.Username) Then
@@ -73,11 +74,14 @@ Namespace Controllers
             End If
 
             Try
-                Dim usuarios As List(Of Usuario) = _usuarioServicio.Buscar(model.Username.Trim())
+                Dim usernameIngresado As String = model.Username.Trim()
+                Dim passwordIngresado As String = model.Password.Trim()
+
+                Dim usuarios As List(Of Usuario) = _usuarioServicio.Buscar(usernameIngresado)
 
                 Dim usuario As Usuario = usuarios.FirstOrDefault(
                     Function(u) u.Username IsNot Nothing AndAlso
-                                String.Equals(u.Username.Trim(), model.Username.Trim(), StringComparison.OrdinalIgnoreCase)
+                                String.Equals(u.Username.Trim(), usernameIngresado, StringComparison.OrdinalIgnoreCase)
                 )
 
                 If usuario Is Nothing Then
@@ -85,46 +89,20 @@ Namespace Controllers
                     Return View(model)
                 End If
 
-                If String.IsNullOrWhiteSpace(usuario.PasswordHash) OrElse
-                   Not String.Equals(usuario.PasswordHash, model.Password, StringComparison.Ordinal) Then
+                Dim passwordBd As String = If(usuario.PasswordHash, String.Empty).Trim()
 
+                If Not String.Equals(passwordBd, passwordIngresado, StringComparison.Ordinal) Then
                     ViewData("Error") = "Usuario o contraseña incorrectos."
                     Return View(model)
                 End If
 
-                Session("UsuarioId") = usuario.UsuId
-                Session("Username") = If(usuario.Username, String.Empty)
-                Session("RolId") = usuario.RolId
-
-                If usuario.CliId.HasValue Then
-                    Session("CliId") = usuario.CliId.Value
-                Else
-                    Session.Remove("CliId")
-                End If
-
-                If usuario.EmpId.HasValue Then
-                    Session("EmpId") = usuario.EmpId.Value
-                Else
-                    Session.Remove("EmpId")
-                End If
-
-                If usuario.RolId = 3 AndAlso Not usuario.CliId.HasValue Then
-                    Session.Clear()
-                    Session.Abandon()
-                    ViewData("Error") = "El usuario cliente no tiene un cliente asociado (CLI_ID)."
+                If usuario.Estado IsNot Nothing AndAlso
+                   Not String.Equals(usuario.Estado.Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                    ViewData("Error") = "El usuario no está activo."
                     Return View(model)
                 End If
-                Select Case usuario.RolId
-                    Case 27, 28
-                        Return RedirectToAction("Index", "Admin")
-                    Case 29
-                        Return RedirectToAction("Index", "Cliente")
-                    Case Else
-                        ViewData("Error") = "El rol del usuario no está configurado correctamente."
-                        Session.Clear()
-                        Session.Abandon()
-                        Return View(model)
-                End Select
+
+                GuardarSesionUsuario(usuario)
 
                 Return RedirigirSegunRolUsuario(usuario)
 
@@ -137,17 +115,7 @@ Namespace Controllers
         <HttpGet>
         Function Registro() As ActionResult
             If Session("UsuarioId") IsNot Nothing Then
-                Dim rolId As Integer = 0
-
-                If Session("RolId") IsNot Nothing Then
-                    Integer.TryParse(Session("RolId").ToString(), rolId)
-                End If
-
-                If rolId <> 3 Then
-                    Return RedirectToAction("Index", "Admin")
-                Else
-                    Return RedirectToAction("Index", "Cliente")
-                End If
+                Return RedirigirSegunSesionActual()
             End If
 
             Return View(New RegistroViewModel())
@@ -196,9 +164,9 @@ Namespace Controllers
             Try
                 Dim coincidenciasUsuario As List(Of Usuario) = _usuarioServicio.Buscar(model.Username.Trim())
                 Dim existeUsuario As Boolean = coincidenciasUsuario.Any(
-            Function(u) u.Username IsNot Nothing AndAlso
-                        String.Equals(u.Username.Trim(), model.Username.Trim(), StringComparison.OrdinalIgnoreCase)
-        )
+                    Function(u) u.Username IsNot Nothing AndAlso
+                                String.Equals(u.Username.Trim(), model.Username.Trim(), StringComparison.OrdinalIgnoreCase)
+                )
 
                 If existeUsuario Then
                     ModelState.AddModelError("Username", "Ese nombre de usuario ya existe.")
@@ -207,31 +175,37 @@ Namespace Controllers
 
                 Dim coincidenciasEmail As List(Of Usuario) = _usuarioServicio.Buscar(model.Email.Trim())
                 Dim existeEmail As Boolean = coincidenciasEmail.Any(
-            Function(u) u.Email IsNot Nothing AndAlso
-                        String.Equals(u.Email.Trim(), model.Email.Trim(), StringComparison.OrdinalIgnoreCase)
-        )
+                    Function(u) u.Email IsNot Nothing AndAlso
+                                String.Equals(u.Email.Trim(), model.Email.Trim(), StringComparison.OrdinalIgnoreCase)
+                )
 
                 If existeEmail Then
                     ModelState.AddModelError("Email", "Ese correo ya está registrado.")
                     Return View(model)
                 End If
 
+                Dim rolClienteId As Integer = ObtenerRolIdPorNombre("CLIENTE")
+                If rolClienteId <= 0 Then
+                    ViewData("Error") = "No existe un rol activo llamado CLIENTE. Crea el rol CLIENTE antes de registrar usuarios del portal."
+                    Return View(model)
+                End If
+
                 Dim nuevoUsuario As New Usuario With {
-            .Username = model.Username.Trim(),
-            .PasswordHash = model.Password,
-            .Email = model.Email.Trim(),
-            .Telefono = If(String.IsNullOrWhiteSpace(model.Telefono), Nothing, model.Telefono.Trim()),
-            .RolId = 3,
-            .CliId = Nothing,
-            .EmpId = Nothing,
-            .UltimoLoginAt = Nothing,
-            .BloqueadoHasta = Nothing,
-            .Estado = "ACTIVO"
-        }
+                    .Username = model.Username.Trim(),
+                    .PasswordHash = model.Password.Trim(),
+                    .Email = model.Email.Trim(),
+                    .Telefono = If(String.IsNullOrWhiteSpace(model.Telefono), Nothing, model.Telefono.Trim()),
+                    .RolId = rolClienteId,
+                    .CliId = Nothing,
+                    .EmpId = Nothing,
+                    .UltimoLoginAt = Nothing,
+                    .BloqueadoHasta = Nothing,
+                    .Estado = "ACTIVO"
+                }
 
                 _usuarioServicio.Insertar(nuevoUsuario)
 
-                TempData("Success") = "Tu cuenta fue creada correctamente. Ahora puedes iniciar sesión."
+                TempData("Success") = "Tu cuenta fue creada correctamente. Para entrar al portal debe tener un CLI_ID asociado."
                 Return RedirectToAction("Login")
             Catch ex As Exception
                 ViewData("Error") = "Ocurrió un error al crear la cuenta: " & ex.Message
@@ -245,22 +219,40 @@ Namespace Controllers
             Return RedirectToAction("Login")
         End Function
 
-        Private Function RedirigirSegunSesionActual() As ActionResult
-            Dim rolId As Integer = ObtenerRolIdDesdeSesion()
-            Dim cliId As Integer? = ObtenerCliIdDesdeSesion()
+        Private Sub GuardarSesionUsuario(ByVal usuario As Usuario)
+            Session("UsuarioId") = usuario.UsuId
+            Session("Username") = If(usuario.Username, String.Empty)
+            Session("RolId") = usuario.RolId
+            Session("RolNombre") = ObtenerNombreRolPorId(usuario.RolId)
 
-            If rolId = 3 Then
-                If cliId.HasValue AndAlso cliId.Value > 0 Then
-                    Return RedirectToAction("Index", "PortalCliente")
-                End If
-
-                Session.Clear()
-                Session.Abandon()
-                TempData("Error") = "La sesión del cliente no es válida porque no tiene CLI_ID asociado."
-                Return RedirectToAction("Login", "Home")
+            If usuario.CliId.HasValue AndAlso usuario.CliId.Value > 0 Then
+                Session("CliId") = usuario.CliId.Value
+            Else
+                Session.Remove("CliId")
             End If
 
-            Return RedirectToAction("Productos", "Admin")
+            If usuario.EmpId.HasValue AndAlso usuario.EmpId.Value > 0 Then
+                Session("EmpId") = usuario.EmpId.Value
+            Else
+                Session.Remove("EmpId")
+            End If
+        End Sub
+
+        Private Function RedirigirSegunSesionActual() As ActionResult
+            Dim rolId As Integer = ObtenerRolIdDesdeSesion()
+
+            If EsRolCliente(rolId) Then
+                Return RedirectToAction("Index", "PortalCliente")
+            End If
+
+            If EsRolAdministrativo(rolId) Then
+                Return RedirectToAction("Index", "Admin")
+            End If
+
+            Session.Clear()
+            Session.Abandon()
+            TempData("Error") = "La sesión no es válida. El usuario no tiene un rol activo asignado."
+            Return RedirectToAction("Login", "Home")
         End Function
 
         Private Function RedirigirSegunRolUsuario(ByVal usuario As Usuario) As ActionResult
@@ -268,11 +260,90 @@ Namespace Controllers
                 Return RedirectToAction("Login", "Home")
             End If
 
-            If usuario.RolId = 3 Then
+            If EsRolCliente(usuario.RolId) Then
                 Return RedirectToAction("Index", "PortalCliente")
             End If
 
-            Return RedirectToAction("Productos", "Admin")
+            If EsRolAdministrativo(usuario.RolId) Then
+                Return RedirectToAction("Index", "Admin")
+            End If
+
+            ViewData("Error") = "El usuario existe, pero no tiene un rol activo asignado."
+            Session.Clear()
+            Session.Abandon()
+            Return View("Login", New LoginViewModel())
+        End Function
+
+        Private Function EsRolCliente(ByVal rolId As Integer) As Boolean
+            Dim nombreRol As String = ObtenerNombreRolPorId(rolId)
+            Return EsNombreRolCliente(nombreRol)
+        End Function
+
+        Private Function EsRolAdministrativo(ByVal rolId As Integer) As Boolean
+            Dim nombreRol As String = ObtenerNombreRolPorId(rolId)
+
+            If String.IsNullOrWhiteSpace(nombreRol) Then
+                Return False
+            End If
+
+            ' REGLA:
+            ' Si el rol es CLIENTE, entra al portal de cliente.
+            ' Si el rol NO es CLIENTE, entra al panel de administración.
+            Return Not EsNombreRolCliente(nombreRol)
+        End Function
+
+        Private Function EsNombreRolCliente(ByVal nombreRol As String) As Boolean
+            If String.IsNullOrWhiteSpace(nombreRol) Then
+                Return False
+            End If
+
+            Dim rolNormalizado As String = nombreRol.Trim().ToUpperInvariant()
+            Return rolNormalizado = "CLIENTE" OrElse rolNormalizado.Contains("CLIENTE")
+        End Function
+
+        Private Function ObtenerNombreRolPorId(ByVal rolId As Integer) As String
+            If rolId <= 0 Then
+                Return String.Empty
+            End If
+
+            Try
+                Dim rolSrv As New RolServicio()
+                Dim rol = rolSrv.ObtenerPorId(rolId)
+
+                If rol IsNot Nothing AndAlso
+                   rol.RolNombre IsNot Nothing AndAlso
+                   (rol.Estado Is Nothing OrElse String.Equals(rol.Estado.Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase)) Then
+                    Return rol.RolNombre.Trim()
+                End If
+            Catch
+                Return String.Empty
+            End Try
+
+            Return String.Empty
+        End Function
+
+        Private Function ObtenerRolIdPorNombre(ByVal nombreRol As String) As Integer
+            If String.IsNullOrWhiteSpace(nombreRol) Then
+                Return 0
+            End If
+
+            Try
+                Dim rolSrv As New RolServicio()
+                Dim roles = rolSrv.Buscar(nombreRol.Trim())
+                Dim rol = roles.FirstOrDefault(
+                    Function(r) r.RolNombre IsNot Nothing AndAlso
+                                String.Equals(r.RolNombre.Trim(), nombreRol.Trim(), StringComparison.OrdinalIgnoreCase) AndAlso
+                                (r.Estado Is Nothing OrElse String.Equals(r.Estado.Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase))
+                )
+
+                If rol IsNot Nothing Then
+                    Return rol.RolId
+                End If
+            Catch
+                Return 0
+            End Try
+
+            Return 0
         End Function
 
         Private Function ObtenerRolIdDesdeSesion() As Integer
@@ -285,17 +356,5 @@ Namespace Controllers
             Return rolId
         End Function
 
-        Private Function ObtenerCliIdDesdeSesion() As Integer?
-            If Session("CliId") Is Nothing Then
-                Return Nothing
-            End If
-
-            Dim cliId As Integer = 0
-            If Integer.TryParse(Session("CliId").ToString(), cliId) AndAlso cliId > 0 Then
-                Return cliId
-            End If
-
-            Return Nothing
-        End Function
     End Class
 End Namespace

@@ -57,11 +57,13 @@ End Code
                         <label for="Username">Usuario</label>
                         <div class="a-input-wrap">
                             <i class="bi bi-person a-input-icon"></i>
-                            @Html.TextBoxFor(Function(m) m.Username, New With {
-                                .class = "a-input",
-                                .placeholder = "Tu nombre de usuario",
-                                .autocomplete = "username"
-                            })
+                            <input type="text"
+                                   id="Username"
+                                   name="Username"
+                                   class="a-input"
+                                   placeholder="Tu nombre de usuario"
+                                   autocomplete="username"
+                                   value="@(If(Model IsNot Nothing, Model.Username, String.Empty))" />
                         </div>
                         @Html.ValidationMessageFor(Function(m) m.Username, "", New With {.style = "color:#b3261e;font-size:12px;"})
                     </div>
@@ -70,12 +72,12 @@ End Code
                         <label for="Password">Contraseña</label>
                         <div class="a-input-wrap">
                             <i class="bi bi-lock a-input-icon"></i>
-                            @Html.PasswordFor(Function(m) m.Password, New With {
-                                .class = "a-input",
-                                .placeholder = "Tu contraseña",
-                                .autocomplete = "current-password",
-                                .id = "password"
-                            })
+                            <input type="password"
+                                   id="Password"
+                                   name="Password"
+                                   class="a-input"
+                                   placeholder="Tu contraseña"
+                                   autocomplete="current-password" />
                             <button type="button" class="a-input-icon-r" id="toggle-pass">
                                 <i class="bi bi-eye" id="eye-icon"></i>
                             </button>
@@ -114,7 +116,7 @@ End Code
     <script>
         $(function () {
             $('#toggle-pass').on('click', function () {
-                var inp = $('#password');
+                var inp = $('#Password');
                 var icon = $('#eye-icon');
 
                 if (inp.attr('type') === 'password') {
