@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
     var grid = document.getElementById('poOrdersGrid');
     var emptyState = document.getElementById('poEmptyState');
     var tabs = document.querySelectorAll('#poTabs .po-tab');
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var ordenes = [];
 
     function escapeHtml(value) {
-        return String(value || '')
+        return String(value === null || value === undefined ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function normalizarRespuesta(payload) {
         if (!payload) {
-            return { ok: false, data: [], message: 'Respuesta vacia del servidor.' };
+            return { ok: false, data: [], message: 'Respuesta vacía del servidor.' };
         }
 
         if (payload.ok !== undefined) {
@@ -47,14 +47,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function formatearMoneda(valor, moneda) {
         var numero = Number(valor || 0);
-        var codigo = String(moneda || 'GTQ').trim();
+        var codigo = String(moneda || 'GTQ').trim().toUpperCase();
         try {
             return new Intl.NumberFormat('es-GT', {
                 style: 'currency',
                 currency: codigo
             }).format(numero);
         } catch (error) {
-            return codigo + ' ' + numero.toFixed(2);
+            return 'Q' + numero.toFixed(2);
+        }
+    }
+
+    function setText(id, value) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.textContent = String(value);
         }
     }
 
@@ -63,11 +70,13 @@ document.addEventListener('DOMContentLoaded', function () {
         var activas = 0;
         var entregadas = 0;
         var canceladas = 0;
+        var totalComprado = 0;
         var i;
 
         for (i = 0; i < lista.length; i += 1) {
             var estado = String(lista[i].EstadoUi || '').toUpperCase();
             todas += 1;
+            totalComprado += Number(lista[i].Total || 0);
 
             if (estado === 'ENTREGADA') {
                 entregadas += 1;
@@ -78,15 +87,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        var elTodas = document.getElementById('poCountTodas');
-        var elActivas = document.getElementById('poCountActivas');
-        var elEntregadas = document.getElementById('poCountEntregadas');
-        var elCanceladas = document.getElementById('poCountCanceladas');
-
-        if (elTodas) { elTodas.textContent = String(todas); }
-        if (elActivas) { elActivas.textContent = String(activas); }
-        if (elEntregadas) { elEntregadas.textContent = String(entregadas); }
-        if (elCanceladas) { elCanceladas.textContent = String(canceladas); }
+        setText('poCountTodas', todas);
+        setText('poCountActivas', activas);
+        setText('poCountEntregadas', entregadas);
+        setText('poCountCanceladas', canceladas);
+        setText('poCountTodasBig', todas);
+        setText('poCountActivasBig', activas);
+        setText('poCountEntregadasBig', entregadas);
+        setText('poTotalComprado', formatearMoneda(totalComprado, 'GTQ'));
     }
 
     function coincideFiltro(item, filtro) {
@@ -122,7 +130,29 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'po-status po-status--danger';
         }
 
+        if (normalizado === 'EN CAMINO') {
+            return 'po-status po-status--info';
+        }
+
         return 'po-status po-status--warning';
+    }
+
+    function iconoEstado(estado) {
+        var normalizado = String(estado || '').toUpperCase();
+
+        if (normalizado === 'ENTREGADA') {
+            return 'bi-check-circle';
+        }
+
+        if (normalizado === 'CANCELADA') {
+            return 'bi-x-circle';
+        }
+
+        if (normalizado === 'EN CAMINO') {
+            return 'bi-truck';
+        }
+
+        return 'bi-clock';
     }
 
     function render(lista) {
@@ -148,26 +178,30 @@ document.addEventListener('DOMContentLoaded', function () {
             var item = visibles[i];
             var puedeRastrear = item.PuedeRastrear === true;
             var estado = item.EstadoUi || 'PENDIENTE';
+            var numeroOrden = item.NumOrden || ('ORD-' + item.OrdenVentaId);
 
             html += ''
-                + '<div class="po-card">'
-                + '  <div class="po-card-head">'
-                + '      <div>'
-                + '          <div class="po-order-id">' + escapeHtml(item.NumOrden || ('ORD-' + item.OrdenVentaId)) + '</div>'
-                + '          <div class="po-order-product">' + escapeHtml(item.Resumen || 'Orden registrada') + '</div>'
+                + '<article class="po-card order-card-lux">'
+                + '  <div class="order-card-main">'
+                + '      <div class="order-card-icon"><i class="bi ' + escapeHtml(iconoEstado(estado)) + '"></i></div>'
+                + '      <div class="order-card-copy">'
+                + '          <div class="po-order-id">' + escapeHtml(numeroOrden) + '</div>'
+                + '          <div class="po-order-product">' + escapeHtml(item.Resumen || 'Orden registrada en el sistema') + '</div>'
+                + '          <div class="order-card-meta"><i class="bi bi-calendar"></i> ' + escapeHtml(item.FechaOrdenTexto || '') + '</div>'
                 + '      </div>'
-                + '      <span class="' + escapeHtml(obtenerClaseEstado(estado)) + '">' + escapeHtml(estado) + '</span>'
                 + '  </div>'
-                + '  <div class="po-row"><span>Fecha</span><strong>' + escapeHtml(item.FechaOrdenTexto || '') + '</strong></div>'
-                + '  <div class="po-row"><span>Total</span><strong>' + escapeHtml(formatearMoneda(item.Total, item.Moneda)) + '</strong></div>'
-                + '  <div class="po-row"><span>Direccion</span><strong>' + escapeHtml(item.Direccion || 'No disponible') + '</strong></div>'
+                + '  <div class="order-card-side">'
+                + '      <span class="' + escapeHtml(obtenerClaseEstado(estado)) + '">' + escapeHtml(estado) + '</span>'
+                + '      <strong class="order-card-total">' + escapeHtml(formatearMoneda(item.Total, item.Moneda)) + '</strong>'
+                + '  </div>'
+                + '  <div class="order-card-address"><i class="bi fa-location-dot"></i><span>' + escapeHtml(item.Direccion || 'Dirección no disponible') + '</span></div>'
                 + '  <div class="po-actions">'
                 + '      <a class="po-btn po-btn--primary" href="/PortalCliente/DetalleOrden?id=' + encodeURIComponent(item.OrdenVentaId) + '">Ver detalle</a>'
                 + (puedeRastrear
-                    ? '<a class="po-btn po-btn--ghost" href="/PortalCliente/Tracking?ordenVentaId=' + encodeURIComponent(item.OrdenVentaId) + '">Rastrear</a>'
+                    ? '<a class="po-btn po-btn--ghost" href="/PortalCliente/Tracking?ordenVentaId=' + encodeURIComponent(item.OrdenVentaId) + '">Rastrear →</a>'
                     : '')
                 + '  </div>'
-                + '</div>';
+                + '</article>';
         }
 
         grid.innerHTML = html;
@@ -188,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function cargarOrdenes() {
-        grid.innerHTML = '<div class="po-loading">Cargando ordenes...</div>';
+        grid.innerHTML = '<div class="po-loading"><i class="bi fa-spinner fa-spin"></i> Cargando pedidos...</div>';
         emptyState.style.display = 'none';
 
         fetch(endpoint, {
@@ -200,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(function (response) {
                 if (!response.ok) {
-                    throw new Error('No se pudieron cargar las ordenes.');
+                    throw new Error('No se pudieron cargar los pedidos.');
                 }
                 return response.json();
             })
@@ -208,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var respuesta = normalizarRespuesta(payload);
 
                 if (!respuesta.ok) {
-                    throw new Error(respuesta.message || 'No se pudieron cargar las ordenes.');
+                    throw new Error(respuesta.message || 'No se pudieron cargar los pedidos.');
                 }
 
                 ordenes = respuesta.data || [];
@@ -219,9 +253,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 grid.innerHTML = '';
                 emptyState.style.display = 'flex';
                 emptyState.innerHTML = ''
-                    + '<div class="po-empty-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>'
-                    + '<div class="po-empty-title">No fue posible cargar las ordenes</div>'
-                    + '<div class="po-empty-text">' + escapeHtml(error.message || 'Ocurrio un error inesperado.') + '</div>'
+                    + '<div class="po-empty-icon"><i class="bi fa-triangle-exclamation"></i></div>'
+                    + '<div class="po-empty-title">No fue posible cargar los pedidos</div>'
+                    + '<div class="po-empty-text">' + escapeHtml(error.message || 'Ocurrió un error inesperado.') + '</div>'
                     + '<button type="button" class="po-empty-link" id="poRetryBtn">Intentar de nuevo</button>';
 
                 var retry = document.getElementById('poRetryBtn');
