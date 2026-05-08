@@ -1,0 +1,261 @@
+(function () {
+    'use strict';
+
+    var todasLasResenas = [];
+    var ratingSeleccionado = 5;
+
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    function formatDate(value) {
+        if (!value) return 'Fecha no disponible';
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return String(value).substring(0, 10);
+        return date.toLocaleDateString('es-GT', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function getRatingStars(value) {
+        var n = Math.max(0, Math.min(5, Math.round(Number(value || 0))));
+        var html = '';
+        for (var i = 1; i <= 5; i++) {
+            html += '<i class="bi ' + (i <= n ? 'bi-star-fill' : 'bi-star') + '"></i>';
+        }
+        return html;
+    }
+
+    function showToast(message, type) {
+        if (window.PortalCliente && typeof window.PortalCliente.toast === 'function') {
+            window.PortalCliente.toast(message, type || 'info');
+            return;
+        }
+        alert(message);
+    }
+
+    function getJson(url, options) {
+        return fetch(url, options || {}).then(function (res) {
+            return res.json().catch(function () {
+                return { ok: false, message: 'Respuesta no válida del servidor.' };
+            });
+        });
+    }
+
+    function cargarResenas() {
+        var loading = $('resenasLoading');
+        var empty = $('resenasEmpty');
+        var grid = $('resenasGrid');
+
+        if (loading) loading.style.display = 'flex';
+        if (empty) empty.style.display = 'none';
+        if (grid) grid.innerHTML = '';
+
+        getJson('/PortalCliente/ObtenerMisResenasData')
+            .then(function (json) {
+                if (!json || !(json.ok || json.success)) {
+                    throw new Error(json && json.message ? json.message : 'No se pudieron cargar las reseñas.');
+                }
+
+                todasLasResenas = Array.isArray(json.data) ? json.data : [];
+                renderResenas();
+            })
+            .catch(function (err) {
+                todasLasResenas = [];
+                renderResenas();
+                showToast(err.message || 'No se pudieron cargar las reseñas.', 'error');
+            })
+            .finally(function () {
+                if (loading) loading.style.display = 'none';
+            });
+    }
+
+    function renderStats(lista) {
+        var total = lista.length;
+        var suma = 0;
+        var activas = 0;
+
+        lista.forEach(function (r) {
+            suma += Number(r.Calificacion || r.calificacion || 0);
+            var estado = String(r.Estado || r.estado || '').toUpperCase();
+            if (!estado || estado === 'ACTIVO' || estado === 'PUBLICADO') activas += 1;
+        });
+
+        if ($('resenasTotal')) $('resenasTotal').textContent = total;
+        if ($('resenasPromedio')) $('resenasPromedio').textContent = total ? (suma / total).toFixed(1) : '0.0';
+        if ($('resenasActivas')) $('resenasActivas').textContent = activas;
+    }
+
+    function filtrarResenas() {
+        var texto = ($('txtBuscarResena') ? $('txtBuscarResena').value : '').toLowerCase().trim();
+        var filtro = $('cmbFiltroResena') ? $('cmbFiltroResena').value : 'TODAS';
+
+        return todasLasResenas.filter(function (r) {
+            var producto = r.Producto || r.producto || {};
+            var cal = Math.round(Number(r.Calificacion || r.calificacion || 0));
+            var estado = String(r.Estado || r.estado || '');
+            var contenido = [
+                producto.Nombre || producto.nombre || '',
+                producto.Referencia || producto.referencia || '',
+                r.Comentario || r.comentario || '',
+                estado
+            ].join(' ').toLowerCase();
+
+            if (filtro !== 'TODAS' && String(cal) !== filtro) return false;
+            if (texto && contenido.indexOf(texto) === -1) return false;
+            return true;
+        });
+    }
+
+    function renderResenas() {
+        var grid = $('resenasGrid');
+        var empty = $('resenasEmpty');
+        if (!grid) return;
+
+        var lista = filtrarResenas();
+        renderStats(todasLasResenas);
+
+        if (!lista.length) {
+            grid.innerHTML = '';
+            if (empty) empty.style.display = 'block';
+            return;
+        }
+
+        if (empty) empty.style.display = 'none';
+
+        grid.innerHTML = lista.map(function (r) {
+            var producto = r.Producto || r.producto || {};
+            var productoId = r.ProductoId || r.productoId || producto.ProductoId || producto.productoId || 0;
+            var nombre = producto.Nombre || producto.nombre || ('Producto #' + productoId);
+            var imagen = producto.ImagenUrl || producto.imagenUrl || '';
+            var comentario = r.Comentario || r.comentario || 'Sin comentario adicional.';
+            var estado = r.Estado || r.estado || 'ACTIVO';
+            var resenaId = r.ResenaId || r.resenaId || 0;
+            var calificacion = r.Calificacion || r.calificacion || 0;
+
+            return '' +
+                '<article class="pc-review-card">' +
+                    '<div class="pc-review-image">' +
+                        (imagen ? '<img src="' + escapeHtml(imagen) + '" alt="' + escapeHtml(nombre) + '" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" />' : '') +
+                        '<div class="pc-product-placeholder" style="' + (imagen ? 'display:none;' : '') + '"><i class="bi bi-chair"></i></div>' +
+                    '</div>' +
+                    '<div class="pc-review-body">' +
+                        '<div class="pc-review-head">' +
+                            '<div>' +
+                                '<h3>' + escapeHtml(nombre) + '</h3>' +
+                                '<span>Producto #' + escapeHtml(productoId) + ' · ' + escapeHtml(formatDate(r.ResenaAt || r.resenaAt)) + '</span>' +
+                            '</div>' +
+                            '<span class="pc-pill pc-pill-pendiente">' + escapeHtml(estado) + '</span>' +
+                        '</div>' +
+                        '<div class="pc-review-stars">' + getRatingStars(calificacion) + '<strong>' + Number(calificacion || 0).toFixed(1) + '</strong></div>' +
+                        '<p>' + escapeHtml(comentario) + '</p>' +
+                        '<div class="pc-review-actions">' +
+                            '<a class="pc-btn pc-btn-outlined" href="/PortalCliente/DetalleProducto/' + encodeURIComponent(productoId) + '">Ver producto</a>' +
+                            '<button type="button" class="pc-btn pc-btn-danger" data-delete-review="' + escapeHtml(resenaId) + '">Eliminar</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</article>';
+        }).join('');
+    }
+
+    function abrirModal() {
+        var modal = $('modalNuevaResena');
+        if (modal) modal.classList.add('show');
+        setRating(5);
+    }
+
+    function cerrarModal(id) {
+        var modal = $(id);
+        if (modal) modal.classList.remove('show');
+    }
+
+    function setRating(value) {
+        ratingSeleccionado = Number(value || 5);
+        if ($('txtCalificacionResena')) $('txtCalificacionResena').value = ratingSeleccionado;
+        var botones = document.querySelectorAll('#ratingInput button');
+        botones.forEach(function (btn) {
+            var n = Number(btn.getAttribute('data-rating'));
+            btn.classList.toggle('active', n <= ratingSeleccionado);
+        });
+    }
+
+    function guardarResena(evt) {
+        evt.preventDefault();
+
+        var productoId = Number($('txtProductoResena') ? $('txtProductoResena').value : 0);
+        var comentario = $('txtComentarioResena') ? $('txtComentarioResena').value : '';
+
+        if (!productoId) {
+            showToast('Ingresa el ID del producto.', 'error');
+            return;
+        }
+
+        getJson('/PortalCliente/CrearResenaData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                productoId: productoId,
+                calificacion: ratingSeleccionado,
+                comentario: comentario
+            })
+        }).then(function (json) {
+            if (!json || !(json.ok || json.success)) {
+                throw new Error(json && json.message ? json.message : 'No se pudo guardar la reseña.');
+            }
+            showToast(json.message || 'Reseña guardada correctamente.', 'success');
+            cerrarModal('modalNuevaResena');
+            if ($('formNuevaResena')) $('formNuevaResena').reset();
+            cargarResenas();
+        }).catch(function (err) {
+            showToast(err.message || 'No se pudo guardar la reseña.', 'error');
+        });
+    }
+
+    function eliminarResena(resenaId) {
+        if (!resenaId) return;
+        if (!confirm('¿Eliminar esta reseña?')) return;
+
+        getJson('/PortalCliente/EliminarResenaData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resenaId: Number(resenaId) })
+        }).then(function (json) {
+            if (!json || !(json.ok || json.success)) {
+                throw new Error(json && json.message ? json.message : 'No se pudo eliminar la reseña.');
+            }
+            showToast(json.message || 'Reseña eliminada.', 'success');
+            cargarResenas();
+        }).catch(function (err) {
+            showToast(err.message || 'No se pudo eliminar la reseña.', 'error');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        cargarResenas();
+
+        if ($('btnAbrirNuevaResena')) $('btnAbrirNuevaResena').addEventListener('click', abrirModal);
+        if ($('formNuevaResena')) $('formNuevaResena').addEventListener('submit', guardarResena);
+        if ($('txtBuscarResena')) $('txtBuscarResena').addEventListener('input', renderResenas);
+        if ($('cmbFiltroResena')) $('cmbFiltroResena').addEventListener('change', renderResenas);
+
+        document.querySelectorAll('[data-close-modal]').forEach(function (el) {
+            el.addEventListener('click', function () { cerrarModal(el.getAttribute('data-close-modal')); });
+        });
+
+        document.querySelectorAll('#ratingInput button').forEach(function (btn) {
+            btn.addEventListener('click', function () { setRating(btn.getAttribute('data-rating')); });
+        });
+
+        document.addEventListener('click', function (evt) {
+            var btn = evt.target.closest('[data-delete-review]');
+            if (btn) eliminarResena(btn.getAttribute('data-delete-review'));
+        });
+    });
+})();

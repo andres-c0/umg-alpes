@@ -1,5 +1,5 @@
-@Code
-    ViewData("Title") = "Tracking"
+﻿@Code
+    ViewData("Title") = "Seguimiento"
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 
     Dim ordenVentaId As Integer = 0
@@ -8,15 +8,23 @@
     End If
 End Code
 
-<div id="trkPage" class="pc-card trk-shell" data-order-id="@ordenVentaId">
-    <div class="pc-card-head">
-        <h2>Tracking de Orden</h2>
-        <a class="pc-pill-link" href="@Url.Action("MisOrdenes", "PortalCliente")">Volver a mis ordenes</a>
-    </div>
+<div id="trkPage" class="trk-page-new" data-order-id="@ordenVentaId">
+    <section class="trk-hero-new">
+        <div>
+            <span class="orders-kicker">Seguimiento de entrega</span>
+            <h1>Tracking del pedido</h1>
+            <p>Consulta la línea de tiempo de tu envío y el estado actual de la entrega.</p>
+        </div>
+        <a class="od-hero-link" href="@Url.Action("MisOrdenes", "PortalCliente")">
+            <i class="fa-solid fa-arrow-left"></i>
+            Volver a mis pedidos
+        </a>
+    </section>
 
     <div id="trkContent">
         <div class="trk-loading">
-            Cargando informacion de tracking...
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Cargando información de tracking...
         </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Option Explicit On
 
 Imports System.Linq
@@ -99,6 +99,8 @@ Namespace Controllers
                     .Nombres = c.Nombres,
                     .Apellidos = c.Apellidos,
                     .Email = c.Email,
+                    .TelResidencia = c.TelResidencia,
+                    .TelCelular = c.TelCelular,
                     .Direccion = c.Direccion,
                     .Ciudad = c.Ciudad,
                     .Departamento = c.Departamento,
@@ -238,6 +240,8 @@ Namespace Controllers
                     .Apellidos = c.Apellidos,
                     .NombreCompleto = ((If(c.Nombres, "") & " " & If(c.Apellidos, "")).Trim()),
                     .Email = c.Email,
+                    .TelResidencia = c.TelResidencia,
+                    .TelCelular = c.TelCelular,
                     .Direccion = c.Direccion,
                     .Ciudad = c.Ciudad,
                     .Departamento = c.Departamento,

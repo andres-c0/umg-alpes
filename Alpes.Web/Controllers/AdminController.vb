@@ -1,10 +1,10 @@
 Option Strict On
 Option Explicit On
 
+Imports System
 Imports System.Web.Mvc
 Imports System.Linq
 Imports Alpes.Servicios.Servicios
-
 
 Namespace Controllers
     Public Class AdminController
@@ -100,7 +100,6 @@ Namespace Controllers
             Return View()
         End Function
 
-
         ' =========================
         ' EMPLEADOS
         ' =========================
@@ -163,14 +162,70 @@ Namespace Controllers
                 Return False
             End If
 
+            Dim nombreRolSesion As String = If(Session("RolNombre") Is Nothing, String.Empty, Session("RolNombre").ToString())
+
+            If EsNombreRolAdministrativo(nombreRolSesion) Then
+                Return True
+            End If
+
             Dim rolId As Integer = 0
             Integer.TryParse(Session("RolId").ToString(), rolId)
 
-            Return rolId = 27 OrElse rolId = 28
+            Dim nombreRolBd As String = ObtenerNombreRolPorId(rolId)
+
+            If EsNombreRolAdministrativo(nombreRolBd) Then
+                Session("RolNombre") = nombreRolBd
+                Return True
+            End If
+
+            Return False
         End Function
+
+        Private Function EsNombreRolAdministrativo(ByVal nombreRol As String) As Boolean
+            If String.IsNullOrWhiteSpace(nombreRol) Then
+                Return False
+            End If
+
+            Dim rolNormalizado As String = nombreRol.Trim().ToUpperInvariant()
+
+            ' REGLA:
+            ' CLIENTE no puede entrar al panel admin.
+            ' Cualquier otro rol activo sí puede entrar al panel admin.
+            Return Not (rolNormalizado = "CLIENTE" OrElse rolNormalizado.Contains("CLIENTE"))
+        End Function
+
+        Private Function ObtenerNombreRolPorId(ByVal rolId As Integer) As String
+            If rolId <= 0 Then
+                Return String.Empty
+            End If
+
+            Try
+                Dim rolSrv As New RolServicio()
+                Dim rol = rolSrv.ObtenerPorId(rolId)
+
+                If rol IsNot Nothing AndAlso
+                   rol.RolNombre IsNot Nothing AndAlso
+                   (rol.Estado Is Nothing OrElse String.Equals(rol.Estado.Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase)) Then
+                    Return rol.RolNombre.Trim()
+                End If
+            Catch
+                Return String.Empty
+            End Try
+
+            Return String.Empty
+        End Function
+
         <HttpGet>
         Function DashboardData() As JsonResult
             Try
+                If Not EsAdmin() Then
+                    Response.StatusCode = 401
+                    Return Json(New With {
+                        .success = False,
+                        .message = "No autorizado."
+                    }, JsonRequestBehavior.AllowGet)
+                End If
+
                 Dim ordenVentaSrv As New Orden_VentaServicio()
                 Dim ordenCompraSrv As New Orden_CompraServicio()
                 Dim clienteSrv As New ClienteServicio()
@@ -200,16 +255,16 @@ Namespace Controllers
                     .Sum()
 
                 Dim ordenesActivas As Integer = ventas _
-    .Where(Function(x) x.Estado IsNot Nothing AndAlso x.Estado.ToUpper() = "ACTIVO") _
-    .Count()
+                    .Where(Function(x) x.Estado IsNot Nothing AndAlso x.Estado.ToUpper() = "ACTIVO") _
+                    .Count()
 
                 Dim stockBajo As Integer = inventario _
-    .Where(Function(x) x.StockMinimo.HasValue AndAlso x.Stock <= x.StockMinimo.Value) _
-    .Count()
+                    .Where(Function(x) x.StockMinimo.HasValue AndAlso x.Stock <= x.StockMinimo.Value) _
+                    .Count()
 
                 Dim nominasPendientes As Integer = nominas _
-    .Where(Function(x) x.Estado IsNot Nothing AndAlso x.Estado.ToUpper() = "PENDIENTE") _
-    .Count()
+                    .Where(Function(x) x.Estado IsNot Nothing AndAlso x.Estado.ToUpper() = "PENDIENTE") _
+                    .Count()
 
                 Dim ventasPorMes = ventas _
                     .GroupBy(Function(x) x.FechaOrden.Month) _
@@ -248,7 +303,6 @@ Namespace Controllers
                 }, JsonRequestBehavior.AllowGet)
             End Try
         End Function
-
 
     End Class
 End Namespace
