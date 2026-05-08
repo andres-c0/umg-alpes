@@ -1,548 +1,400 @@
 ﻿@Code
-    ViewBag.Title = "Inicio"
+    ViewData("Title") = "Inicio"
+    Layout = "~/Views/Shared/_PublicLayout.vbhtml"
 End Code
 
-<section class="home-hero">
-    <div class="container">
-        <div class="hero-grid">
-            <div class="hero-copy">
-                <div class="hero-badge">Colección artesanal</div>
-                <h1 class="hero-title">Muebles que convierten espacios en experiencias</h1>
-                <p class="hero-text">
-                    En Muebles de los Alpes diseñamos piezas para interior y exterior con acabados elegantes,
-                    materiales de calidad y una presencia cálida que transforma cualquier ambiente.
+<section class="home-public-hero" id="inicio">
+    <div class="home-hero-slider" id="homeHeroSlider">
+        <article class="home-hero-slide active" data-slide="0">
+            <div class="home-hero-bg home-hero-bg-cafe"></div>
+
+            <div class="home-hero-pattern home-hero-pattern-one"></div>
+            <div class="home-hero-pattern home-hero-pattern-two"></div>
+
+            <div class="home-hero-content">
+                <span class="home-hero-eyebrow">COLECCIÓN ARTESANAL 2025</span>
+
+                <h1 class="home-hero-title-balanced">
+                    <span>Muebles que</span>
+                    <span>cuentan una</span>
+                    <span>historia</span>
+                </h1>
+
+                <p>
+                    Fabricados a mano con madera guatemalteca seleccionada,
+                    acabados elegantes y presencia cálida para cada espacio.
                 </p>
 
-                <div class="hero-actions">
-                    <a href="#" class="btn btn-gold">Ver catálogo</a>
-                    <a href="#" class="btn btn-outlined">Explorar colecciones</a>
-                </div>
+                <div class="home-hero-actions">
+                    <a href="@Url.Action("CatalogoPublico", "Home")" class="home-btn home-btn-gold">
+                        Explorar colección
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
 
-                <div class="hero-highlights">
-                    <div class="highlight-item">
-                        <span class="highlight-number">+120</span>
-                        <span class="highlight-label">Modelos disponibles</span>
-                    </div>
-                    <div class="highlight-item">
-                        <span class="highlight-number">Interior</span>
-                        <span class="highlight-label">Líneas elegantes</span>
-                    </div>
-                    <div class="highlight-item">
-                        <span class="highlight-number">Exterior</span>
-                        <span class="highlight-label">Resistencia y estilo</span>
-                    </div>
+                    <a href="#productos-destacados" class="home-btn home-btn-light-outline">
+                        Ver destacados
+                    </a>
                 </div>
             </div>
+        </article>
 
-            <div class="hero-visual">
-                <div class="hero-card hero-card-main">
-                    <div class="hero-card-label">Diseño destacado</div>
-                    <div class="hero-card-title">Sala Colonial Alpes</div>
-                    <div class="hero-card-text">
-                        Madera fina, textura cálida y una composición pensada para espacios sofisticados.
-                    </div>
-                </div>
+        <article class="home-hero-slide" data-slide="1">
+            <div class="home-hero-bg home-hero-bg-verde"></div>
 
-                <div class="hero-floating-card">
-                    <div class="floating-tag">Nuevo</div>
-                    <div class="floating-title">Colección Terraza</div>
-                    <div class="floating-text">Ideal para espacios exteriores elegantes.</div>
+            <div class="home-hero-pattern home-hero-pattern-one"></div>
+            <div class="home-hero-pattern home-hero-pattern-two"></div>
+
+            <div class="home-hero-content">
+                <span class="home-hero-eyebrow">LÍNEA COLONIAL</span>
+
+                <h1>
+                    Herencia<br />
+                    que se<br />
+                    siente
+                </h1>
+
+                <p>
+                    Diseño colonial con acabados artesanales, materiales resistentes
+                    y estilo pensado para hogares con carácter.
+                </p>
+
+                <div class="home-hero-actions">
+                    <a href="@Url.Action("CatalogoPublico", "Home", New With {.categoria = "Interior"})" class="home-btn home-btn-gold">
+                        Ver interior
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                    <a href="@Url.Action("Registro", "Home")" class="home-btn home-btn-light-outline">
+                        Crear cuenta
+                    </a>
                 </div>
             </div>
+        </article>
+
+        <article class="home-hero-slide" data-slide="2">
+            <div class="home-hero-bg home-hero-bg-nogal"></div>
+
+            <div class="home-hero-pattern home-hero-pattern-one"></div>
+            <div class="home-hero-pattern home-hero-pattern-two"></div>
+
+            <div class="home-hero-content">
+                <span class="home-hero-eyebrow">ENVÍO SIN COSTO</span>
+
+                <h1>
+                    A toda<br />
+                    Guatemala<br />
+                    sin cargo
+                </h1>
+
+                <p>
+                    Entregamos en los 22 departamentos con una experiencia de compra
+                    sencilla, segura y pensada para el cliente.
+                </p>
+
+                <div class="home-hero-actions">
+                    <a href="@Url.Action("CatalogoPublico", "Home", New With {.categoria = "Exterior"})" class="home-btn home-btn-gold">
+                        Ver exterior
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                    <a href="@Url.Action("CarritoInvitado", "Home")" class="home-btn home-btn-light-outline">
+                        Ver carrito
+                    </a>
+                </div>
+            </div>
+        </article>
+
+        <div class="home-hero-indicators" id="homeHeroIndicators">
+            <button type="button" class="active" data-target-slide="0" aria-label="Ver banner 1"></button>
+            <button type="button" data-target-slide="1" aria-label="Ver banner 2"></button>
+            <button type="button" data-target-slide="2" aria-label="Ver banner 3"></button>
         </div>
     </div>
 </section>
 
-<section class="home-section">
-    <div class="container">
-        <div class="section-heading">
-            <h2 class="section-title">Nuestra propuesta</h2>
-            <p class="section-subtitle">
-                El portal está pensado para que el cliente pueda consultar muebles, agregarlos a su carrito
-                y realizar compras de forma cómoda y segura, mientras la administración controla productos,
-                clientes, precios y reportes. :contentReference[oaicite:2]{index=2}
-            </p>
-        </div>
+<section class="home-public-section home-categories-section">
+    <div class="home-section-heading">
+        <span>POR CATEGORÍA</span>
+        <h2>Encuentra tu estilo</h2>
+        <p>
+            Explora muebles diseñados para interiores elegantes o espacios exteriores
+            con resistencia, comodidad y presencia visual.
+        </p>
+    </div>
 
-        <div class="feature-grid">
-            <div class="feature-card card-base">
-                <div class="feature-icon">01</div>
-                <h3 class="feature-title">Catálogo elegante</h3>
-                <p class="feature-text">
-                    Una experiencia visual refinada para descubrir muebles por estilo, material y tipo.
-                </p>
-            </div>
+    <div class="home-category-grid">
+        <a href="@Url.Action("CatalogoPublico", "Home", New With {.categoria = "Interior"})" class="home-category-card home-category-interior">
+            <div class="home-category-overlay"></div>
 
-            <div class="feature-card card-base">
-                <div class="feature-icon">02</div>
-                <h3 class="feature-title">Compra segura</h3>
-                <p class="feature-text">
-                    Flujo claro desde la selección del producto hasta el proceso de pago y confirmación.
-                </p>
-            </div>
+            <div class="home-category-content">
+                <span class="home-category-icon">
+                    <i class="bi bi-house-door"></i>
+                </span>
 
-            <div class="feature-card card-base">
-                <div class="feature-icon">03</div>
-                <h3 class="feature-title">Gestión administrativa</h3>
-                <p class="feature-text">
-                    Soporte para administración de clientes, productos, precios, inventario y reportes.
-                </p>
+                <h3>Interior</h3>
+                <p>Salas, comedores, dormitorios y espacios cálidos.</p>
+
+                <strong>
+                    Explorar
+                    <i class="bi bi-arrow-right"></i>
+                </strong>
             </div>
-        </div>
+        </a>
+
+        <a href="@Url.Action("CatalogoPublico", "Home", New With {.categoria = "Exterior"})" class="home-category-card home-category-exterior">
+            <div class="home-category-overlay"></div>
+
+            <div class="home-category-content">
+                <span class="home-category-icon">
+                    <i class="bi bi-tree"></i>
+                </span>
+
+                <h3>Exterior</h3>
+                <p>Terrazas, jardines y ambientes abiertos.</p>
+
+                <strong>
+                    Explorar
+                    <i class="bi bi-arrow-right"></i>
+                </strong>
+            </div>
+        </a>
     </div>
 </section>
 
-<section class="home-section alt-section">
-    <div class="container">
-        <div class="section-heading">
-            <h2 class="section-title">Colecciones destacadas</h2>
-            <p class="section-subtitle">
-                Ejemplos visuales para la página principal. Más adelante los conectaremos a los datos reales.
-            </p>
+<section class="home-public-section home-featured-section" id="productos-destacados">
+    <div class="home-featured-heading">
+        <div>
+            <span>SELECCIÓN ESPECIAL</span>
+            <h2>Productos destacados</h2>
         </div>
 
-        <div class="collection-grid">
-            <article class="collection-card card-base">
-                <div class="collection-image image-wood"></div>
-                <div class="collection-content">
-                    <div class="badge-pill badge-warning">Interior</div>
-                    <h3 class="collection-title">Línea Nogal Clásico</h3>
-                    <p class="collection-text">
-                        Piezas sobrias y elegantes para sala, comedor y dormitorio.
-                    </p>
-                    <a href="#" class="collection-link">Ver detalles</a>
-                </div>
-            </article>
+        <a href="@Url.Action("CatalogoPublico", "Home")">
+            Ver catálogo completo
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
 
-            <article class="collection-card card-base">
-                <div class="collection-image image-outdoor"></div>
-                <div class="collection-content">
-                    <div class="badge-pill badge-info">Exterior</div>
-                    <h3 class="collection-title">Terraza Selva</h3>
-                    <p class="collection-text">
-                        Diseños resistentes para jardines, terrazas y espacios abiertos.
-                    </p>
-                    <a href="#" class="collection-link">Ver detalles</a>
-                </div>
-            </article>
+    <div class="home-featured-loading" id="homeProductosLoading">
+        <span class="home-loader"></span>
+        <p>Cargando productos destacados...</p>
+    </div>
 
-            <article class="collection-card card-base">
-                <div class="collection-image image-luxury"></div>
-                <div class="collection-content">
-                    <div class="badge-pill badge-success">Premium</div>
-                    <h3 class="collection-title">Edición Artesanal</h3>
-                    <p class="collection-text">
-                        Acabados finos, detalles exclusivos y presencia de alto nivel.
-                    </p>
-                    <a href="#" class="collection-link">Ver detalles</a>
+    <div class="home-products-row"
+         id="homeProductosDestacados"
+         data-productos-url="@Url.Action("ObtenerProductosPublicosData", "Home")"
+         data-detalle-base-url="@Url.Action("DetalleProducto", "Home")">
+        <article class="home-product-card home-product-placeholder">
+            <div class="home-product-image">
+                <i class="bi bi-armchair"></i>
+            </div>
+
+            <div class="home-product-info">
+                <span>INTERIOR</span>
+                <h3>Sala Colonial Alpes</h3>
+
+                <div class="home-product-price-row">
+                    <strong>Q 3,250</strong>
+
+                    <button type="button" class="home-product-cart-btn" data-demo-cart="true" aria-label="Agregar producto demo">
+                        <i class="bi bi-cart3"></i>
+                    </button>
                 </div>
-            </article>
-        </div>
+
+                <small>12 cuotas de Q 271</small>
+            </div>
+        </article>
+
+        <article class="home-product-card home-product-placeholder">
+            <div class="home-product-image">
+                <i class="bi bi-lamp"></i>
+            </div>
+
+            <div class="home-product-info">
+                <span>EXTERIOR</span>
+                <h3>Terraza Selva</h3>
+
+                <div class="home-product-price-row">
+                    <strong>Q 2,780</strong>
+
+                    <button type="button" class="home-product-cart-btn" data-demo-cart="true" aria-label="Agregar producto demo">
+                        <i class="bi bi-cart3"></i>
+                    </button>
+                </div>
+
+                <small>12 cuotas de Q 232</small>
+            </div>
+        </article>
+
+        <article class="home-product-card home-product-placeholder">
+            <div class="home-product-image">
+                <i class="bi bi-layout-sidebar"></i>
+            </div>
+
+            <div class="home-product-info">
+                <span>PREMIUM</span>
+                <h3>Comedor Nogal</h3>
+
+                <div class="home-product-price-row">
+                    <strong>Q 4,650</strong>
+
+                    <button type="button" class="home-product-cart-btn" data-demo-cart="true" aria-label="Agregar producto demo">
+                        <i class="bi bi-cart3"></i>
+                    </button>
+                </div>
+
+                <small>12 cuotas de Q 388</small>
+            </div>
+        </article>
+    </div>
+
+    <div class="home-products-empty" id="homeProductosEmpty" style="display:none;">
+        <i class="bi bi-box-seam"></i>
+        <h3>No hay productos disponibles</h3>
+        <p>Cuando existan productos activos, se mostrarán en esta sección.</p>
     </div>
 </section>
 
-<section class="home-section">
-    <div class="container">
-        <div class="cta-panel">
-            <div class="cta-copy">
-                <h2 class="cta-title">Diseño guatemalteco con carácter</h2>
-                <p class="cta-text">
-                    Explora nuestro catálogo y descubre muebles creados para combinar artesanía,
-                    calidad y elegancia en un solo lugar.
-                </p>
-            </div>
+<section class="home-benefits-strip">
+    <div class="home-benefit-item">
+        <i class="bi bi-truck"></i>
+        <strong>Envío sin costo</strong>
+        <span>A toda Guatemala</span>
+    </div>
 
-            <div class="cta-actions">
-                <a href="#" class="btn btn-primary">Ingresar al portal</a>
-                <a href="#" class="btn btn-outlined">Conocer más</a>
-            </div>
-        </div>
+    <div class="home-benefit-item">
+        <i class="bi bi-award"></i>
+        <strong>Garantía de 1 año</strong>
+        <span>Por defecto de fábrica</span>
+    </div>
+
+    <div class="home-benefit-item">
+        <i class="bi bi-tools"></i>
+        <strong>Artesanal</strong>
+        <span>Fabricado a mano</span>
+    </div>
+
+    <div class="home-benefit-item">
+        <i class="bi bi-arrow-left-right"></i>
+        <strong>Devolución</strong>
+        <span>Primeros 30 días</span>
     </div>
 </section>
 
-<style>
-    .home-hero {
-        padding: 56px 0 48px;
-        background: radial-gradient(circle at top right, rgba(212,168,83,0.18), transparent 22%), radial-gradient(circle at bottom left, rgba(139,111,71,0.12), transparent 24%), linear-gradient(180deg, #f8f4ef 0%, #f7f3ee 100%);
-    }
+<section class="home-public-section home-editorial-section">
+    <div class="home-section-heading">
+        <span>TENDENCIAS 2025</span>
+        <h2>Inspiración para tu hogar</h2>
+        <p>
+            Colecciones pensadas para transformar espacios con equilibrio,
+            tradición, textura y diseño contemporáneo.
+        </p>
+    </div>
 
-    .hero-grid {
-        display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
-        gap: 32px;
-        align-items: center;
-    }
+    <div class="home-editorial-grid">
+        <article class="home-editorial-card home-editorial-card-cafe">
+            <div class="home-editorial-gradient"></div>
 
-    .hero-copy {
-        padding-right: 16px;
-    }
+            <div class="home-editorial-content">
+                <span>TENDENCIA</span>
+                <h3>Minimalismo<br />Cálido</h3>
+                <p>Espacios serenos con materiales nobles y tonos naturales.</p>
+            </div>
 
-    .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(212,168,83,0.18);
-        color: var(--cafe-oscuro);
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        margin-bottom: 18px;
-    }
+            <i class="bi bi-arrow-right"></i>
+        </article>
 
-    .hero-title {
-        font-size: 52px;
-        line-height: 1.08;
-        margin-bottom: 18px;
-        max-width: 700px;
-    }
+        <article class="home-editorial-card home-editorial-card-verde">
+            <div class="home-editorial-gradient"></div>
 
-    .hero-text {
-        font-size: 16px;
-        color: var(--nogal-medio);
-        max-width: 620px;
-        margin-bottom: 24px;
-    }
+            <div class="home-editorial-content">
+                <span>TENDENCIA</span>
+                <h3>Estilo<br />Colonial</h3>
+                <p>Herencia guatemalteca con presencia elegante y artesanal.</p>
+            </div>
 
-    .hero-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 28px;
-    }
+            <i class="bi bi-arrow-right"></i>
+        </article>
 
-    .hero-highlights {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-    }
+        <article class="home-editorial-card home-editorial-card-grafito">
+            <div class="home-editorial-gradient"></div>
 
-    .highlight-item {
-        min-width: 130px;
-        background: var(--blanco);
-        border: var(--border-light);
-        border-radius: 12px;
-        padding: 14px 16px;
-        box-shadow: var(--shadow-card);
-    }
+            <div class="home-editorial-content">
+                <span>TENDENCIA</span>
+                <h3>Ecléctico<br />Moderno</h3>
+                <p>Fusión con carácter para ambientes diferentes y memorables.</p>
+            </div>
 
-    .highlight-number {
-        display: block;
-        font-family: var(--font-display);
-        color: var(--cafe-oscuro);
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 4px;
-    }
+            <i class="bi bi-arrow-right"></i>
+        </article>
+    </div>
+</section>
 
-    .highlight-label {
-        display: block;
-        color: var(--nogal-medio);
-        font-size: 12px;
-    }
+<section class="home-final-cta">
+    <div class="home-final-decoration">
+        <span></span>
+        <strong></strong>
+        <span></span>
+    </div>
 
-    .hero-visual {
-        position: relative;
-        min-height: 460px;
-        display: flex;
-        align-items: stretch;
-    }
+    <h2>Transforma tu hogar</h2>
 
-    .hero-card-main {
-        width: 100%;
-        min-height: 460px;
-        border-radius: 20px;
-        padding: 32px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        background: linear-gradient(180deg, rgba(44,24,16,0.10) 0%, rgba(44,24,16,0.78) 100%), linear-gradient(135deg, #8B6F47 0%, #2C1810 100%);
-        color: var(--blanco);
-        overflow: hidden;
-        position: relative;
-    }
+    <p>
+        Crea tu cuenta y accede a precios exclusivos, cuotas,
+        seguimiento de pedidos y una experiencia de compra personalizada.
+    </p>
 
-        .hero-card-main::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at top left, rgba(255,255,255,0.14), transparent 26%), radial-gradient(circle at center right, rgba(212,168,83,0.18), transparent 24%);
-            pointer-events: none;
-        }
+    <div class="home-final-actions">
+        <a href="@Url.Action("Registro", "Home")" class="home-btn home-btn-gold">
+            Crear cuenta gratuita
+        </a>
 
-    .hero-card-label,
-    .hero-card-title,
-    .hero-card-text {
-        position: relative;
-        z-index: 2;
-    }
+        <a href="@Url.Action("Login", "Home")" class="home-btn home-btn-dark-outline">
+            Ya tengo cuenta — Iniciar sesión
+        </a>
+    </div>
+</section>
 
-    .hero-card-label {
-        font-size: 12px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        color: #F3D79A;
-        margin-bottom: 12px;
-    }
+<div class="home-access-modal" id="homeAccessModal" aria-hidden="true">
+    <div class="home-access-backdrop" data-close-access-modal="true"></div>
 
-    .hero-card-title {
-        font-family: var(--font-display);
-        font-size: 34px;
-        font-weight: 700;
-        line-height: 1.1;
-        margin-bottom: 10px;
-    }
+    <div class="home-access-panel">
+        <button type="button" class="home-access-close" data-close-access-modal="true" aria-label="Cerrar">
+            <i class="bi bi-x-lg"></i>
+        </button>
 
-    .hero-card-text {
-        font-size: 14px;
-        color: rgba(255,255,255,0.85);
-        max-width: 320px;
-    }
+        <div class="home-access-handle"></div>
 
-    .hero-floating-card {
-        position: absolute;
-        right: -18px;
-        bottom: 28px;
-        width: 220px;
-        background: var(--blanco);
-        border-radius: 16px;
-        padding: 18px;
-        box-shadow: var(--shadow-elevated);
-        border: var(--border-light);
-    }
+        <div class="home-access-header">
+            <span>
+                <i class="bi bi-armchair"></i>
+            </span>
 
-    .floating-tag {
-        display: inline-block;
-        background: rgba(212,168,83,0.20);
-        color: var(--cafe-oscuro);
-        font-size: 11px;
-        font-weight: 700;
-        border-radius: 999px;
-        padding: 4px 10px;
-        margin-bottom: 10px;
-    }
+            <div>
+                <h3>Muebles de los Alpes</h3>
+                <p id="homeAccessModalText">Bienvenido de vuelta</p>
+            </div>
+        </div>
 
-    .floating-title {
-        font-family: var(--font-display);
-        font-size: 20px;
-        color: var(--cafe-oscuro);
-        margin-bottom: 6px;
-    }
+        <a href="@Url.Action("Login", "Home")" class="home-access-option home-access-login">
+            <div>
+                <strong>Iniciar sesión</strong>
+                <small>Ya tengo una cuenta</small>
+            </div>
 
-    .floating-text {
-        font-size: 13px;
-        color: var(--nogal-medio);
-    }
+            <i class="bi bi-arrow-right"></i>
+        </a>
 
-    .home-section {
-        padding: 56px 0;
-    }
+        <a href="@Url.Action("Registro", "Home")" class="home-access-option home-access-register">
+            <div>
+                <strong>Crear cuenta gratuita</strong>
+                <small>Sin compromisos</small>
+            </div>
 
-    .alt-section {
-        background: rgba(232,224,213,0.32);
-        border-top: var(--border-light);
-        border-bottom: var(--border-light);
-    }
+            <i class="bi bi-arrow-right"></i>
+        </a>
 
-    .section-heading {
-        margin-bottom: 26px;
-    }
-
-    .feature-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-
-    .feature-card {
-        padding: 22px;
-    }
-
-    .feature-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 10px;
-        background: var(--pergamino);
-        color: var(--cafe-oscuro);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        margin-bottom: 14px;
-    }
-
-    .feature-title {
-        font-size: 22px;
-        margin-bottom: 10px;
-    }
-
-    .feature-text {
-        color: var(--nogal-medio);
-        margin-bottom: 0;
-    }
-
-    .collection-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 22px;
-    }
-
-    .collection-card {
-        overflow: hidden;
-    }
-
-    .collection-image {
-        height: 220px;
-        background-size: cover;
-        background-position: center;
-        border-bottom: var(--border-light);
-    }
-
-    .image-wood {
-        background: linear-gradient(180deg, rgba(44,24,16,0.12), rgba(44,24,16,0.48)), linear-gradient(135deg, #C4A882, #8B6F47);
-    }
-
-    .image-outdoor {
-        background: linear-gradient(180deg, rgba(26,58,42,0.10), rgba(26,58,42,0.50)), linear-gradient(135deg, #8B6F47, #1A3A2A);
-    }
-
-    .image-luxury {
-        background: linear-gradient(180deg, rgba(212,168,83,0.10), rgba(44,24,16,0.42)), linear-gradient(135deg, #D4A853, #2C1810);
-    }
-
-    .collection-content {
-        padding: 20px;
-    }
-
-    .collection-title {
-        font-size: 24px;
-        margin: 12px 0 10px;
-    }
-
-    .collection-text {
-        color: var(--nogal-medio);
-        margin-bottom: 14px;
-    }
-
-    .collection-link {
-        color: var(--cafe-oscuro);
-        font-weight: 700;
-    }
-
-        .collection-link:hover {
-            color: var(--oro-guatemalteco);
-        }
-
-    .cta-panel {
-        background: linear-gradient(135deg, #2C1810 0%, #4a2c1f 100%);
-        color: var(--blanco);
-        border-radius: 20px;
-        padding: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 24px;
-        box-shadow: var(--shadow-elevated);
-    }
-
-    .cta-title {
-        color: var(--blanco);
-        font-size: 34px;
-        margin-bottom: 10px;
-    }
-
-    .cta-text {
-        color: rgba(255,255,255,0.82);
-        margin-bottom: 0;
-        max-width: 680px;
-    }
-
-    .cta-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-
-        .cta-actions .btn-outlined {
-            color: var(--blanco);
-            border-color: rgba(255,255,255,0.7);
-        }
-
-            .cta-actions .btn-outlined:hover {
-                background: rgba(255,255,255,0.08);
-                color: var(--blanco);
-            }
-
-    @@media (max-width: 1100px) {
-        .hero-title {
-            font-size: 42px;
-        }
-
-        .feature-grid,
-        .collection-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @@media (max-width: 900px) {
-        .hero-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .hero-copy {
-            padding-right: 0;
-        }
-
-        .hero-visual {
-            min-height: 360px;
-        }
-
-        .hero-card-main {
-            min-height: 360px;
-        }
-
-        .hero-floating-card {
-            right: 16px;
-            bottom: 16px;
-        }
-
-        .cta-panel {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .cta-actions {
-            justify-content: flex-start;
-        }
-    }
-
-    @@media (max-width: 640px) {
-        .home-hero {
-            padding-top: 34px;
-        }
-
-        .hero-title {
-            font-size: 34px;
-        }
-
-        .feature-grid,
-        .collection-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .hero-card-main {
-            padding: 24px;
-        }
-
-        .hero-card-title {
-            font-size: 28px;
-        }
-
-        .hero-floating-card {
-            position: static;
-            width: 100%;
-            margin-top: 14px;
-        }
-    }
-</style>
+        <button type="button" class="home-access-continue" data-close-access-modal="true">
+            Continuar explorando
+        </button>
+    </div>
+</div>

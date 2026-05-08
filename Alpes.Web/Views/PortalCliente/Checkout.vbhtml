@@ -47,5 +47,6 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-checkout.js?v=16")"></script>
+    <script src="@Url.Content("~/Scripts/fusion-carrito-invitado.js?v=1")"></script>
+    <script src="@Url.Content("~/Scripts/portal-checkout.js?v=17")"></script>
 End Section
