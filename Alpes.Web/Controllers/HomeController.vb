@@ -5,6 +5,7 @@ Imports System
 Imports System.Linq
 Imports System.Web.Mvc
 Imports System.Collections.Generic
+Imports Alpes.Entidades.Clientes
 Imports Alpes.Entidades.Inventario
 Imports Alpes.Servicios.Servicios
 Imports Alpes.Web.Models
@@ -18,11 +19,13 @@ Namespace Controllers
         Private ReadOnly _usuarioServicio As UsuarioServicio
         Private ReadOnly _productoServicio As ProductoServicio
         Private ReadOnly _precioHistoricoServicio As Precio_HistoricoServicio
+        Private ReadOnly _clienteServicio As ClienteServicio
 
         Public Sub New()
             _usuarioServicio = New UsuarioServicio()
             _productoServicio = New ProductoServicio()
             _precioHistoricoServicio = New Precio_HistoricoServicio()
+            _clienteServicio = New ClienteServicio()
         End Sub
 
         Function Index() As ActionResult
@@ -40,6 +43,20 @@ Namespace Controllers
         End Function
 
         Function CarritoInvitado() As ActionResult
+            Return View()
+        End Function
+
+        Function CatalogoPublico(Optional ByVal categoria As String = "",
+                         Optional ByVal q As String = "") As ActionResult
+            Dim categoriaNormalizada As String = If(categoria, String.Empty).Trim().ToUpperInvariant()
+
+            If categoriaNormalizada <> "INTERIOR" AndAlso categoriaNormalizada <> "EXTERIOR" Then
+                categoriaNormalizada = String.Empty
+            End If
+
+            ViewData("CategoriaInicial") = categoriaNormalizada
+            ViewData("BusquedaInicial") = If(q, String.Empty).Trim()
+
             Return View()
         End Function
 
@@ -256,112 +273,135 @@ Namespace Controllers
         End Function
 
         <HttpGet>
-        Function Registro() As ActionResult
+        Function Registro(Optional ByVal returnUrl As String = "") As ActionResult
+            Dim returnUrlSeguro As String = ObtenerReturnUrlSeguro(returnUrl)
+
             If Session("UsuarioId") IsNot Nothing Then
+                If Not String.IsNullOrWhiteSpace(returnUrlSeguro) AndAlso EsRolCliente(ObtenerRolIdDesdeSesion()) Then
+                    Return Redirect(returnUrlSeguro)
+                End If
+
                 Return RedirigirSegunSesionActual()
             End If
 
-            Return View(New RegistroViewModel())
+            Dim model As New RegistroViewModel With {
+        .Pais = "Guatemala",
+        .ReturnUrl = returnUrlSeguro
+    }
+
+            ViewData("ReturnUrl") = returnUrlSeguro
+
+            Return View(model)
         End Function
 
         <HttpPost>
         <ValidateAntiForgeryToken>
-        Function Registro(ByVal model As RegistroViewModel) As ActionResult
+        Function Registro(ByVal model As RegistroViewModel, Optional ByVal returnUrl As String = "") As ActionResult
             If model Is Nothing Then
                 ViewData("Error") = "Solicitud inválida."
                 Return View(New RegistroViewModel())
             End If
 
-            If String.IsNullOrWhiteSpace(model.Username) Then
-                ModelState.AddModelError("Username", "El nombre de usuario es requerido.")
-            ElseIf model.Username.Trim().Length < 4 Then
-                ModelState.AddModelError("Username", "El nombre de usuario debe tener al menos 4 caracteres.")
+            Dim returnUrlSeguro As String = ObtenerReturnUrlSeguro(returnUrl)
+
+            If String.IsNullOrWhiteSpace(returnUrlSeguro) Then
+                returnUrlSeguro = ObtenerReturnUrlSeguro(model.ReturnUrl)
             End If
 
-            If String.IsNullOrWhiteSpace(model.Email) Then
-                ModelState.AddModelError("Email", "El correo electrónico es requerido.")
-            ElseIf Not Regex.IsMatch(model.Email.Trim(), "^[^@\s]+@[^@\s]+\.[^@\s]+$") Then
-                ModelState.AddModelError("Email", "Ingresa un correo electrónico válido.")
+            If String.IsNullOrWhiteSpace(returnUrlSeguro) Then
+                returnUrlSeguro = ObtenerReturnUrlSeguro(Request.Form("ReturnUrl"))
             End If
 
-            If String.IsNullOrWhiteSpace(model.Password) Then
-                ModelState.AddModelError("Password", "La contraseña es requerida.")
-            ElseIf model.Password.Length < 6 Then
-                ModelState.AddModelError("Password", "La contraseña debe tener al menos 6 caracteres.")
-            End If
+            model.ReturnUrl = returnUrlSeguro
+            ViewData("ReturnUrl") = returnUrlSeguro
 
-            If String.IsNullOrWhiteSpace(model.ConfirmPassword) Then
-                ModelState.AddModelError("ConfirmPassword", "Debes confirmar la contraseña.")
-            ElseIf Not String.Equals(model.Password, model.ConfirmPassword, StringComparison.Ordinal) Then
-                ModelState.AddModelError("ConfirmPassword", "Las contraseñas no coinciden.")
-            End If
-
-            If Not String.IsNullOrWhiteSpace(model.Telefono) AndAlso model.Telefono.Trim().Length > 20 Then
-                ModelState.AddModelError("Telefono", "El teléfono no puede exceder 20 caracteres.")
-            End If
+            ValidarRegistroCliente(model)
 
             If Not ModelState.IsValid Then
                 Return View(model)
             End If
 
             Try
-                Dim coincidenciasUsuario As List(Of Usuario) = _usuarioServicio.Buscar(model.Username.Trim())
-
-                If coincidenciasUsuario Is Nothing Then
-                    coincidenciasUsuario = New List(Of Usuario)()
-                End If
-
-                Dim existeUsuario As Boolean = coincidenciasUsuario.Any(
-                    Function(u) u.Username IsNot Nothing AndAlso
-                                String.Equals(u.Username.Trim(), model.Username.Trim(), StringComparison.OrdinalIgnoreCase)
-                )
-
-                If existeUsuario Then
+                If ExisteUsuarioPorUsername(model.Username.Trim()) Then
                     ModelState.AddModelError("Username", "Ese nombre de usuario ya existe.")
                     Return View(model)
                 End If
 
-                Dim coincidenciasEmail As List(Of Usuario) = _usuarioServicio.Buscar(model.Email.Trim())
-
-                If coincidenciasEmail Is Nothing Then
-                    coincidenciasEmail = New List(Of Usuario)()
+                If ExisteUsuarioPorEmail(model.Email.Trim()) Then
+                    ModelState.AddModelError("Email", "Ese correo ya está registrado como usuario.")
+                    Return View(model)
                 End If
 
-                Dim existeEmail As Boolean = coincidenciasEmail.Any(
-                    Function(u) u.Email IsNot Nothing AndAlso
-                                String.Equals(u.Email.Trim(), model.Email.Trim(), StringComparison.OrdinalIgnoreCase)
-                )
+                If ExisteClientePorDocumento(model.NumDocumento.Trim()) Then
+                    ModelState.AddModelError("NumDocumento", "Ese número de documento ya está registrado.")
+                    Return View(model)
+                End If
 
-                If existeEmail Then
-                    ModelState.AddModelError("Email", "Ese correo ya está registrado.")
+                If ExisteClientePorEmail(model.Email.Trim()) Then
+                    ModelState.AddModelError("Email", "Ese correo ya está registrado como cliente.")
                     Return View(model)
                 End If
 
                 Dim rolClienteId As Integer = ObtenerRolIdPorNombre("CLIENTE")
+
                 If rolClienteId <= 0 Then
                     ViewData("Error") = "No existe un rol activo llamado CLIENTE. Crea el rol CLIENTE antes de registrar usuarios del portal."
                     Return View(model)
                 End If
 
+                Dim nuevoCliente As New Cliente With {
+            .TipoDocumento = model.TipoDocumento.Trim().ToUpperInvariant(),
+            .NumDocumento = model.NumDocumento.Trim(),
+            .Nit = If(String.IsNullOrWhiteSpace(model.Nit), Nothing, model.Nit.Trim()),
+            .Nombres = model.Nombres.Trim(),
+            .Apellidos = model.Apellidos.Trim(),
+            .Email = model.Email.Trim(),
+            .TelResidencia = model.TelResidencia.Trim(),
+            .TelCelular = If(String.IsNullOrWhiteSpace(model.TelCelular), Nothing, model.TelCelular.Trim()),
+            .Direccion = model.Direccion.Trim(),
+            .Ciudad = model.Ciudad.Trim(),
+            .Departamento = model.Departamento.Trim(),
+            .Pais = model.Pais.Trim(),
+            .Profesion = If(String.IsNullOrWhiteSpace(model.Profesion), Nothing, model.Profesion.Trim()),
+            .Estado = "ACTIVO"
+        }
+
+                Dim cliIdGenerado As Integer = _clienteServicio.Insertar(nuevoCliente)
+
+                If cliIdGenerado <= 0 Then
+                    ViewData("Error") = "No se pudo crear el cliente."
+                    Return View(model)
+                End If
+
                 Dim nuevoUsuario As New Usuario With {
-                    .Username = model.Username.Trim(),
-                    .PasswordHash = model.Password.Trim(),
-                    .Email = model.Email.Trim(),
-                    .Telefono = If(String.IsNullOrWhiteSpace(model.Telefono), Nothing, model.Telefono.Trim()),
-                    .RolId = rolClienteId,
-                    .CliId = Nothing,
-                    .EmpId = Nothing,
-                    .UltimoLoginAt = Nothing,
-                    .BloqueadoHasta = Nothing,
-                    .Estado = "ACTIVO"
-                }
+            .Username = model.Username.Trim(),
+            .PasswordHash = model.Password.Trim(),
+            .Email = model.Email.Trim(),
+            .Telefono = model.TelefonoPrincipal,
+            .RolId = rolClienteId,
+            .CliId = cliIdGenerado,
+            .EmpId = Nothing,
+            .UltimoLoginAt = Nothing,
+            .BloqueadoHasta = Nothing,
+            .Estado = "ACTIVO"
+        }
 
-                _usuarioServicio.Insertar(nuevoUsuario)
+                Dim usuIdGenerado As Integer = _usuarioServicio.Insertar(nuevoUsuario)
 
-                TempData("Success") = "Tu cuenta fue creada correctamente. Para entrar al portal debe tener un CLI_ID asociado."
-                Return RedirectToAction("Login")
+                If usuIdGenerado > 0 Then
+                    nuevoUsuario.UsuId = usuIdGenerado
+                End If
+
+                GuardarSesionUsuario(nuevoUsuario)
+
+                If Not String.IsNullOrWhiteSpace(returnUrlSeguro) Then
+                    Return Redirect(returnUrlSeguro)
+                End If
+
+                Return RedirectToAction("Index", "PortalCliente")
+
             Catch ex As Exception
-                ViewData("Error") = "Ocurrió un error al crear la cuenta: " & ex.Message
+                ViewData("Error") = "Ocurrió un error al crear la cuenta: " & LimpiarMensaje(ex.Message)
                 Return View(model)
             End Try
         End Function
@@ -740,6 +780,141 @@ Namespace Controllers
             End If
 
             Return ruta
+        End Function
+
+        <NonAction>
+        Private Sub ValidarRegistroCliente(ByVal model As RegistroViewModel)
+            If String.IsNullOrWhiteSpace(model.Username) Then
+                ModelState.AddModelError("Username", "El nombre de usuario es requerido.")
+            ElseIf model.Username.Trim().Length < 4 Then
+                ModelState.AddModelError("Username", "El nombre de usuario debe tener al menos 4 caracteres.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Email) Then
+                ModelState.AddModelError("Email", "El correo electrónico es requerido.")
+            ElseIf Not Regex.IsMatch(model.Email.Trim(), "^[^@\s]+@[^@\s]+\.[^@\s]+$") Then
+                ModelState.AddModelError("Email", "Ingresa un correo electrónico válido.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Password) Then
+                ModelState.AddModelError("Password", "La contraseña es requerida.")
+            ElseIf model.Password.Length < 6 Then
+                ModelState.AddModelError("Password", "La contraseña debe tener al menos 6 caracteres.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.ConfirmPassword) Then
+                ModelState.AddModelError("ConfirmPassword", "Debes confirmar la contraseña.")
+            ElseIf Not String.Equals(model.Password, model.ConfirmPassword, StringComparison.Ordinal) Then
+                ModelState.AddModelError("ConfirmPassword", "Las contraseñas no coinciden.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.TipoDocumento) Then
+                ModelState.AddModelError("TipoDocumento", "El tipo de documento es requerido.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.NumDocumento) Then
+                ModelState.AddModelError("NumDocumento", "El número de documento es requerido.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Nombres) Then
+                ModelState.AddModelError("Nombres", "Los nombres son requeridos.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Apellidos) Then
+                ModelState.AddModelError("Apellidos", "Los apellidos son requeridos.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.TelResidencia) Then
+                ModelState.AddModelError("TelResidencia", "El teléfono de residencia es requerido.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Direccion) Then
+                ModelState.AddModelError("Direccion", "La dirección es requerida.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Ciudad) Then
+                ModelState.AddModelError("Ciudad", "La ciudad es requerida.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Departamento) Then
+                ModelState.AddModelError("Departamento", "El departamento es requerido.")
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Pais) Then
+                ModelState.AddModelError("Pais", "El país es requerido.")
+            End If
+
+            If Not String.IsNullOrWhiteSpace(model.TelResidencia) AndAlso model.TelResidencia.Trim().Length > 30 Then
+                ModelState.AddModelError("TelResidencia", "El teléfono de residencia no puede exceder 30 caracteres.")
+            End If
+
+            If Not String.IsNullOrWhiteSpace(model.TelCelular) AndAlso model.TelCelular.Trim().Length > 30 Then
+                ModelState.AddModelError("TelCelular", "El teléfono celular no puede exceder 30 caracteres.")
+            End If
+        End Sub
+
+        <NonAction>
+        Private Function ExisteUsuarioPorUsername(ByVal username As String) As Boolean
+            Dim usuarios As List(Of Usuario) = _usuarioServicio.Buscar(username)
+
+            If usuarios Is Nothing Then
+                usuarios = New List(Of Usuario)()
+            End If
+
+            Return usuarios.Any(
+                Function(u) u.Username IsNot Nothing AndAlso
+                            String.Equals(u.Username.Trim(), username.Trim(), StringComparison.OrdinalIgnoreCase)
+            )
+        End Function
+
+        <NonAction>
+        Private Function ExisteUsuarioPorEmail(ByVal email As String) As Boolean
+            Dim usuarios As List(Of Usuario) = _usuarioServicio.Buscar(email)
+
+            If usuarios Is Nothing Then
+                usuarios = New List(Of Usuario)()
+            End If
+
+            Return usuarios.Any(
+                Function(u) u.Email IsNot Nothing AndAlso
+                            String.Equals(u.Email.Trim(), email.Trim(), StringComparison.OrdinalIgnoreCase)
+            )
+        End Function
+
+        <NonAction>
+        Private Function ExisteClientePorDocumento(ByVal numDocumento As String) As Boolean
+            Try
+                Dim clientes As List(Of Cliente) = _clienteServicio.Buscar("NUM_DOCUMENTO", numDocumento)
+
+                If clientes Is Nothing Then
+                    clientes = New List(Of Cliente)()
+                End If
+
+                Return clientes.Any(
+                    Function(c) c.NumDocumento IsNot Nothing AndAlso
+                                String.Equals(c.NumDocumento.Trim(), numDocumento.Trim(), StringComparison.OrdinalIgnoreCase)
+                )
+            Catch
+                Return False
+            End Try
+        End Function
+
+        <NonAction>
+        Private Function ExisteClientePorEmail(ByVal email As String) As Boolean
+            Try
+                Dim clientes As List(Of Cliente) = _clienteServicio.Buscar("EMAIL", email)
+
+                If clientes Is Nothing Then
+                    clientes = New List(Of Cliente)()
+                End If
+
+                Return clientes.Any(
+                    Function(c) c.Email IsNot Nothing AndAlso
+                                String.Equals(c.Email.Trim(), email.Trim(), StringComparison.OrdinalIgnoreCase)
+                )
+            Catch
+                Return False
+            End Try
         End Function
 
     End Class

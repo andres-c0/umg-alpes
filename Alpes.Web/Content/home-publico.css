@@ -2381,3 +2381,420 @@ a {
         font-size: 20px;
     }
 }
+
+/* ============================================================
+   HEADER CON SESIÓN ACTIVA
+   ============================================================ */
+
+.public-session-pill {
+    gap: 8px;
+    background: rgba(212, 168, 83, 0.18);
+    color: var(--cafe-oscuro);
+}
+
+.public-session-pill i {
+    color: var(--nogal-medio);
+    font-size: 17px;
+}
+
+.public-session-pill:hover {
+    background: rgba(212, 168, 83, 0.28);
+    color: var(--cafe-oscuro);
+}
+
+/* ============================================================
+   CATÁLOGO PÚBLICO
+   ============================================================ */
+
+.catalogo-publico-page {
+    max-width: 1180px;
+    margin: 34px auto 0;
+    padding: 0 22px;
+}
+
+.catalogo-hero {
+    overflow: hidden;
+    border-radius: 34px;
+    background: radial-gradient(circle at 82% 18%, rgba(212, 168, 83, 0.28), transparent 28%), linear-gradient(135deg, var(--cafe-oscuro), var(--verde-selva));
+    box-shadow: var(--sombra-media);
+    color: #FFFFFF;
+}
+
+.catalogo-hero-content {
+    padding: 54px;
+    max-width: 850px;
+}
+
+.catalogo-back-link {
+    color: rgba(255, 255, 255, 0.86);
+    margin-bottom: 28px;
+}
+
+    .catalogo-back-link:hover {
+        color: var(--oro-guatemalteco);
+    }
+
+.catalogo-hero-content > span {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--oro-guatemalteco);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.catalogo-hero-content h1 {
+    margin: 0;
+    color: #FFFFFF !important;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(44px, 6vw, 72px);
+    line-height: 0.96;
+    font-weight: 800;
+}
+
+.catalogo-hero-content p {
+    max-width: 650px;
+    margin: 20px 0 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.catalogo-hero-stats {
+    margin-top: 34px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+    .catalogo-hero-stats article {
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+    }
+
+    .catalogo-hero-stats strong {
+        display: block;
+        color: #FFFFFF;
+        font-size: 28px;
+        font-weight: 900;
+    }
+
+    .catalogo-hero-stats span {
+        display: block;
+        margin-top: 4px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+.catalogo-toolbar {
+    margin-top: 28px;
+    padding: 18px;
+    border-radius: 26px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(139, 111, 71, 0.13);
+    box-shadow: var(--sombra-suave);
+}
+
+.catalogo-search-box {
+    min-height: 52px;
+    padding: 0 18px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(247, 243, 238, 0.8);
+    border: 1px solid rgba(139, 111, 71, 0.12);
+}
+
+    .catalogo-search-box i {
+        color: var(--nogal-medio);
+        font-size: 18px;
+    }
+
+    .catalogo-search-box input {
+        width: 100%;
+        border: 0;
+        outline: none;
+        background: transparent;
+        color: var(--cafe-oscuro);
+        font-weight: 800;
+    }
+
+        .catalogo-search-box input::placeholder {
+            color: rgba(44, 24, 16, 0.42);
+        }
+
+.catalogo-filtros {
+    display: inline-flex;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 999px;
+    background: rgba(196, 168, 130, 0.18);
+}
+
+.catalogo-filtro-btn {
+    min-height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(44, 24, 16, 0.66);
+    font-size: 13px;
+    font-weight: 900;
+    transition: all 0.22s ease;
+}
+
+    .catalogo-filtro-btn.active,
+    .catalogo-filtro-btn:hover {
+        background: var(--cafe-oscuro);
+        color: var(--oro-guatemalteco);
+    }
+
+.catalogo-content {
+    margin-top: 30px;
+}
+
+.catalogo-loading {
+    min-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: rgba(44, 24, 16, 0.62);
+    font-weight: 900;
+}
+
+.catalogo-empty {
+    max-width: 680px;
+    margin: 54px auto;
+    padding: 48px 24px;
+    border-radius: 30px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px dashed rgba(139, 111, 71, 0.22);
+    box-shadow: var(--sombra-suave);
+}
+
+    .catalogo-empty i {
+        font-size: 54px;
+        color: var(--nogal-medio);
+    }
+
+    .catalogo-empty h2 {
+        margin: 18px 0 8px;
+        color: var(--cafe-oscuro);
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 36px;
+    }
+
+    .catalogo-empty p {
+        margin-bottom: 24px;
+        color: rgba(44, 24, 16, 0.62);
+    }
+
+.catalogo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.catalogo-card {
+    overflow: hidden;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(139, 111, 71, 0.13);
+    box-shadow: var(--sombra-suave);
+    transition: all 0.25s ease;
+}
+
+    .catalogo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--sombra-media);
+    }
+
+.catalogo-card-image {
+    position: relative;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 70% 20%, rgba(212, 168, 83, 0.24), transparent 28%), linear-gradient(135deg, rgba(44, 24, 16, 0.96), rgba(139, 111, 71, 0.9));
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 72px;
+    text-decoration: none;
+}
+
+    .catalogo-card-image:hover {
+        text-decoration: none;
+    }
+
+    .catalogo-card-image img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+    }
+
+.catalogo-card-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(44, 24, 16, 0.86);
+    color: var(--oro-guatemalteco);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+
+.catalogo-card-body {
+    padding: 22px;
+}
+
+.catalogo-card-ref {
+    display: block;
+    color: var(--nogal-medio);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.catalogo-card-body h3 {
+    min-height: 58px;
+    margin: 8px 0 10px;
+    color: var(--cafe-oscuro);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 26px;
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+.catalogo-card-body p {
+    min-height: 42px;
+    margin: 0 0 16px;
+    color: rgba(44, 24, 16, 0.58);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.catalogo-card-price strong {
+    display: block;
+    color: var(--cafe-oscuro);
+    font-size: 23px;
+    font-weight: 900;
+}
+
+.catalogo-card-price small {
+    display: block;
+    margin-top: 4px;
+    color: rgba(44, 24, 16, 0.54);
+    font-weight: 800;
+}
+
+.catalogo-card-actions {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.catalogo-card-detail {
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(196, 168, 130, 0.2);
+    color: var(--cafe-oscuro);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+    .catalogo-card-detail:hover {
+        background: var(--cafe-oscuro);
+        color: #FFFFFF;
+        text-decoration: none;
+    }
+
+.catalogo-card-cart {
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 17px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cafe-oscuro);
+    color: var(--oro-guatemalteco);
+    box-shadow: 0 14px 28px rgba(44, 24, 16, 0.2);
+    transition: all 0.2s ease;
+}
+
+    .catalogo-card-cart:hover {
+        transform: translateY(-2px) scale(1.03);
+        background: var(--nogal-medio);
+    }
+
+    .catalogo-card-cart.agregado {
+        background: var(--verde-selva);
+        color: #FFFFFF;
+    }
+
+@media (max-width: 1024px) {
+    .catalogo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .catalogo-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .catalogo-filtros {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 680px) {
+    .catalogo-publico-page {
+        padding: 0 14px;
+    }
+
+    .catalogo-hero-content {
+        padding: 38px 24px;
+    }
+
+    .catalogo-hero-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .catalogo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .catalogo-filtros {
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+
+    .catalogo-card-image,
+    .catalogo-card-image img {
+        height: 230px;
+    }
+
+    .catalogo-card-body h3 {
+        min-height: auto;
+    }
+}

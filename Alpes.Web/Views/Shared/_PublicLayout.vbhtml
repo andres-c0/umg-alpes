@@ -26,6 +26,26 @@
 
     Dim esCarrito As Boolean = String.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase) AndAlso
                                 String.Equals(currentAction, "CarritoInvitado", StringComparison.OrdinalIgnoreCase)
+    Dim usuarioAutenticado As Boolean = Session("UsuarioId") IsNot Nothing
+
+    Dim nombreUsuarioPublico As String = "Mi cuenta"
+
+    If Session("Username") IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(Session("Username").ToString()) Then
+        nombreUsuarioPublico = Session("Username").ToString()
+    End If
+
+    Dim rolNombrePublico As String = ""
+
+    If Session("RolNombre") IsNot Nothing Then
+        rolNombrePublico = Session("RolNombre").ToString()
+    End If
+
+    Dim esClientePublico As Boolean = False
+
+    If Not String.IsNullOrWhiteSpace(rolNombrePublico) Then
+        esClientePublico = rolNombrePublico.Trim().ToUpperInvariant().Contains("CLIENTE")
+    End If
+
 End Code
 
 <!DOCTYPE html>
@@ -74,13 +94,24 @@ End Code
                         Catálogo
                     </a>
 
-                    <a href="@Url.Action("Login", "Home")" class="public-nav-link">
-                        Iniciar sesión
-                    </a>
+                    @If usuarioAutenticado Then
+                        @<a href="@(If(esClientePublico, Url.Action("Index", "PortalCliente"), Url.Action("Index", "Admin")))" class="public-nav-link public-session-pill">
+                            <i class="bi bi-person-circle"></i>
+                            @nombreUsuarioPublico
+                        </a>
 
-                    <a href="@Url.Action("Registro", "Home")" class="public-nav-link public-nav-link-primary">
-                        Crear cuenta
-                    </a>
+                        @<a href="@Url.Action("Logout", "Home")" class="public-nav-link public-nav-link-primary">
+                            Cerrar sesión
+                        </a>
+                    Else
+                        @<a href="@Url.Action("Login", "Home")" class="public-nav-link">
+                            Iniciar sesión
+                        </a>
+
+                        @<a href="@Url.Action("Registro", "Home")" class="public-nav-link public-nav-link-primary">
+                            Crear cuenta
+                        </a>
+                    End If
                 </nav>
 
                 <div class="public-actions">
@@ -112,15 +143,27 @@ End Code
                     <strong id="publicMobileCartCount">0</strong>
                 </a>
 
-                <a href="@Url.Action("Login", "Home")" class="public-mobile-link">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    <span>Iniciar sesión</span>
-                </a>
+                @If usuarioAutenticado Then
+                    @<a href="@(If(esClientePublico, Url.Action("Index", "PortalCliente"), Url.Action("Index", "Admin")))" class="public-mobile-link">
+                        <i class="bi bi-person-circle"></i>
+                        <span>@nombreUsuarioPublico</span>
+                    </a>
 
-                <a href="@Url.Action("Registro", "Home")" class="public-mobile-link public-mobile-link-primary">
-                    <i class="bi bi-person-plus"></i>
-                    <span>Crear cuenta</span>
-                </a>
+                    @<a href="@Url.Action("Logout", "Home")" class="public-mobile-link public-mobile-link-primary">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Cerrar sesión</span>
+                    </a>
+                Else
+                    @<a href="@Url.Action("Login", "Home")" class="public-mobile-link">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Iniciar sesión</span>
+                    </a>
+
+                    @<a href="@Url.Action("Registro", "Home")" class="public-mobile-link public-mobile-link-primary">
+                        <i class="bi bi-person-plus"></i>
+                        <span>Crear cuenta</span>
+                    </a>
+                End If
             </div>
         </header>
 
@@ -174,9 +217,15 @@ End Code
             </div>
         </footer>
 
-        <a href="@Url.Action("Login", "Home")" class="public-floating-button" aria-label="Acceso a cuenta">
-            <i class="bi bi-chat-heart"></i>
-        </a>
+        @If usuarioAutenticado Then
+            @<a href="@(If(esClientePublico, Url.Action("Index", "PortalCliente"), Url.Action("Index", "Admin")))" class="public-floating-button" aria-label="Ir a mi cuenta">
+                <i class="bi bi-person-heart"></i>
+            </a>
+        Else
+            @<a href="@Url.Action("Login", "Home")" class="public-floating-button" aria-label="Acceso a cuenta">
+                <i class="bi bi-chat-heart"></i>
+            </a>
+        End If
     </div>
 
     @Scripts.Render("~/bundles/jquery")

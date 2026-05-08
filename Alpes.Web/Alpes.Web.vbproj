@@ -231,6 +231,7 @@
     </Compile>
     <Compile Include="Models\CrudCampoConfig.vb" />
     <Compile Include="Models\CrudTablaConfig.vb" />
+    <Compile Include="Models\FusionarCarritoInvitadoViewModel.vb" />
     <Compile Include="Models\LoginViewModel.vb" />
     <Compile Include="Models\ProductoListadoViewModel.vb" />
     <Compile Include="Models\RegistroViewModel.vb" />
@@ -252,6 +253,8 @@
     <Compile Include="Controllers\HomeController.vb" />
     <Content Include="Content\home-publico.css" />
     <Content Include="Scripts\carrito-invitado.js" />
+    <Content Include="Scripts\catalogo-publico.js" />
+    <Content Include="Scripts\fusion-carrito-invitado.js" />
     <Content Include="Scripts\home-publico.js" />
     <Content Include="Scripts\portal-busqueda.js" />
     <Content Include="Scripts\portal-resenas.js" />
@@ -261,6 +264,7 @@
     <Content Include="Views\Shared\_PublicLayout.vbhtml" />
     <Content Include="Views\Home\DetalleProducto.vbhtml" />
     <Content Include="Views\Home\CarritoInvitado.vbhtml" />
+    <Content Include="Views\Home\CatalogoPublico.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

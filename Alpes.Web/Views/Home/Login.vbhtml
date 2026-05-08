@@ -106,7 +106,7 @@ End Code
 
                 <div style="text-align:center;font-size:13px;color:var(--nogal-medio)">
                     ¿No tienes cuenta?
-                    <a href="/Home/Registro"
+                    <a href="@Url.Action("Registro", "Home", New With {.returnUrl = returnUrl})"
                        style="color:var(--cafe-oscuro);font-weight:700;margin-left:4px">
                         Regístrate
                     </a>
