@@ -137,6 +137,10 @@
 
     function render(data) {
         var items = data.Items || [];
+        var countLabel = document.getElementById('ccProductCount');
+        if (countLabel) {
+            countLabel.textContent = items.length + ' producto' + (items.length === 1 ? '' : 's');
+        }
         var moneda = data.Moneda || 'GTQ';
 
         if (!items.length) {
