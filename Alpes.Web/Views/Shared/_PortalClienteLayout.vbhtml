@@ -75,87 +75,20 @@ End Code
                 </div>
 
                 <div class="pc-nav-group-title">TIENDA</div>
-
                 <nav class="pc-nav mapp-nav">
-                    <a href="@Url.Action("Index", "PortalCliente")"
-                       class="pc-nav-item @(If(esInicio, "active", ""))">
-                        <i class="bi bi-house"></i>
-                        <span>Inicio</span>
-                    </a>
-
-                    <div class="pc-nav-dropdown">
-                        <button type="button" class="pc-nav-item pc-nav-toggle" onclick="this.parentElement.classList.toggle('open')">
-                            <i class="bi bi-grid"></i>
-                            <span>Catálogo</span>
-                            <i class="bi bi-chevron-down pc-chevron"></i>
-                        </button>
-
-                        <div class="pc-nav-submenu">
-                            <a href="@Url.Action("Busqueda", "PortalCliente")"
-                               class="pc-nav-item @(If(esCatalogo, "active", ""))">
-                                <i class="bi bi-grid"></i>
-                                <span>Catálogo</span>
-                            </a>
-
-                            <a href="@Url.Action("MisFavoritos", "PortalCliente")"
-                               class="pc-nav-item @(If(esFavoritos, "active", ""))">
-                                <i class="bi bi-heart"></i>
-                                <span>Favoritos</span>
-                            </a>
-
-                            <a href="@Url.Action("MisOrdenes", "PortalCliente")"
-                               class="pc-nav-item @(If(esOrdenes, "active", ""))">
-                                <i class="bi bi-receipt"></i>
-                                <span>Órdenes</span>
-                                <span class="pc-nav-badge" id="pcBadgeOrders">0</span>
-                            </a>
-
-                            <a href="@Url.Action("Carrito", "PortalCliente")"
-                               class="pc-nav-item @(If(esCarrito, "active", ""))">
-                                <i class="bi bi-cart3"></i>
-                                <span>Carrito</span>
-                                <span class="pc-nav-badge" id="pcBadgeCart">0</span>
-                            </a>
-                        </div>
-                    </div>
+                    <a href="@Url.Action("Index", "PortalCliente")" class="pc-nav-item @(If(esInicio, "active", ""))"><i class="bi bi-house"></i><span>Inicio</span></a>
+                    <a href="@Url.Action("Busqueda", "PortalCliente")" class="pc-nav-item @(If(esCatalogo, "active", ""))"><i class="bi bi-grid"></i><span>Catálogo</span></a>
+                    <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="pc-nav-item @(If(esFavoritos, "active", ""))"><i class="bi bi-heart"></i><span>Favoritos</span></a>
+                    <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="pc-nav-item @(If(esOrdenes, "active", ""))"><i class="bi bi-receipt"></i><span>Órdenes</span><span class="pc-nav-badge" id="pcBadgeOrders">0</span></a>
+                    <a href="@Url.Action("Carrito", "PortalCliente")" class="pc-nav-item @(If(esCarrito, "active", ""))"><i class="bi bi-cart3"></i><span>Carrito</span><span class="pc-nav-badge" id="pcBadgeCart">0</span></a>
                 </nav>
 
                 <div class="pc-nav-group-title">MI CUENTA</div>
-
                 <nav class="pc-nav mapp-nav">
-
-                    <div class="perfil-menu">
-                        <input type="checkbox" id="perfilToggle" class="perfil-toggle-check" />
-
-                        <label for="perfilToggle" class="pc-nav-item perfil-toggle-label">
-                            <i class="bi bi-person"></i>
-                            <span>Perfil</span>
-                            <i class="bi bi-chevron-down pc-chevron"></i>
-                        </label>
-
-                        <div class="perfil-submenu">
-                            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-nav-item">
-                                <i class="bi bi-person"></i>
-                                <span>Perfil</span>
-                            </a>
-
-                            <a href="@Url.Action("MisTarjetas", "PortalCliente")" class="pc-nav-item">
-                                <i class="bi bi-credit-card"></i>
-                                <span>Tarjetas</span>
-                            </a>
-
-                            <a href="@Url.Action("MisResenas", "PortalCliente")" class="pc-nav-item">
-                                <i class="bi bi-star"></i>
-                                <span>Reseñas</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <a href="@Url.Action("Configuracion", "PortalCliente")" class="pc-nav-item @(If(esConfig, "active", ""))">
-                        <i class="bi bi-gear"></i>
-                        <span>Configuración</span>
-                    </a>
-
+                    <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-nav-item @(If(String.Equals(currentAction, "MiPerfil", StringComparison.OrdinalIgnoreCase), "active", ""))"><i class="bi bi-person"></i><span>Perfil</span></a>
+                    <a href="@Url.Action("MisTarjetas", "PortalCliente")" class="pc-nav-item @(If(String.Equals(currentAction, "MisTarjetas", StringComparison.OrdinalIgnoreCase), "active", ""))"><i class="bi bi-credit-card"></i><span>Tarjetas</span></a>
+                    <a href="@Url.Action("MisResenas", "PortalCliente")" class="pc-nav-item @(If(String.Equals(currentAction, "MisResenas", StringComparison.OrdinalIgnoreCase), "active", ""))"><i class="bi bi-star"></i><span>Reseñas</span></a>
+                    <a href="@Url.Action("Configuracion", "PortalCliente")" class="pc-nav-item @(If(esConfig, "active", ""))"><i class="bi bi-gear"></i><span>Configuración</span></a>
                 </nav>
             </div>
 
@@ -169,13 +102,8 @@ End Code
 
         <main class="pc-main mapp-main">
             <header class="pc-topbar mapp-topbar">
-                <button id="pcMenuButton" class="pc-menu-btn mapp-menu-btn modern-menu-btn" type="button" aria-label="Abrir menú">
-                    <div class="menu-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </button>                <div class="mapp-topbar-copy">
+                <button id="pcMenuButton" class="pc-menu-btn mapp-menu-btn" type="button" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+                <div class="mapp-topbar-copy">
                     <div class="mapp-topbar-hello">Hola, @primerNombre <span class="mapp-topbar-vip">VIP</span></div>
                     <div class="mapp-topbar-sub">Muebles de los Alpes</div>
                 </div>
@@ -204,20 +132,6 @@ End Code
 
     @Scripts.Render("~/bundles/jquery")
     <script src="@Url.Content("~/Scripts/portal-cliente.js?v=18")"></script>
-
     @RenderSection("scripts", required:=False)
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".pc-nav-toggle, .pc-profile-toggle").forEach(function (toggle) {
-                toggle.addEventListener("click", function () {
-                    var dropdown = toggle.closest(".pc-nav-dropdown");
-                    if (dropdown) {
-                        dropdown.classList.toggle("open");
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>

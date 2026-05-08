@@ -11,20 +11,24 @@
     });
 
     function enlazarEventos() {
-        $('#btnNuevoProducto').on('click', abrirNuevo);
+        $('#btnNuevoProducto').on('click', function () {
+            abrirNuevo();
+        });
 
-        $('#btnRecargarProductos').on('click', cargarProductos);
+        $('#btnRecargarProductos').on('click', function () {
+            cargarProductos();
+        });
 
-        $('#btnCerrarModalProducto, #btnCancelarProducto, .modal-a__backdrop').on('click', cerrarModal);
+        $('#btnCerrarModalProducto, #btnCancelarProducto, .modal-a__backdrop').on('click', function () {
+            cerrarModal();
+        });
 
-        $('#btnGuardarProducto').on('click', guardarProducto);
+        $('#btnGuardarProducto').on('click', function () {
+            guardarProducto();
+        });
 
         $('#txtBuscarProducto').on('input', function () {
             renderTabla($(this).val());
-        });
-
-        $('#ImagenUrl').on('input', function () {
-            actualizarPreviewImagen($(this).val());
         });
     }
 
@@ -44,7 +48,7 @@
     }
 
     function cargarProductos() {
-        $('#productosBody').html('<tr><td colspan="11" class="table-empty">Cargando productos...</td></tr>');
+        $('#productosBody').html('<tr><td colspan="10" class="table-empty">Cargando productos...</td></tr>');
 
         $.getJSON('/Producto/Index')
             .done(function (res) {
@@ -52,7 +56,7 @@
                 renderTabla($('#txtBuscarProducto').val());
             })
             .fail(function (xhr) {
-                $('#productosBody').html('<tr><td colspan="11" class="table-empty">Error al cargar productos.</td></tr>');
+                $('#productosBody').html('<tr><td colspan="10" class="table-empty">Error al cargar productos.</td></tr>');
                 console.error(xhr);
             });
     }
@@ -67,14 +71,13 @@
         filtro = (filtro || '').toLowerCase().trim();
 
         var lista = productos.filter(function (p) {
-            var nombre = valor(p.Nombre).toLowerCase();
-            var referencia = valor(p.Referencia).toLowerCase();
-
+            var nombre = (p.Nombre || '').toLowerCase();
+            var referencia = (p.Referencia || '').toLowerCase();
             return !filtro || nombre.indexOf(filtro) >= 0 || referencia.indexOf(filtro) >= 0;
         });
 
         if (!lista.length) {
-            $('#productosBody').html('<tr><td colspan="11" class="table-empty">No hay productos para mostrar.</td></tr>');
+            $('#productosBody').html('<tr><td colspan="10" class="table-empty">No hay productos para mostrar.</td></tr>');
             return;
         }
 
@@ -83,14 +86,6 @@
         lista.forEach(function (p) {
             html += '<tr>';
             html += '<td>' + valor(p.ProductoId) + '</td>';
-
-            html += '<td>'
-                + '<img src="' + urlImagenProducto(p.ImagenUrl) + '" '
-                + 'class="producto-thumb" '
-                + 'alt="' + escapar(valor(p.Nombre)) + '" '
-                + 'onerror="this.style.display=\'none\'" />'
-                + '</td>';
-
             html += '<td>' + valor(p.Referencia) + '</td>';
             html += '<td>' + valor(p.Nombre) + '</td>';
             html += '<td>' + valor(p.Tipo) + '</td>';
@@ -99,14 +94,12 @@
             html += '<td>' + valor(p.UnidadMedidaNombre) + '</td>';
             html += '<td>' + valor(p.Color) + '</td>';
             html += '<td>' + valor(p.Estado) + '</td>';
-
             html += '<td>';
             html += '<div class="table-actions">';
             html += '<button class="btn-icon" onclick="AdminProductos.editar(' + p.ProductoId + ')"><i class="bi bi-pencil"></i></button>';
             html += '<button class="btn-icon btn-icon-danger" onclick="AdminProductos.eliminar(' + p.ProductoId + ', \'' + escapar(valor(p.Nombre)) + '\')"><i class="bi bi-trash"></i></button>';
             html += '</div>';
             html += '</td>';
-
             html += '</tr>';
         });
 
@@ -123,7 +116,6 @@
         limpiarFormulario();
 
         $('#modalProductoTitulo').text('Editar producto');
-
         $('#ProductoId').val(producto.ProductoId || 0);
         $('#Referencia').val(producto.Referencia || '');
         $('#Nombre').val(producto.Nombre || '');
@@ -139,9 +131,7 @@
         $('#UnidadMedidaId').val(producto.UnidadMedidaId || '');
         $('#CategoriaId').val(producto.CategoriaId || '');
         $('#LoteProducto').val(producto.LoteProducto || '');
-        $('#Estado').val(producto.Estado || 'ACTIVO');
-
-        actualizarPreviewImagen(producto.ImagenUrl || '');
+        $('#Estado').val(producto.Estado || '');
 
         $('#modalProducto').show();
     }
@@ -168,8 +158,6 @@
         $('#CategoriaId').val('');
         $('#LoteProducto').val('');
         $('#Estado').val('ACTIVO');
-
-        actualizarPreviewImagen('');
         ocultarError();
     }
 
@@ -183,7 +171,8 @@
             Material: $('#Material').val(),
             AltoCm: decimalNullable($('#AltoCm').val()),
             AnchoCm: decimalNullable($('#AnchoCm').val()),
-            ProfundidadCm: decimalNullable($('#ProfundidadCm').val()),
+            ProfundidadCm: decimalNullable($('#ProfundidadCm').val(),
+            ),
             Color: $('#Color').val(),
             PesoGramos: decimalNullable($('#PesoGramos').val()),
             ImagenUrl: $('#ImagenUrl').val(),
@@ -227,7 +216,6 @@
                     mostrarError('No se encontró el producto.');
                     return;
                 }
-
                 abrirEditar(res);
             })
             .fail(function (xhr) {
@@ -260,39 +248,28 @@
 
     function llenarCategorias() {
         var html = '<option value="">Seleccione...</option>';
-
         categorias.forEach(function (c) {
             html += '<option value="' + c.CategoriaId + '">' + valor(c.Nombre) + '</option>';
         });
-
         $('#CategoriaId').html(html);
     }
 
     function llenarUnidades() {
         var html = '<option value="">Seleccione...</option>';
-
         unidades.forEach(function (u) {
             html += '<option value="' + u.UnidadMedidaId + '">' + valor(u.Nombre) + '</option>';
         });
-
         $('#UnidadMedidaId').html(html);
     }
 
-    function urlImagenProducto(url) {
-        url = valor(url).trim();
-
-        if (url) return url;
-
-        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">' +
-            '<rect width="100%" height="100%" rx="14" fill="#f7f2ec"/>' +
-            '<text x="50%" y="52%" text-anchor="middle" font-size="22" fill="#c4a882">📦</text>' +
-            '</svg>'
-        );
+    function nombreCategoria(id) {
+        var item = categorias.find(function (c) { return c.CategoriaId == id; });
+        return item ? valor(item.Nombre) : valor(id);
     }
 
-    function actualizarPreviewImagen(url) {
-        $('#ProductoPreviewImg').attr('src', urlImagenProducto(url));
+    function nombreUnidad(id) {
+        var item = unidades.find(function (u) { return u.UnidadMedidaId == id; });
+        return item ? valor(item.Nombre) : '';
     }
 
     function mostrarError(msg) {
@@ -330,16 +307,12 @@
 
     function decimalNullable(v) {
         if (v === null || v === undefined || v === '') return null;
-
         var n = parseFloat(v);
         return isNaN(n) ? null : n;
     }
 
     function escapar(txt) {
-        return String(txt || '')
-            .replace(/\\/g, '\\\\')
-            .replace(/'/g, "\\'")
-            .replace(/"/g, '&quot;');
+        return String(txt || '').replace(/'/g, "\\'");
     }
 
     window.AdminProductos = {

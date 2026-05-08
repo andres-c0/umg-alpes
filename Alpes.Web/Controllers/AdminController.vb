@@ -76,8 +76,6 @@ Namespace Controllers
             Return View()
         End Function
 
-
-
         ' =========================
         ' PROVEEDORES
         ' =========================
@@ -151,8 +149,6 @@ Namespace Controllers
 
             Return View()
         End Function
-
-
 
         ' =========================
         ' VALIDACIÓN DE ADMIN

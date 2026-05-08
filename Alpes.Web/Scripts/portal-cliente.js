@@ -25,13 +25,3 @@
     window.PortalClienteActualizarBadges = cargarResumen;
     cargarResumen();
 });
-document.addEventListener("DOMContentLoaded", function () {
-    var toggle = document.querySelector(".pc-nav-toggle");
-    var dropdown = document.querySelector(".pc-nav-dropdown");
-
-    if (toggle && dropdown) {
-        toggle.addEventListener("click", function () {
-            dropdown.classList.toggle("open");
-        });
-    }
-});

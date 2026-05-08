@@ -1,11 +1,10 @@
 (function () {
     var inventario = [];
     var inventarioFiltrado = [];
-    var productos = [];
 
     $(document).ready(function () {
         enlazarEventos();
-        cargarProductos();
+        cargarInventario();
     });
 
     function enlazarEventos() {
@@ -29,19 +28,6 @@
             .on('input change keyup', function () {
                 $(this).removeClass('input-error');
                 actualizarDisponibleEdit();
-            });
-    }
-
-    function cargarProductos() {
-        $.getJSON('/Producto/Index')
-            .done(function (res) {
-                productos = $.isArray(res) ? res : (res.data || []);
-                cargarInventario();
-            })
-            .fail(function () {
-                console.error('No se pudieron cargar los productos.');
-                productos = [];
-                cargarInventario();
             });
     }
 
@@ -102,15 +88,11 @@
         inventarioFiltrado.forEach(function (x) {
             var inventarioId = entero(getAny(x, ['InvProdId'], 0));
             var productoId = entero(getAny(x, ['ProductoId'], 0));
-            var producto = obtenerProducto(productoId);
-
-            var nombre = valor(getAny(x, ['ProductoNombre', 'NombreProducto', 'Producto', 'Nombre'], producto ? producto.Nombre : 'Producto sin nombre'));
-            var referencia = valor(getAny(x, ['Referencia', 'Codigo', 'Sku', 'SKU'], producto ? producto.Referencia : '--'));
-            var tipo = valor(getAny(x, ['Tipo', 'CategoriaNombre', 'Categoria'], producto ? producto.CategoriaNombre : 'GENERAL'));
-            var color = valor(getAny(x, ['Color'], producto ? producto.Color : 'Sin color'));
-            var descripcion = valor(getAny(x, ['Descripcion', 'Descripción'], producto ? producto.Descripcion : 'Sin descripción disponible.'));
-            var imagen = obtenerImagenProducto(productoId);
-
+            var nombre = valor(getAny(x, ['ProductoNombre', 'NombreProducto', 'Producto', 'Nombre'], 'Producto sin nombre'));
+            var referencia = valor(getAny(x, ['Referencia', 'Codigo', 'Sku', 'SKU'], '--'));
+            var tipo = valor(getAny(x, ['Tipo', 'CategoriaNombre', 'Categoria'], 'GENERAL'));
+            var color = valor(getAny(x, ['Color'], 'Sin color'));
+            var descripcion = valor(getAny(x, ['Descripcion', 'Descripción'], 'Sin descripción disponible.'));
             var stock = entero(getAny(x, ['Stock'], 0));
             var reservado = entero(getAny(x, ['StockReservado', 'Reservado'], 0));
             var stockMinimo = entero(getAny(x, ['StockMinimo'], 0));
@@ -121,15 +103,7 @@
             html += '<div class="inventario-card">';
             html += '   <div class="inventario-card__top">';
             html += '       <div class="inventario-card__identity">';
-
-            html += '           <div class="inventario-card__icon inventario-card__icon--img">';
-            if (imagen) {
-                html += '               <img src="' + escapeHtml(imagen) + '" class="inventario-producto-img" alt="' + escapeHtml(nombre) + '" onerror="this.style.display=\'none\'; this.parentNode.innerHTML=\'<i class=&quot;bi bi-box-seam-fill&quot;></i>\';" />';
-            } else {
-                html += '               <i class="bi bi-box-seam-fill"></i>';
-            }
-            html += '           </div>';
-
+            html += '           <div class="inventario-card__icon"><i class="bi bi-box-seam-fill"></i></div>';
             html += '           <div class="inventario-card__main">';
             html += '               <div class="inventario-card__title">' + escapeHtml(nombre) + '</div>';
             html += '               <div class="inventario-card__chips">';
@@ -147,7 +121,7 @@
             html += '       <div class="inventario-card__status ' + estado.clase + '">' + estado.texto + '</div>';
             html += '   </div>';
 
-            html += '   <div class="inventario-card__desc">' + escapeHtml(descripcion || 'Sin descripción disponible.') + '</div>';
+            html += '   <div class="inventario-card__desc">' + escapeHtml(descripcion) + '</div>';
 
             html += '   <div class="inventario-card__stats">';
             html += '       <div class="inventario-stat inventario-stat--neutral">';
@@ -186,7 +160,7 @@
     }
 
     function actualizarResumen(lista) {
-        var productosTotal = lista.length;
+        var productos = lista.length;
         var stock = 0;
         var reservado = 0;
         var bajoMinimo = 0;
@@ -205,8 +179,8 @@
             }
         });
 
-        $('#inventarioVisibleCount').text(productosTotal + ' registros visibles');
-        $('#kpiInventarioProductos').text(productosTotal);
+        $('#inventarioVisibleCount').text(productos + ' registros visibles');
+        $('#kpiInventarioProductos').text(productos);
         $('#kpiInventarioStock').text(stock);
         $('#kpiInventarioReservado').text(reservado);
         $('#kpiInventarioBajoMinimo').text(bajoMinimo);
@@ -235,14 +209,11 @@
 
                 var invProdId = entero(getAny(x, ['InvProdId'], 0));
                 var productoId = entero(getAny(x, ['ProductoId'], 0));
-                var producto = obtenerProducto(productoId);
-
-                var nombre = valor(getAny(base, ['ProductoNombre', 'NombreProducto', 'Producto', 'Nombre'], producto ? producto.Nombre : 'Producto #' + productoId));
-                var referencia = valor(getAny(base, ['Referencia', 'Codigo', 'Sku', 'SKU'], producto ? producto.Referencia : '--'));
-                var tipo = valor(getAny(base, ['Tipo', 'CategoriaNombre', 'Categoria'], producto ? producto.CategoriaNombre : 'GENERAL'));
-                var color = valor(getAny(base, ['Color'], producto ? producto.Color : 'Sin color'));
-                var descripcion = valor(getAny(base, ['Descripcion', 'Descripción'], producto ? producto.Descripcion : 'Sin descripción disponible.'));
-
+                var nombre = valor(getAny(base, ['ProductoNombre', 'NombreProducto', 'Producto', 'Nombre'], 'Producto #' + productoId));
+                var referencia = valor(getAny(base, ['Referencia', 'Codigo', 'Sku', 'SKU'], '--'));
+                var tipo = valor(getAny(base, ['Tipo', 'CategoriaNombre', 'Categoria'], 'GENERAL'));
+                var color = valor(getAny(base, ['Color'], 'Sin color'));
+                var descripcion = valor(getAny(base, ['Descripcion', 'Descripción'], 'Sin descripción disponible.'));
                 var stock = entero(getAny(x, ['Stock'], 0));
                 var reservado = entero(getAny(x, ['StockReservado', 'Reservado'], 0));
                 var stockMinimo = entero(getAny(x, ['StockMinimo'], 0));
@@ -416,25 +387,6 @@
         return { texto: 'Disponible', clase: 'inventario-card__status--ok' };
     }
 
-    function obtenerProducto(productoId) {
-        return productos.find(function (p) {
-            return entero(p.ProductoId || p.PRODUCTO_ID) === entero(productoId);
-        }) || null;
-    }
-
-    function obtenerImagenProducto(productoId) {
-        var p = obtenerProducto(productoId);
-
-        if (!p) {
-            console.warn('No se encontró producto para inventario:', productoId);
-            return '';
-        }
-
-        console.log('Producto encontrado:', p);
-
-        return p.ImagenUrl || p.IMAGEN_URL || p.ImagenURL || p.imagenUrl || '';
-    }
-
     function getAny(obj, keys, fallback) {
         for (var i = 0; i < keys.length; i++) {
             var k = keys[i];
@@ -442,7 +394,6 @@
                 return obj[k];
             }
         }
-
         return fallback !== undefined ? fallback : '';
     }
 

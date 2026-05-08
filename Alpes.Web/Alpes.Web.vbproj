@@ -231,7 +231,6 @@
     </Compile>
     <Compile Include="Models\CrudCampoConfig.vb" />
     <Compile Include="Models\CrudTablaConfig.vb" />
-    <Compile Include="Models\FusionarCarritoInvitadoViewModel.vb" />
     <Compile Include="Models\LoginViewModel.vb" />
     <Compile Include="Models\ProductoListadoViewModel.vb" />
     <Compile Include="Models\RegistroViewModel.vb" />
@@ -251,20 +250,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
-    <Content Include="Content\home-publico.css" />
-    <Content Include="Scripts\carrito-invitado.js" />
-    <Content Include="Scripts\catalogo-publico.js" />
-    <Content Include="Scripts\fusion-carrito-invitado.js" />
-    <Content Include="Scripts\home-publico.js" />
     <Content Include="Scripts\portal-busqueda.js" />
     <Content Include="Scripts\portal-resenas.js" />
-    <Content Include="Scripts\producto-publico-detalle.js" />
     <Content Include="Views\PortalCliente\Busqueda.vbhtml" />
     <Content Include="Views\PortalCliente\MisResenas.vbhtml" />
-    <Content Include="Views\Shared\_PublicLayout.vbhtml" />
-    <Content Include="Views\Home\DetalleProducto.vbhtml" />
-    <Content Include="Views\Home\CarritoInvitado.vbhtml" />
-    <Content Include="Views\Home\CatalogoPublico.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -400,11 +389,11 @@
     <Content Include="Views\Admin\Compras.vbhtml" />
     <Content Include="Views\Admin\Empleados.vbhtml" />
     <Content Include="Views\Admin\Nomina.vbhtml" />
+    <Content Include="Views\Shared\_Layout.vbhtml" />
     <Content Include="Views\Admin\Marketing.vbhtml" />
     <Content Include="Views\Admin\Produccion.vbhtml" />
     <Content Include="Views\Admin\Reportes.vbhtml" />
     <Content Include="Views\Admin\Configuracion.vbhtml" />
-    <Content Include="Views\Admin\Reportes.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />

@@ -30,7 +30,6 @@ End Code
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Imagen</th>
                         <th>Referencia</th>
                         <th>Nombre</th>
                         <th>Tipo</th>
@@ -44,7 +43,7 @@ End Code
                 </thead>
                 <tbody id="productosBody">
                     <tr>
-                        <td colspan="11" class="table-empty">Cargando productos...</td>
+                        <td colspan="10" class="table-empty">Cargando productos...</td>
                     </tr>
                 </tbody>
             </table>
@@ -62,20 +61,6 @@ End Code
 
         <div class="modal-a__body">
             <input type="hidden" id="ProductoId" value="0" />
-
-            <div class="producto-image-preview-wrap">
-                <div class="producto-image-preview">
-                    <img id="ProductoPreviewImg"
-                         src="/Content/img/no-image.png"
-                         alt="Vista previa producto"
-                         onerror="this.src='/Content/img/no-image.png';" />
-                </div>
-
-                <div class="producto-image-preview-info">
-                    <strong>Imagen del producto</strong>
-                    <span>Pega aquí la URL generada en Cloudinary para visualizarla en el listado.</span>
-                </div>
-            </div>
 
             <div class="form-grid">
                 <div class="a-form-group">
@@ -128,9 +113,9 @@ End Code
                     <input type="number" step="0.01" id="PesoGramos" class="a-input" />
                 </div>
 
-                <div class="a-form-group form-grid__full">
-                    <label for="ImagenUrl">Imagen URL Cloudinary</label>
-                    <input type="text" id="ImagenUrl" class="a-input" placeholder="https://res.cloudinary.com/..." />
+                <div class="a-form-group">
+                    <label for="ImagenUrl">Imagen URL</label>
+                    <input type="text" id="ImagenUrl" class="a-input" />
                 </div>
 
                 <div class="a-form-group">
@@ -154,10 +139,7 @@ End Code
 
                 <div class="a-form-group">
                     <label for="Estado">Estado</label>
-                    <select id="Estado" class="a-input">
-                        <option value="ACTIVO">ACTIVO</option>
-                        <option value="INACTIVO">INACTIVO</option>
-                    </select>
+                    <input type="text" id="Estado" class="a-input" placeholder="ACTIVO / INACTIVO" />
                 </div>
             </div>
 
@@ -174,6 +156,5 @@ End Code
     </div>
 </div>
 
-@section scripts
-    <script src="@Url.Content("~/Scripts/admin-productos.js")?v=@DateTime.Now.Ticks"></script>
-End Section
+@Scripts.Render("~/bundles/jquery")
+<script src="~/Scripts/admin-productos.js"></script>

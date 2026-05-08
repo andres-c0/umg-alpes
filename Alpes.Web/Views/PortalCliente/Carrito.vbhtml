@@ -3,37 +3,26 @@
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 End Code
 
-<div class="cc-page cc-page-new">
-
-    <div class="cc-top-link">
-        <a href="@Url.Action("Busqueda", "PortalCliente")">
-            ← Continuar comprando
-        </a>
-    </div>
-
+<div class="cc-page">
     <div class="cc-header cc-header--hero">
         <div>
-            <h1 class="cc-title">Tu carrito</h1>
-            <div class="cc-subtitle">
-                Puedes agregar productos sin iniciar sesión. Solo te pediremos ingresar o crear cuenta cuando quieras finalizar la compra.
-            </div>
+            <div class="cc-eyebrow">Muebles de los Alpes</div>
+            <h1 class="cc-title">Carrito de compra</h1>
+            <div class="cc-subtitle">Revisa cantidades, precios y subtotales antes de confirmar tu pedido.</div>
+        </div>
+        <div class="cc-header-actions">
+            <a href="@Url.Action("Index", "PortalCliente")" class="cc-link-back">Seguir comprando</a>
         </div>
     </div>
 
-    <div class="cc-grid cc-grid-new">
+    <div class="cc-grid">
         <section class="cc-items-card" aria-label="Productos en carrito">
             <div class="cc-card-heading">
                 <div>
-                    <strong id="ccProductCount">Productos</strong>
-                    <p>Guardados localmente en este navegador</p>
+                    <h2>Productos seleccionados</h2>
+                    <p>Modifica cantidades o elimina productos.</p>
                 </div>
-
-                <button type="button" class="cc-empty-cart-btn" id="ccBtnVaciarCarrito">
-                    <i class="bi bi-trash"></i>
-                    Vaciar carrito
-                </button>
             </div>
-
             <div id="ccItemsContainer">
                 <div class="cc-loading">Cargando carrito...</div>
             </div>
@@ -43,9 +32,8 @@ End Code
             <div class="cc-loading">Calculando resumen...</div>
         </aside>
     </div>
-
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-carrito.js?v=17")"></script>
+    <script src="@Url.Content("~/Scripts/portal-carrito.js?v=16")"></script>
 End Section

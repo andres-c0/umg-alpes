@@ -2,7 +2,6 @@
     var ordenes = [];
     var productos = [];
     var clientes = [];
-    var detallesOrden = [];
     var estadoFiltro = 0;
 
     $(document).ready(function () {
@@ -13,11 +12,7 @@
     });
 
     function enlazarEventos() {
-        $('#btnRecargarOrden').on('click', function () {
-            cargarCatalogos().then(function () {
-                cargarOrdenes();
-            });
-        });
+        $('#btnRecargarOrden').on('click', cargarOrdenes);
 
         $('#txtBuscarOrden').on('input', function () {
             renderCards();
@@ -43,13 +38,8 @@
                 clientes = normalizarLista(res);
             });
 
-        var d3 = $.getJSON('/Orden_Venta_Detalle/Index')
-            .done(function (res) {
-                detallesOrden = normalizarLista(res);
-            });
-
-        return $.when(d1, d2, d3).fail(function () {
-            console.warn('No se pudieron cargar productos, clientes o detalle de órdenes.');
+        return $.when(d1, d2).fail(function () {
+            console.warn('No se pudieron cargar productos o clientes.');
         });
     }
 
@@ -58,7 +48,9 @@
 
         $.getJSON('/Orden_Venta/Index')
             .done(function (res) {
+                console.log('ORDENES RESPONSE:', res);
                 ordenes = normalizarLista(res);
+                console.log('ORDENES NORMALIZADAS:', ordenes);
                 renderCards();
             })
             .fail(function (xhr) {
@@ -109,9 +101,8 @@
             var descuento = formatearMonto(o.Descuento);
             var fecha = formatearFecha(o.FechaOrden);
             var direccion = valor(o.DireccionEnvioSnapshot);
-
-            var items = contarItemsOrden(o.OrdenVentaId);
-            var lineas = contarLineasOrden(o.OrdenVentaId);
+            var items = entero(o.Items || o.CantidadItems || 1);
+            var lineas = entero(o.Lineas || o.CantidadLineas || 1);
 
             html += ''
                 + '<div class="orden-card" onclick="AdminOrdenes.verDetalle(' + o.OrdenVentaId + ')">'
@@ -148,12 +139,10 @@
         var totalVentas = 0;
         var pendientes = 0;
         var canceladas = 0;
-        var itemsVisibles = 0;
+        var itemsVisibles = lista.length;
 
         lista.forEach(function (o) {
             totalVentas += decimal(o.Total);
-            itemsVisibles += contarItemsOrden(o.OrdenVentaId);
-
             if (entero(o.EstadoOrdenId) === 30) pendientes++;
             if (entero(o.EstadoOrdenId) === 35) canceladas++;
         });
@@ -181,7 +170,7 @@
     }
 
     function cargarDetalleOrden(id) {
-        $('#detalleOrdenBody').html('<div class="table-empty">Cargando detalle...</div>');
+        $('#detalleOrdenBody').html('<tr><td colspan="4" class="table-empty">Cargando detalle...</td></tr>');
         $('#modalDetalleOrden').show();
         ocultarErrorDetalle();
 
@@ -194,8 +183,18 @@
 
                 llenarCabeceraDetalle(orden);
 
-                var detalles = detallesDeOrden(id);
-                renderDetalleProductos(detalles);
+                $.getJSON('/Orden_Venta_Detalle/Index')
+    .done(function (res) {
+        var detalles = normalizarLista(res).filter(function (d) {
+            return entero(d.OrdenVentaId) === entero(id);
+        });
+
+        renderDetalleProductos(detalles);
+    })
+                    .fail(function () {
+                        mostrarErrorDetalle('No fue posible cargar el detalle de la orden.');
+                        $('#detalleOrdenBody').html('<tr><td colspan="4" class="table-empty">No fue posible cargar el detalle.</td></tr>');
+                    });
             })
             .fail(function () {
                 mostrarErrorDetalle('No fue posible obtener la orden.');
@@ -234,6 +233,7 @@
         $('#detalleOrdenEstadoRegistro').val(orden.Estado || '');
     }
 
+
     function renderTimelineEstado(estadoActualId) {
         var actual = entero(estadoActualId);
 
@@ -270,7 +270,7 @@
 
     function cerrarDetalle() {
         $('#modalDetalleOrden').hide();
-        $('#detalleOrdenBody').html('<div class="table-empty">Cargando detalle...</div>');
+        $('#detalleOrdenBody').html('<tr><td colspan="4" class="table-empty">Cargando detalle...</td></tr>');
         ocultarErrorDetalle();
     }
 
@@ -326,8 +326,6 @@
                 if (orden) orden.EstadoOrdenId = estadoOrdenId;
 
                 $('#detalleEstadoOrden').html(badgeEstadoPorId(estadoOrdenId));
-                $('#detalleTimelineOrden').html(renderTimelineEstado(estadoOrdenId));
-
                 renderCards();
                 ocultarErrorDetalle();
                 alert('Estado actualizado correctamente.');
@@ -353,13 +351,10 @@
             var cantidad = entero(d.Cantidad);
             var precio = formatearMonto(d.PrecioUnitarioSnapshot);
             var subtotal = formatearMonto(d.SubtotalLinea);
-            var imagen = imagenProducto(d.ProductoId);
 
             html += ''
                 + '<div class="orden-product-item">'
-                + '  <div class="orden-product-item__image">'
-                + '    <img src="' + imagen + '" alt="' + escaparHtml(nombreProd) + '" onerror="this.src=\'' + placeholderProducto() + '\'" />'
-                + '  </div>'
+                + '  <div class="orden-product-item__icon"><i class="bi bi-box-seam"></i></div>'
                 + '  <div class="orden-product-item__info">'
                 + '    <div class="orden-product-item__name">' + nombreProd + '</div>'
                 + '    <div class="orden-product-item__meta">Cantidad: ' + cantidad + ' &nbsp; · &nbsp; Precio unit: Q ' + precio + '</div>'
@@ -369,22 +364,6 @@
         });
 
         $('#detalleOrdenBody').html(html);
-    }
-
-    function detallesDeOrden(ordenId) {
-        return detallesOrden.filter(function (d) {
-            return entero(d.OrdenVentaId) === entero(ordenId);
-        });
-    }
-
-    function contarLineasOrden(ordenId) {
-        return detallesDeOrden(ordenId).length;
-    }
-
-    function contarItemsOrden(ordenId) {
-        return detallesDeOrden(ordenId).reduce(function (total, d) {
-            return total + entero(d.Cantidad);
-        }, 0);
     }
 
     function nombreCliente(id) {
@@ -423,40 +402,10 @@
         return '<span class="orden-badge ' + estado.clase + '">' + estado.texto + '</span>';
     }
 
-    function obtenerProducto(id) {
-        return productos.find(function (p) {
-            return entero(p.ProductoId) === entero(id);
-        }) || null;
-    }
-
-    function nombreProducto(id) {
-        var item = obtenerProducto(id);
-        if (!item) return '';
-        return valor(item.Nombre) + (item.Referencia ? ' (' + item.Referencia + ')' : '');
-    }
-
-    function imagenProducto(id) {
-        var item = obtenerProducto(id);
-        return item && item.ImagenUrl ? item.ImagenUrl : placeholderProducto();
-    }
-
-    function placeholderProducto() {
-        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">' +
-            '<rect width="100%" height="100%" rx="14" fill="#f7f2ec"/>' +
-            '<text x="50%" y="52%" text-anchor="middle" font-size="22" fill="#c4a882">📦</text>' +
-            '</svg>'
-        );
-    }
-
     function formatearMonto(valorMonto) {
         var n = parseFloat(valorMonto);
         if (isNaN(n)) return '0.00';
-
-        return n.toLocaleString('es-GT', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        return n.toFixed(2);
     }
 
     function formatearFecha(valorFecha) {
@@ -465,15 +414,21 @@
         var matchAspNet = /\/Date\((\d+)\)\//.exec(valorFecha);
         if (matchAspNet) {
             var fechaAsp = new Date(parseInt(matchAspNet[1], 10));
-            return fechaValida(fechaAsp) ? fechaAsp.toLocaleDateString('es-GT') : '';
+            return fechaValida(fechaAsp) ? fechaAsp.toLocaleDateString() : '';
         }
 
         var fecha = new Date(valorFecha);
-        return fechaValida(fecha) ? fecha.toLocaleDateString('es-GT') : valor(valorFecha);
+        return fechaValida(fecha) ? fecha.toLocaleDateString() : valor(valorFecha);
     }
 
     function fechaValida(fecha) {
         return fecha instanceof Date && !isNaN(fecha.getTime());
+    }
+
+    function nombreProducto(id) {
+        var item = productos.find(function (p) { return p.ProductoId == id; });
+        if (!item) return '';
+        return item.Nombre + (item.Referencia ? ' (' + item.Referencia + ')' : '');
     }
 
     function mostrarErrorDetalle(msg) {
@@ -507,15 +462,6 @@
     function decimal(v) {
         var n = parseFloat(v);
         return isNaN(n) ? 0 : n;
-    }
-
-    function escaparHtml(txt) {
-        return String(txt || '')
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
     }
 
     window.AdminOrdenes = {

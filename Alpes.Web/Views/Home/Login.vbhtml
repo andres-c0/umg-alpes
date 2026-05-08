@@ -3,12 +3,6 @@
 @Code
     Layout = Nothing
     ViewData("Title") = "Iniciar sesión"
-
-    Dim returnUrl As String = ""
-
-    If ViewData("ReturnUrl") IsNot Nothing Then
-        returnUrl = ViewData("ReturnUrl").ToString()
-    End If
 End Code
 
 <!DOCTYPE html>
@@ -59,9 +53,6 @@ End Code
                 @Using Html.BeginForm("Login", "Home", FormMethod.Post)
                     @Html.AntiForgeryToken()
 
-                    @Html.Hidden("returnUrl", returnUrl)
-                    @Html.Hidden("ReturnUrl", returnUrl)
-
                     @<div class="a-form-group">
                         <label for="Username">Usuario</label>
                         <div class="a-input-wrap">
@@ -106,7 +97,7 @@ End Code
 
                 <div style="text-align:center;font-size:13px;color:var(--nogal-medio)">
                     ¿No tienes cuenta?
-                    <a href="@Url.Action("Registro", "Home", New With {.returnUrl = returnUrl})"
+                    <a href="/Home/Registro"
                        style="color:var(--cafe-oscuro);font-weight:700;margin-left:4px">
                         Regístrate
                     </a>

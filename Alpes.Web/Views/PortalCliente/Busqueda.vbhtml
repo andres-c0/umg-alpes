@@ -2,116 +2,8 @@
     ViewData("Title") = "Búsqueda"
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 End Code
-<style>
-    .catalog-tabs {
-        height: 54px;
-        background: #170900;
-        display: flex;
-        align-items: end;
-        gap: 34px;
-        padding: 0 18px;
-        margin: -16px -20px 10px -20px;
-    }
-
-    .catalog-tab {
-        color: #8d7b6b;
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 900;
-        padding-bottom: 14px;
-        border-bottom: 4px solid transparent;
-    }
-
-        .catalog-tab.active {
-            color: #fff;
-            border-bottom-color: #d6a354;
-        }
-
-        .catalog-tab small {
-            background: rgba(255,255,255,.12);
-            padding: 2px 6px;
-            border-radius: 8px;
-            margin-left: 4px;
-            color: #c7aa70;
-        }
-
-    .catalog-bottom-nav {
-        position: fixed;
-        left: 164px;
-        right: 0;
-        bottom: 0;
-        height: 64px;
-        background: white;
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        border-top: 1px solid #eee4d8;
-        z-index: 99;
-    }
-
-        .catalog-bottom-nav a {
-            display: grid;
-            place-items: center;
-            align-content: center;
-            gap: 3px;
-            color: #b39a6b;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-            .catalog-bottom-nav a i {
-                font-size: 18px;
-            }
-
-            .catalog-bottom-nav a.active {
-                color: #321407;
-            }
-
-    .pb-page {
-        padding-bottom: 85px;
-    }
-</style>
 
 <div class="pb-page">
-    <div class="catalog-tabs">
-        <a href="#" class="catalog-tab active" data-tab="todos">
-            Todos <small id="catCountTodos">0</small>
-        </a>
-
-        <a href="#" class="catalog-tab" data-tab="exterior">
-            Exterior <small id="catCountExterior">0</small>
-        </a>
-
-        <a href="#" class="catalog-tab" data-tab="interior">
-            Interior <small id="catCountInterior">0</small>
-        </a>
-        <nav class="catalog-bottom-nav">
-            <a href="@Url.Action("Index", "PortalCliente")">
-                <i class="bi bi-house"></i>
-                <span>Inicio</span>
-            </a>
-
-            <a class="active" href="@Url.Action("Busqueda", "PortalCliente")">
-                <i class="bi bi-grid"></i>
-                <span>Catálogo</span>
-            </a>
-
-            <a href="@Url.Action("Favoritos", "PortalCliente")">
-                <i class="bi bi-heart"></i>
-                <span>Favoritos</span>
-            </a>
-
-            <a href="@Url.Action("MisOrdenes", "PortalCliente")">
-                <i class="bi bi-receipt"></i>
-                <span>Órdenes</span>
-            </a>
-
-            <a href="#">
-                <i class="bi bi-person"></i>
-                <span>Perfil</span>
-            </a>
-        </nav>
-    </div>
     <section class="pb-hero">
         <div>
             <div class="ci-badge">Catálogo avanzado</div>
@@ -203,5 +95,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-busqueda.js?v=23")"></script>
+    <script src="@Url.Content("~/Scripts/portal-busqueda.js?v=16")"></script>
 End Section

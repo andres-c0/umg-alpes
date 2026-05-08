@@ -21,7 +21,7 @@ Namespace Controllers
         ' VISTAS
         ' =========================
         Function Index() As ActionResult
-            Return View("~/Views/PortalCliente/Index.vbhtml")
+            Return View()
         End Function
 
         Function Catalogo() As ActionResult
