@@ -1,31 +1,39 @@
 ﻿@Code
     ViewData("Title") = "Inicio"
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
-    Dim username As String = System.Convert.ToString(ViewData("Username"))
-    If String.IsNullOrWhiteSpace(username) Then username = "Cliente"
-    Dim primerNombre As String = username
-    If Not String.IsNullOrWhiteSpace(username) AndAlso username.Contains(" ") Then primerNombre = username.Split(" "c)(0)
-    Dim cliIdTexto As String = System.Convert.ToString(ViewData("CliId"))
 End Code
 
-<div class="mhome-page" data-cli-id="@cliIdTexto">
+<div class="mhome-page">
+
     <section class="mhome-banner">
         <div class="mhome-banner-copy">
-            <span class="mhome-kicker" id="mhomeSaludoHora">Bienvenido</span>
-            <h1>@primerNombre</h1>
-            <div class="mhome-status"><span></span> Cliente activo</div>
+            <span class="mhome-kicker">Buenas tardes</span>
+            <h1>falvarado</h1>
+            <div class="mhome-status">
+                <span></span> Cliente activo
+            </div>
         </div>
-        <a href="@Url.Action("Busqueda", "PortalCliente")" class="mhome-banner-btn"><i class="bi bi-grid"></i> Ver catálogo</a>
+
+        <a href="@Url.Action("Busqueda", "PortalCliente")" class="mhome-banner-btn">
+            <i class="bi bi-grid"></i>
+            Ver catálogo
+        </a>
+
         <div class="mhome-deco"></div>
     </section>
 
     <section class="mhome-search-wrap">
-        <div class="mhome-search">
+        <form class="mhome-search" method="get" action="@Url.Action("Busqueda", "PortalCliente")">
             <i class="bi bi-search"></i>
-            <input type="text" id="ciBuscarProducto" placeholder="Buscar muebles, salas, comedores…" autocomplete="off" />
-            <button type="button" id="ciBtnBuscar" aria-label="Buscar"><i class="bi bi-arrow-right"></i></button>
-        </div>
-        <div id="mhomeSearchResults" class="mhome-search-results"></div>
+
+            <input type="text"
+                   name="q"
+                   placeholder="Buscar muebles, salas, comedores..." />
+
+            <button type="submit">
+                <i class="bi bi-arrow-right"></i>
+            </button>
+        </form>
     </section>
 
     <section class="mhome-stats-block">
@@ -34,77 +42,210 @@ End Code
                 <span>Resumen de mi cuenta</span>
                 <h2>Actividad reciente</h2>
             </div>
-            <a href="@Url.Action("MiPerfil", "PortalCliente")">Ver perfil →</a>
+            <a href="#">Ver perfil →</a>
         </div>
+
         <div class="mhome-kpis">
-            <article class="mhome-kpi"><div class="mhome-kpi-icon brown"><i class="bi bi-bag-check"></i></div><strong id="ciPedidosTotal">0</strong><span>PEDIDOS<br />TOTALES</span></article>
-            <article class="mhome-kpi"><div class="mhome-kpi-icon green"><i class="bi bi-truck"></i></div><strong id="ciPedidosActivos">0</strong><span>EN<br />CAMINO</span></article>
-            <article class="mhome-kpi"><div class="mhome-kpi-icon gold"><i class="bi bi-check-circle"></i></div><strong id="ciPedidosEntregados">0</strong><span>ENTREGADOS</span></article>
-            <article class="mhome-kpi"><div class="mhome-kpi-icon red"><i class="bi bi-cash"></i></div><strong id="ciTotalComprado">Q0</strong><span>TOTAL<br />GASTADO</span></article>
+            <article class="mhome-kpi">
+                <div class="mhome-kpi-icon brown"><i class="bi bi-bag-check"></i></div>
+                <strong>2</strong>
+                <span>PEDIDOS<br />TOTALES</span>
+            </article>
+
+            <article class="mhome-kpi">
+                <div class="mhome-kpi-icon green"><i class="bi bi-truck"></i></div>
+                <strong>0</strong>
+                <span>EN<br />CAMINO</span>
+            </article>
+
+            <article class="mhome-kpi">
+                <div class="mhome-kpi-icon gold"><i class="bi bi-check-circle"></i></div>
+                <strong>0</strong>
+                <span>ENTREGADOS</span>
+            </article>
+
+            <article class="mhome-kpi">
+                <div class="mhome-kpi-icon red"><i class="bi bi-cash"></i></div>
+                <strong>Q13.7k</strong>
+                <span>TOTAL<br />GASTADO</span>
+            </article>
         </div>
     </section>
 
     <section class="mhome-panels">
         <article class="mhome-panel mhome-orders-panel">
             <div class="mhome-panel-head">
-                <div><span>Compras</span><h2>Mis pedidos recientes</h2></div>
-                <a href="@Url.Action("MisOrdenes", "PortalCliente")">Ver todos →</a>
+                <div>
+                    <span>Compras</span>
+                    <h2>Mis pedidos recientes</h2>
+                </div>
+                <a href="#">Ver todos →</a>
             </div>
-            <div id="mhomeOrdenesRecientes" class="mhome-orders-list">
-                <div class="mhome-mini-empty">Cargando pedidos...</div>
+
+            <div class="mhome-orders-list">
+                <div class="mhome-order-item">
+                    <div>
+                        <strong>Pedido #ORD-2026-0001</strong>
+                        <span>Mueble Alpes</span>
+                    </div>
+                    <b>Q9352</b>
+                </div>
+
+                <div class="mhome-order-item">
+                    <div>
+                        <strong>Pedido #ORD-2025-0001</strong>
+                        <span>Mueble Alpes</span>
+                    </div>
+                    <b>Q4312</b>
+                </div>
             </div>
         </article>
 
         <article class="mhome-panel mhome-track-panel">
             <div class="mhome-panel-head">
-                <div><span>Seguimiento</span><h2>Último envío</h2></div>
+                <div>
+                    <span>Seguimiento</span>
+                    <h2>Tracking activo</h2>
+                </div>
             </div>
-            <div id="mhomeTrackingActual" class="mhome-track-card">
-                <div class="mhome-mini-empty">Consultando tracking...</div>
+
+            <div class="mhome-track-card">
+                <strong>Pedido #ORD-2026-0001</strong>
+                <span>Sofá Alpino — estimado</span>
+                <br />
+                <span>✅ Pedido confirmado</span>
+                <span>🟡 En producción</span>
+                <span>○ En camino</span>
+                <span>○ Entregado</span>
             </div>
         </article>
     </section>
 
     <section class="mhome-quick-section">
         <div class="mhome-section-head">
-            <div><span>Accesos</span><h2>Todo a la mano</h2></div>
+            <div>
+                <span>Accesos rápidos</span>
+                <h2>Accesos rápidos</h2>
+            </div>
         </div>
+
+
         <div class="mhome-quick-row">
-            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="mhome-quick"><i class="bi bi-heart-fill"></i><span>Favoritos</span></a>
-            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="mhome-quick"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
-            <a href="@Url.Action("MisTarjetas", "PortalCliente")" class="mhome-quick"><i class="bi bi-credit-card"></i><span>Tarjetas</span></a>
-            <a href="@Url.Action("Soporte", "PortalCliente")" class="mhome-quick"><i class="bi bi-headset"></i><span>Soporte</span></a>
+            <a href="@Url.Action("Busqueda", "PortalCliente")" class="mhome-quick">
+                <i class="bi bi-grid"></i>
+                <span>Catálogo</span>
+            </a>
+
+            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="mhome-quick">
+                <i class="bi bi-receipt"></i>
+                <span>Mis órdenes</span>
+            </a>
+
+            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="mhome-quick">
+                <i class="bi bi-heart-fill"></i>
+                <span>Favoritos</span>
+            </a>
+
+            <a href="@Url.Action("MisResenas", "PortalCliente")" class="mhome-quick">
+                <i class="bi bi-star-fill"></i>
+                <span>Mis reseñas</span>
+            </a>
         </div>
+    </section>
+    <section class="mhome-products-preview">
+
+        <div class="mhome-section-head">
+            <div>
+                <span>Para ti</span>
+            </div>
+
+            <a href="#">Ver todo</a>
+        </div>
+
+        <div id="homeParaTi" class="mhome-product-row">
+        </div>
+
     </section>
 
-    <section class="mhome-products-section">
+
+    <section class="mhome-products-large">
+
         <div class="mhome-section-head">
-            <div><span>Para ti</span><h2>Recomendados</h2></div>
-            <a href="@Url.Action("Busqueda", "PortalCliente")">Ver catálogo →</a>
+            <div>
+                <span>Productos</span>
+            </div>
+
+            <a href="#">Catálogo completo</a>
         </div>
-        <div id="piRecomendadosContainer" class="mhome-product-strip">
-            <div class="mhome-mini-empty">Cargando recomendaciones...</div>
+
+        <div id="homeProductosGrandes" class="mhome-large-grid">
         </div>
+
+        <div id="homeCatalogoCompleto" class="mhome-catalogo-grid">
+        </div>
+
     </section>
 
-    <section class="mhome-products-section">
-        <div class="mhome-section-head">
-            <div><span>Tienda</span><h2>Todos los productos</h2></div>
-            <a href="@Url.Action("Busqueda", "PortalCliente")">Ver completo →</a>
-        </div>
-        <div class="mhome-filter-pill-row" aria-label="Filtros rápidos">
-            <select id="ciFiltroCategoria"><option value="">Todas</option></select>
-            <select id="ciFiltroTipo"><option value="">Todos los tipos</option></select>
-            <select id="ciFiltroColor"><option value="">Colores</option></select>
-            <select id="ciFiltroMaterial"><option value="">Materiales</option></select>
-            <button type="button" id="ciBtnLimpiar">Limpiar</button>
-        </div>
-        <div id="ciCatalogoContainer" class="mhome-product-grid">
-            <div class="mhome-mini-empty">Cargando catálogo...</div>
-        </div>
-    </section>
 </div>
 
-@Section scripts
-    <script src="@Url.Content("~/Scripts/portal-inicio.js?v=18")"></script>
-End Section
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        fetch("/PortalCliente/ObtenerCatalogoData")
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+
+                var data = res.data || res.Data || res || [];
+
+                var productos = data.map(function (x) {
+                    return x.Producto || x.producto || x;
+                });
+
+                var paraTi = document.getElementById("homeParaTi");
+                var grandes = document.getElementById("homeProductosGrandes");
+                var catalogo = document.getElementById("homeCatalogoCompleto");
+
+                function imagen(p) {
+                    return p.ImagenUrl || p.imagenUrl || p.Imagen || p.UrlImagen || p.urlImagen || "";
+                }
+
+                function nombre(p) {
+                    return p.Nombre || p.nombre || p.NombreProducto || p.nombreProducto || "Producto";
+                }
+
+                function precio(p) {
+                    return p.PrecioActual || p.precioActual || p.Precio || p.precio || p.PrecioUnitario || p.precioUnitario || 0;
+                }
+
+                paraTi.innerHTML = productos.slice(0, 8).map(function (p) {
+                    return `
+                        <div class="mhome-product-mini">
+                            <img src="${imagen(p)}" />
+                            <h4>${nombre(p)}</h4>
+                            <strong>Q ${precio(p)}</strong>
+                            <button>Agregar</button>
+                        </div>
+                    `;
+                }).join("");
+
+                grandes.innerHTML = productos.slice(0, 2).map(function (p) {
+                    return `
+                        <div class="mhome-large-card">
+                            <img src="${imagen(p)}" />
+                        </div>
+                    `;
+                }).join("");
+
+                catalogo.innerHTML = productos.map(function (p) {
+                    return `
+                        <div class="mhome-catalogo-card">
+                            <img src="${imagen(p)}" />
+                            <h4>${nombre(p)}</h4>
+                            <strong>Q ${precio(p)}</strong>
+                            <button>Agregar</button>
+                        </div>
+                    `;
+                }).join("");
+            });
+    });
+</script>

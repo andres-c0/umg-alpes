@@ -64,7 +64,7 @@ End Code
         <i class="bi bi-star"></i>
         <h3>Aún no tienes reseñas</h3>
         <p>Cuando valores tus productos, aparecerán en esta sección.</p>
-        <a href="@Url.Action("Busqueda", "PortalCliente")" class="pc-btn pc-btn-primary">Explorar catálogo</a>
+        <a href="/PortalCliente/Busqueda" class="pc-btn pc-btn-primary">Explorar catálogo</a>
     </div>
 
     <div id="resenasGrid" class="pc-review-grid"></div>

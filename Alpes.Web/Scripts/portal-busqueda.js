@@ -215,13 +215,37 @@
         }
         chips.innerHTML = valores.map(function (v) { return '<span class="pb-chip">' + escapeHtml(v) + '</span>'; }).join('');
     }
+    function actualizarCatalogTabs() {
+        var total = catalogoCompleto.length;
 
+        var exterior = catalogoCompleto.filter(function (item) {
+            var p = getProductoDesdeItem(item);
+            var categoria = p.CategoriaNombre || p.Categoria || p.Tipo || '';
+            return normalizarTexto(categoria) === 'exterior';
+        }).length;
+
+        var interior = catalogoCompleto.filter(function (item) {
+            var p = getProductoDesdeItem(item);
+            var categoria = p.CategoriaNombre || p.Categoria || p.Tipo || '';
+            return normalizarTexto(categoria) === 'interior';
+        }).length;
+
+        var t = document.getElementById('catCountTodos');
+        var e = document.getElementById('catCountExterior');
+        var i = document.getElementById('catCountInterior');
+
+        if (t) { t.textContent = total; }
+        if (e) { e.textContent = exterior; }
+        if (i) { i.textContent = interior; }
+    }
     function aplicarFiltros() {
         var q = inputBuscar ? inputBuscar.value : '';
         var categoria = filtroCategoria ? filtroCategoria.value : '';
         var tipo = filtroTipo ? filtroTipo.value : '';
         var material = filtroMaterial ? filtroMaterial.value : '';
         var color = filtroColor ? filtroColor.value : '';
+        var tabActivo = document.querySelector('.catalog-tab.active');
+        var categoriaTab = tabActivo ? tabActivo.getAttribute('data-tab') : 'todos';
 
         var filtrados = catalogoCompleto.filter(function (item) {
             var p = getProductoDesdeItem(item);
@@ -229,11 +253,13 @@
                 && (categoria === '' || String(p.CategoriaId) === String(categoria))
                 && (tipo === '' || normalizarTexto(p.Tipo) === normalizarTexto(tipo))
                 && (material === '' || normalizarTexto(p.Material) === normalizarTexto(material))
-                && (color === '' || normalizarTexto(p.Color) === normalizarTexto(color));
+                && (color === '' || normalizarTexto(p.Color) === normalizarTexto(color))
+                && (categoriaTab === 'todos' || normalizarTexto(p.CategoriaNombre || p.Categoria || p.Tipo || '') === normalizarTexto(categoriaTab));
         });
 
         filtrados = aplicarOrden(filtrados);
         if (resumen) { resumen.textContent = filtrados.length + ' producto(s) encontrados'; }
+        actualizarCatalogTabs();
         actualizarChips();
 
         if (!filtrados.length) {
@@ -347,6 +373,19 @@
             aplicarFiltros();
         });
     }
+    document.querySelectorAll('.catalog-tab').forEach(function (tab) {
+        tab.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            document.querySelectorAll('.catalog-tab').forEach(function (x) {
+                x.classList.remove('active');
+            });
+
+            tab.classList.add('active');
+            aplicarFiltros();
+        });
+    });
     resultados.addEventListener('click', manejarClick);
     cargarCatalogo();
 });
+
