@@ -23,7 +23,14 @@
     };
 
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
-    function money(v) { var n = Number(v || 0); return 'Q' + n.toFixed(2); }
+    function money(v) {
+        var n = Number(v || 0);
+
+        return 'Q' + n.toLocaleString('es-GT', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
     function norm(v) { return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
     function jsonNorm(p) {
         if (!p) { return { ok: false, data: [], message: 'Respuesta vacía.' }; }
@@ -38,6 +45,15 @@
     function validImg(url) { url = String(url || '').trim(); return url.indexOf('http') === 0 || url.indexOf('/') === 0 || url.indexOf('data:image') === 0; }
     function desc(p) { return value(p, ['Descripcion', 'descripcion'], p.Tipo || 'Mueble artesanal guatemalteco con detalles de calidad.'); }
     function precio(p) { return value(p, ['PrecioActual', 'Precio', 'precio', 'PrecioUnitario'], 0); }
+    function money(valor) {
+        var numero = Number(valor || 0);
+
+        return numero.toLocaleString('es-GT', {
+            style: 'currency',
+            currency: 'GTQ',
+            minimumFractionDigits: 2
+        });
+    }
     function toast(msg, ok) {
         var el = document.createElement('div');
         el.className = 'pc-toast ' + (ok ? 'pc-toast--success' : 'pc-toast--error');

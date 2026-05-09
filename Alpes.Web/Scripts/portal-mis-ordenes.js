@@ -95,6 +95,14 @@
         setText('poCountActivasBig', activas);
         setText('poCountEntregadasBig', entregadas);
         setText('poTotalComprado', formatearMoneda(totalComprado, 'GTQ'));
+        
+
+        var badgeOrdenes = document.getElementById('pcBadgeOrders');
+
+        if (badgeOrdenes) {
+            badgeOrdenes.textContent = todas;
+            badgeOrdenes.style.display = todas > 0 ? '' : 'none';
+        }
     }
 
     function coincideFiltro(item, filtro) {

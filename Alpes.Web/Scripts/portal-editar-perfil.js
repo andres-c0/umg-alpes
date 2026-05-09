@@ -116,13 +116,23 @@
 
     function openModal() {
         if (currentProfile) renderProfile(currentProfile);
-        var modal = $('perfilModal');
-        if (modal) modal.classList.add('show');
-    }
 
+        var modal = $('perfilModal');
+
+        if (modal) {
+            modal.classList.add('show');
+            modal.style.display = 'flex';
+            modal.style.opacity = '1';
+            modal.style.visibility = 'visible';
+        }
+    }
     function closeModal() {
         var modal = $('perfilModal');
-        if (modal) modal.classList.remove('show');
+
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {

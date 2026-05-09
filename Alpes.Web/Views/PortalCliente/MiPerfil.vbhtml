@@ -2,7 +2,29 @@
     ViewData("Title") = "Mi perfil"
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 End Code
+<style>
+    .pc-profile-hero h1 {
+        color: #ffffff !important;
+    }
+    .pc-modal-backdrop.show {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 9999 !important;
+    }
 
+    .pc-profile-modal {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        position: relative !important;
+        z-index: 10000 !important;
+        background: #fff !important;
+    }
+</style>
 <section class="pc-section pc-profile-page" id="perfilClientePage">
     <div class="pc-hero pc-profile-hero">
         <div>
@@ -162,5 +184,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-editar-perfil.js?v=16")"></script>
+    <script src="@Url.Content("~/Scripts/portal-editar-perfil.js?v=17")"></script>
 End Section

@@ -244,6 +244,46 @@
                 mostrarToast(error.message || 'Error al cargar el carrito.', 'error');
             });
     }
+  
+    var btnVaciarCarrito = document.getElementById('ccBtnVaciarCarrito');
+
+    if (btnVaciarCarrito) {
+        btnVaciarCarrito.addEventListener('click', function () {
+            if (isBusy) return;
+
+            mostrarConfirmacionCarrito('¿Vaciar todo el carrito?', function () {
+                var botonesEliminar = itemsContainer.querySelectorAll('button[data-action="remove"]');
+
+                if (!botonesEliminar.length) {
+                    mostrarToast('No hay productos para eliminar.', 'error');
+                    return;
+                }
+
+                isBusy = true;
+                btnVaciarCarrito.disabled = true;
+
+                var promesas = Array.prototype.map.call(botonesEliminar, function (btn) {
+                    var id = Number(btn.getAttribute('data-id') || 0);
+                    return postJson(endpointEliminar, { carritoDetId: id });
+                });
+
+                Promise.all(promesas)
+                    .then(function () {
+                        mostrarToast('Carrito vaciado correctamente.', 'success');
+                        notificarCarritoActualizado();
+                        cargarCarrito();
+                    })
+                    .catch(function () {
+                        mostrarToast('No se pudo vaciar el carrito.', 'error');
+                    })
+                    .finally(function () {
+                        isBusy = false;
+                        btnVaciarCarrito.disabled = false;
+                    });
+            });
+        });
+    }
+   
 
     itemsContainer.addEventListener('click', function (e) {
         var button = e.target.closest('button[data-action]');
@@ -298,6 +338,36 @@
                 button.disabled = false;
             });
     });
+
+    function mostrarConfirmacionCarrito(mensaje, onConfirmar) {
+        var overlay = document.createElement('div');
+        overlay.className = 'cc-confirm-overlay';
+
+        overlay.innerHTML =
+            '<div class="cc-confirm-box">' +
+            '<div class="cc-confirm-icon"><i class="bi bi-trash"></i></div>' +
+            '<h3>Vaciar carrito</h3>' +
+            '<p>' + mensaje + '</p>' +
+            '<div class="cc-confirm-actions">' +
+            '<button type="button" class="cc-confirm-cancel">Cancelar</button>' +
+            '<button type="button" class="cc-confirm-ok">Vaciar</button>' +
+            '</div>' +
+            '</div>';
+
+        document.body.appendChild(overlay);
+
+        overlay.querySelector('.cc-confirm-cancel').addEventListener('click', function () {
+            overlay.remove();
+        });
+
+        overlay.querySelector('.cc-confirm-ok').addEventListener('click', function () {
+            overlay.remove();
+
+            if (typeof onConfirmar === 'function') {
+                onConfirmar();
+            }
+        });
+    }
 
     cargarCarrito();
 });

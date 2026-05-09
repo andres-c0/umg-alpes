@@ -290,6 +290,8 @@ Namespace Controllers
                 clienteActual.Pais = If(String.IsNullOrWhiteSpace(pais), "Guatemala", pais.Trim())
 
                 _clienteServicio.Actualizar(clienteActual)
+                Session("NombreCliente") = (clienteActual.Nombres & " " & clienteActual.Apellidos).Trim()
+                ViewData("NombreCliente") = Session("NombreCliente")
 
                 Return Json(New With {
                     .ok = True,
@@ -332,23 +334,24 @@ Namespace Controllers
 
                     If producto IsNot Nothing Then
                         resultado.Add(New With {
-                            .ListaDeseosId = favorito.ListaDeseosId,
-                            .CliId = favorito.CliId,
-                            .ProductoId = favorito.ProductoId,
-                            .Nota = favorito.Nota,
-                            .Producto = New With {
-                                .ProductoId = producto.ProductoId,
-                                .Referencia = producto.Referencia,
-                                .Nombre = producto.Nombre,
-                                .Descripcion = producto.Descripcion,
-                                .Tipo = producto.Tipo,
-                                .Material = producto.Material,
-                                .Color = producto.Color,
-                                .ImagenUrl = producto.ImagenUrl,
-                                .CategoriaId = producto.CategoriaId,
-                                .Estado = producto.Estado
-                            }
-                        })
+                                .ListaDeseosId = favorito.ListaDeseosId,
+                                .CliId = favorito.CliId,
+                                .ProductoId = favorito.ProductoId,
+                                .Nota = favorito.Nota,
+                                .Producto = New With {
+                                    .ProductoId = producto.ProductoId,
+                                    .Referencia = producto.Referencia,
+                                    .Nombre = producto.Nombre,
+                                    .Descripcion = producto.Descripcion,
+                                    .Tipo = producto.Tipo,
+                                    .Material = producto.Material,
+                                    .Color = producto.Color,
+                                    .ImagenUrl = producto.ImagenUrl,
+                                    .CategoriaId = producto.CategoriaId,
+                                    .Estado = producto.Estado,
+                                    .PrecioActual = ObtenerPrecioActualProducto(producto.ProductoId)
+                                }
+                            })
                     End If
                 Next
 
@@ -1101,17 +1104,19 @@ Namespace Controllers
                 Next
 
                 Return Json(New With {
-                    .ok = True,
-                    .data = New With {
-                        .carritoItems = carritoItems,
-                        .ordenesActivas = ordenesActivas
-                    }
-                }, JsonRequestBehavior.AllowGet)
+    .ok = True,
+    .data = New With {
+        .totalOrdenes = ordenes.Count,
+        .carritoItems = carritoItems,
+        .ordenesActivas = ordenesActivas
+    }
+}, JsonRequestBehavior.AllowGet)
+
             Catch ex As Exception
                 Return Json(New With {
-                    .ok = False,
-                    .message = LimpiarMensaje(ex.Message)
-                }, JsonRequestBehavior.AllowGet)
+        .ok = False,
+        .message = LimpiarMensaje(ex.Message)
+    }, JsonRequestBehavior.AllowGet)
             End Try
         End Function
 
@@ -2031,6 +2036,18 @@ Namespace Controllers
             ViewData("UsuarioId") = Convert.ToInt32(Session("UsuarioId"))
             ViewData("RolId") = rolId
             ViewData("CliId") = cliId.Value
+            If Session("NombreCliente") Is Nothing OrElse String.IsNullOrWhiteSpace(Session("NombreCliente").ToString()) Then
+                Try
+                    Dim clienteActual As Cliente = _clienteServicio.ObtenerPorId(cliId.Value)
+
+                    If clienteActual IsNot Nothing Then
+                        Session("NombreCliente") = (clienteActual.Nombres & " " & clienteActual.Apellidos).Trim()
+                    End If
+                Catch
+                End Try
+            End If
+
+            ViewData("NombreCliente") = If(Session("NombreCliente") IsNot Nothing, Session("NombreCliente").ToString(), String.Empty)
             ViewData("Username") = If(Session("Username") IsNot Nothing, Session("Username").ToString(), String.Empty)
 
             Return Nothing
@@ -2445,7 +2462,7 @@ Namespace Controllers
         <NonAction>
         Private Function ObtenerPrecioActualProducto(ByVal productoId As Integer) As Decimal
             If productoId <= 0 Then
-                Return 0D
+                Return -1D
             End If
 
             Dim precios As New List(Of Precio_Historico)()
@@ -2458,49 +2475,46 @@ Namespace Controllers
 
             If precios Is Nothing OrElse precios.Count = 0 Then
                 Try
-                    precios = _precioHistoricoServicio.Listar()
+                    precios = _precioHistoricoServicio.Listar().
+                Where(Function(x) x.ProductoId = productoId).
+                ToList()
                 Catch
                     precios = New List(Of Precio_Historico)()
                 End Try
             End If
 
-            Dim vigente As Precio_Historico = Nothing
-            Dim ahora As DateTime = DateTime.Now
-
-            For Each p As Precio_Historico In precios
-                If p Is Nothing Then
-                    Continue For
-                End If
-
-                If p.ProductoId <> productoId Then
-                    Continue For
-                End If
-
-                If Not String.IsNullOrWhiteSpace(p.Estado) AndAlso Not String.Equals(p.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
-                    Continue For
-                End If
-
-                Dim inicioOk As Boolean = (p.VigenciaInicio = DateTime.MinValue OrElse ahora >= p.VigenciaInicio)
-                Dim finOk As Boolean = (Not p.VigenciaFin.HasValue OrElse ahora <= p.VigenciaFin.Value)
-
-                If Not inicioOk OrElse Not finOk Then
-                    Continue For
-                End If
-
-                If vigente Is Nothing Then
-                    vigente = p
-                ElseIf p.VigenciaInicio > vigente.VigenciaInicio Then
-                    vigente = p
-                End If
-            Next
-
-            If vigente IsNot Nothing Then
-                Return vigente.Precio
+            If precios Is Nothing OrElse precios.Count = 0 Then
+                Return -1D
             End If
 
-            Return 0D
-        End Function
+            Dim ahora As DateTime = DateTime.Now
 
+            Dim precioVigente = precios.
+        Where(Function(p) p IsNot Nothing).
+        Where(Function(p) p.ProductoId = productoId).
+        Where(Function(p) String.IsNullOrWhiteSpace(p.Estado) OrElse String.Equals(p.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase)).
+        Where(Function(p) p.Precio > 0).
+        Where(Function(p) (p.VigenciaInicio = DateTime.MinValue OrElse ahora >= p.VigenciaInicio) AndAlso (Not p.VigenciaFin.HasValue OrElse ahora <= p.VigenciaFin.Value)).
+        OrderByDescending(Function(p) p.VigenciaInicio).
+        FirstOrDefault()
+
+            If precioVigente IsNot Nothing Then
+                Return precioVigente.Precio
+            End If
+
+            Dim ultimoPrecioValido = precios.
+        Where(Function(p) p IsNot Nothing).
+        Where(Function(p) p.ProductoId = productoId).
+        Where(Function(p) p.Precio > 0).
+        OrderByDescending(Function(p) p.VigenciaInicio).
+        FirstOrDefault()
+
+            If ultimoPrecioValido IsNot Nothing Then
+                Return ultimoPrecioValido.Precio
+            End If
+
+            Return -1D
+        End Function
         <NonAction>
         Private Function ObtenerEstadoOrdenInicialId() As Integer
             Dim estados As List(Of Estado_Orden) = _estadoOrdenServicio.Listar()

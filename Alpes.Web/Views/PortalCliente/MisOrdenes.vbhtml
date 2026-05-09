@@ -307,11 +307,18 @@ End Code
 
             return true;
         }
+        function actualizarBadgeOrdenes(total) {
+            var badges = document.querySelectorAll("#pcBadgeOrders");
 
+            badges.forEach(function (badge) {
+                badge.textContent = total;
+                badge.style.display = total > 0 ? "" : "none";
+            });
+        }
         function pintar() {
             var visibles = ordenes.filter(coincide);
-            cantidad.textContent = ordenes.length + " pedidos";
-
+            cantidad.textContent = ordenes.length + " ordenes";
+            actualizarBadgeOrdenes(ordenes.length);
             if (!visibles.length) {
                 lista.innerHTML = `
                     <div class="ordenes-empty">
@@ -387,6 +394,9 @@ End Code
                 .then(function (res) {
                     ordenes = res.data || res.Data || [];
                     pintar();
+                    setTimeout(function () {
+                        actualizarBadgeOrdenes(ordenes.length);
+                    }, 500);
                 });
         }
 
