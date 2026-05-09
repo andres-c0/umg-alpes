@@ -20,6 +20,23 @@
             renderChartVentas($(this).data('type'));
         });
 
+        $('#btnAbrirGenerarReporte').on('click', abrirModalReporte);
+        $('#btnCancelarGenerarReporte').on('click', cerrarModalReporte);
+        $('.report-export-backdrop').on('click', cerrarModalReporte);
+
+        $('.report-period-btn').on('click', function () {
+            $('.report-period-btn').removeClass('active');
+            $(this).addClass('active');
+            cambiarPeriodoReporte($(this).data('periodo'));
+        });
+
+        $('.report-format-btn').on('click', function () {
+            $('.report-format-btn').removeClass('active');
+            $(this).addClass('active');
+        });
+
+        $('#btnGenerarReporte').on('click', generarReporte);
+
         cargarTodo();
     });
 
@@ -294,28 +311,27 @@
     }
 
     function ventasPorMes(anio) {
-    var arr = Array(12).fill(0);
+        var arr = Array(12).fill(0);
 
-    ordenes.forEach(function (o) {
-        var f = parseFechaNet(o.FechaOrden);
+        ordenes.forEach(function (o) {
+            var f = parseFechaNet(o.FechaOrden);
 
-        if (!f) return;
+            if (!f) return;
 
-        if (f.getFullYear() === anio) {
-            var total = numero(o.Total || o.TOTAL);
-            arr[f.getMonth()] += total;
-        }
-    });
+            if (f.getFullYear() === anio) {
+                var total = numero(o.Total || o.TOTAL);
+                arr[f.getMonth()] += total;
+            }
+        });
 
-    console.log("VENTAS", anio, arr);
+        console.log("VENTAS", anio, arr);
 
-    return arr;
-}
+        return arr;
+    }
 
     function parseFechaNet(fecha) {
         if (!fecha) return null;
 
-        // Extrae el número de /Date(XXXX)/
         var match = /Date\((\d+)\)/.exec(fecha);
 
         if (!match) return null;
@@ -361,6 +377,7 @@
     function estadoId(o) {
         return numero(o.EstadoOrdenId || o.ESTADO_ORDEN_ID || o.EstadoId || o.ESTADO_ID);
     }
+
     function badgeEstado(id) {
         var txt = 'Pendiente';
         var cls = 'pendiente';
@@ -420,5 +437,58 @@
     function numero(v) {
         var n = parseFloat(v);
         return isNaN(n) ? 0 : n;
+    }
+
+    function abrirModalReporte() {
+        $('#modalGenerarReporte').removeClass('hidden');
+        cambiarPeriodoReporte($('.report-period-btn.active').data('periodo') || 'rango');
+    }
+
+    function cerrarModalReporte() {
+        $('#modalGenerarReporte').addClass('hidden');
+    }
+
+    function cambiarPeriodoReporte(periodo) {
+        $('#repGrupoTrimestre').toggleClass('hidden', periodo !== 'trimestre');
+        $('#repGrupoMesInicio').toggleClass('hidden', periodo !== 'rango');
+        $('#repGrupoMesFin').toggleClass('hidden', periodo !== 'rango');
+    }
+
+    function generarReporte() {
+        var periodo = $('.report-period-btn.active').data('periodo') || 'rango';
+        var formato = $('.report-format-btn.active').data('formato') || 'pdf';
+        var anio = $('#repExportAnio').val();
+        var mesInicio = $('#repExportMesInicio').val();
+        var mesFin = $('#repExportMesFin').val();
+        var trimestre = $('#repExportTrimestre').val();
+
+        if (periodo === 'rango' && numero(mesInicio) > numero(mesFin)) {
+            alert('El mes inicial no puede ser mayor al mes final.');
+            return;
+        }
+
+        var url =
+            '/Reportes/Exportar?periodo=' + encodeURIComponent(periodo) +
+            '&formato=' + encodeURIComponent(formato) +
+            '&anio=' + encodeURIComponent(anio) +
+            '&mesInicio=' + encodeURIComponent(mesInicio) +
+            '&mesFin=' + encodeURIComponent(mesFin) +
+            '&trimestre=' + encodeURIComponent(trimestre);
+
+        window.location.href = url;
+
+        /*
+            PARTE 2:
+            Aquí conectaremos con backend.
+
+            Ejemplo futuro:
+            window.location.href =
+                '/Reportes/Exportar?periodo=' + periodo +
+                '&formato=' + formato +
+                '&anio=' + anio +
+                '&mesInicio=' + mesInicio +
+                '&mesFin=' + mesFin +
+                '&trimestre=' + trimestre;
+        */
     }
 })();
