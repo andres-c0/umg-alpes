@@ -5,10 +5,15 @@ End Code
 
 <div class="reportes-page">
     <section class="reportes-hero">
+        <button type="button" id="btnAbrirGenerarReporte" class="btn-a btn-a-gold report-generate-btn">
+            <i class="bi bi-download"></i>
+            Generar reporte
+        </button>
         <h1>Reportes</h1>
         <p>Dashboard administrativo de órdenes y rendimiento</p>
-    </section>
 
+    </section>
+    
     <div class="reportes-alert">
         <i class="bi bi-arrow-repeat"></i>
         <div>
@@ -163,6 +168,105 @@ End Code
             </table>
         </div>
     </section>
+
+    <div id="modalGenerarReporte" class="report-export-modal hidden">
+        <div class="report-export-backdrop"></div>
+
+        <div class="report-export-dialog">
+            <div class="report-export-icon">
+                <i class="bi bi-kanban"></i>
+            </div>
+
+            <h2>Generar reporte administrativo</h2>
+            <p>Muebles de los Alpes</p>
+
+            <label>Tipo de período</label>
+            <div class="report-segment">
+                <button type="button" class="report-period-btn active" data-periodo="rango">Rango de meses</button>
+                <button type="button" class="report-period-btn" data-periodo="trimestre">Trimestre</button>
+                <button type="button" class="report-period-btn" data-periodo="anual">Anual</button>
+            </div>
+
+            <div class="form-grid mt-16">
+                <div class="a-form-group">
+                    <label>Año</label>
+                    <select id="repExportAnio" class="a-input no-icon">
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+
+                <div id="repGrupoTrimestre" class="a-form-group hidden">
+                    <label>Trimestre</label>
+                    <select id="repExportTrimestre" class="a-input no-icon">
+                        <option value="1">Q1 · Ene-Mar</option>
+                        <option value="2">Q2 · Abr-Jun</option>
+                        <option value="3">Q3 · Jul-Sep</option>
+                        <option value="4">Q4 · Oct-Dic</option>
+                    </select>
+                </div>
+
+                <div id="repGrupoMesInicio" class="a-form-group">
+                    <label>Mes inicial</label>
+                    <select id="repExportMesInicio" class="a-input no-icon">
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+
+                <div id="repGrupoMesFin" class="a-form-group">
+                    <label>Mes final</label>
+                    <select id="repExportMesFin" class="a-input no-icon">
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5" selected>Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+            </div>
+
+            <label class="mt-16">Formato</label>
+            <div class="report-format-grid">
+                <button type="button" class="report-format-btn active" data-formato="pdf">
+                    <i class="bi bi-filetype-pdf"></i>
+                    PDF profesional
+                </button>
+                <button type="button" class="report-format-btn" data-formato="excel">
+                    <i class="bi bi-table"></i>
+                    Excel editable
+                </button>
+            </div>
+
+            <div class="report-export-actions">
+                <button type="button" id="btnCancelarGenerarReporte" class="btn-a btn-a-ghost">
+                    Cancelar
+                </button>
+
+                <button type="button" id="btnGenerarReporte" class="btn-a btn-a-primary">
+                    <i class="bi bi-download"></i>
+                    Generar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section scripts
