@@ -131,7 +131,7 @@ Namespace Repositorios
         Public Function ObtenerPorId(ByVal id As Integer) As Cliente
             Dim entidad As Cliente = Nothing
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_CLIENTE.SP_OBTENER_CLIENTE", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -152,7 +152,7 @@ Namespace Repositorios
         Public Function Listar() As List(Of Cliente)
             Dim lista As New List(Of Cliente)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_CLIENTE.SP_LISTAR_CLIENTES", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -172,7 +172,7 @@ Namespace Repositorios
         Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of Cliente)
             Dim lista As New List(Of Cliente)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_CLIENTE.SP_BUSCAR_CLIENTES", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 

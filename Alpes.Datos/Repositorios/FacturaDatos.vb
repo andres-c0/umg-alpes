@@ -92,7 +92,7 @@ Namespace Repositorios
         Public Function ObtenerPorId(ByVal id As Integer) As Factura
             Dim entidad As Factura = Nothing
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_FACTURA.SP_OBTENER_FACTURA", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -113,7 +113,7 @@ Namespace Repositorios
         Public Function Listar() As List(Of Factura)
             Dim lista As New List(Of Factura)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_FACTURA.SP_LISTAR_FACTURAS", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -133,7 +133,7 @@ Namespace Repositorios
         Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of Factura)
             Dim lista As New List(Of Factura)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_FACTURA.SP_BUSCAR_FACTURAS", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
