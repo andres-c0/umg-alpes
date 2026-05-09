@@ -103,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Conexion\ConexionOracle.vb" />
+    <Compile Include="Modelos\ReporteDashboard.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -186,6 +187,7 @@
     <Compile Include="Repositorios\Recepcion_MaterialDatos.vb" />
     <Compile Include="Repositorios\Regla_Envio_GratisDatos.vb" />
     <Compile Include="Repositorios\Regla_PromocionDatos.vb" />
+    <Compile Include="Repositorios\ReporteDatos.vb" />
     <Compile Include="Repositorios\Resena_ComentarioDatos.vb" />
     <Compile Include="Repositorios\RolDatos.vb" />
     <Compile Include="Repositorios\Rol_EmpleadoDatos.vb" />

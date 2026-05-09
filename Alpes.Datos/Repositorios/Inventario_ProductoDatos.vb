@@ -82,7 +82,7 @@ Namespace Repositorios
         Public Function ObtenerPorId(ByVal id As Integer) As Inventario_Producto
             Dim entidad As Inventario_Producto = Nothing
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_INVENTARIO_PRODUCTO.SP_OBTENER_INVENTARIO_PRODUCTO", cn)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.BindByName = True
@@ -104,7 +104,7 @@ Namespace Repositorios
         Public Function Listar() As List(Of Inventario_Producto)
             Dim lista As New List(Of Inventario_Producto)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_INVENTARIO_PRODUCTO.SP_LISTAR_INVENTARIO_PRODUCTO", cn)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.BindByName = True
@@ -125,7 +125,7 @@ Namespace Repositorios
         Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of Inventario_Producto)
             Dim lista As New List(Of Inventario_Producto)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_INVENTARIO_PRODUCTO.SP_BUSCAR_INVENTARIO_PRODUCTO", cn)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.BindByName = True

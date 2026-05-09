@@ -83,7 +83,7 @@ Namespace Repositorios
         Public Function ObtenerPorId(ByVal id As Integer) As Estado_Orden
             Dim entidad As Estado_Orden = Nothing
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_ESTADO_ORDEN.SP_OBTENER", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -104,7 +104,7 @@ Namespace Repositorios
         Public Function Listar() As List(Of Estado_Orden)
             Dim lista As New List(Of Estado_Orden)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_ESTADO_ORDEN.SP_LISTAR", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -124,7 +124,7 @@ Namespace Repositorios
         Public Function Buscar(ByVal valor As String) As List(Of Estado_Orden)
             Dim lista As New List(Of Estado_Orden)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_ESTADO_ORDEN.SP_BUSCAR", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
