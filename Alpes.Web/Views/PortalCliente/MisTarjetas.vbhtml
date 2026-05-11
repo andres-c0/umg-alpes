@@ -2,6 +2,49 @@
     ViewData("Title") = "Mis tarjetas"
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
 End Code
+<style>
+    .pc-hero h1 {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .pc-hero p {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .pc-hero .pc-eyebrow {
+        color: #431406 !important;
+    }
+
+    #tarjetaModal {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(47, 18, 8, 0.65) !important;
+        z-index: 9998 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 24px !important;
+    }
+
+        #tarjetaModal.show {
+            display: flex !important;
+        }
+
+        #tarjetaModal .pc-modal {
+            display: block !important;
+            position: relative !important;
+            z-index: 9999 !important;
+            background: #ffffff !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            max-width: 620px !important;
+            width: 100% !important;
+            border-radius: 18px !important;
+            padding: 28px !important;
+        }
+</style>
 
 <section class="pc-section pc-cards-page" id="tarjetasClientePage">
     <div class="pc-hero pc-cards-hero">
@@ -86,5 +129,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-tarjetas.js?v=16")"></script>
+    <script src="@Url.Content("~/Scripts/portal-tarjetas.js?v=17")"></script>
 End Section

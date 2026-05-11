@@ -80,7 +80,11 @@
 
     function formatearMoneda(valor) {
         var numero = Number(valor || 0);
-        return 'Q' + numero.toFixed(2);
+
+        return 'Q' + numero.toLocaleString('es-GT', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
     function imagenValida(url) {

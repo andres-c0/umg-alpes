@@ -96,7 +96,7 @@ End Code
                 <span>Catálogo</span>
             </a>
 
-            <a href="@Url.Action("Favoritos", "PortalCliente")">
+            <a href="@Url.Action("MisFavoritos", "PortalCliente")">
                 <i class="bi bi-heart"></i>
                 <span>Favoritos</span>
             </a>

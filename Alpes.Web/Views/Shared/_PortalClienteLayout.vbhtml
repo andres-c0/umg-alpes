@@ -1,8 +1,14 @@
 ﻿@Code
-    Dim username As String = System.Convert.ToString(ViewData("Username"))
+    Dim username As String = System.Convert.ToString(ViewData("NombreCliente"))
+
+    If String.IsNullOrWhiteSpace(username) AndAlso Session("NombreCliente") IsNot Nothing Then
+        username = Session("NombreCliente").ToString()
+    End If
+
     If String.IsNullOrWhiteSpace(username) AndAlso Session("Username") IsNot Nothing Then
         username = Session("Username").ToString()
     End If
+
     If String.IsNullOrWhiteSpace(username) Then
         username = "Cliente"
     End If
