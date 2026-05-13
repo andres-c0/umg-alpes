@@ -2,6 +2,54 @@
     Layout = "~/Views/Shared/_PortalClienteLayout.vbhtml"
     ViewData("Title") = "Mis reseñas"
 End Code
+<style>
+    .resena-toast {
+        position: fixed;
+        top: 92px;
+        right: 28px;
+        background: #431406;
+        color: #fff7e8;
+        border-radius: 16px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 18px 40px rgba(67, 20, 6, .24);
+        z-index: 99999;
+        opacity: 0;
+        transform: translateY(-12px);
+        transition: all .25s ease;
+    }
+
+        .resena-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    .resena-toast-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        background: #deb04f;
+        color: #431406;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+    }
+
+    .resena-toast strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .resena-toast span {
+        display: block;
+        color: #ffe4a8;
+        font-size: 11px;
+        margin-top: 2px;
+    }
+</style>
 
 <section class="pc-page pc-reviews-page">
     <div class="pc-hero pc-hero--reviews">
@@ -85,19 +133,35 @@ End Code
 
         <form id="formNuevaResena" class="pc-form">
             <div class="pc-form-group">
-                <label for="txtProductoResena">Producto ID</label>
-                <input type="number" id="txtProductoResena" class="pc-input" min="1" placeholder="Ej. 74" required />
-                <small>Usa el ID del producto que aparece en el detalle o catálogo.</small>
+                <label for="cmbProductoResena">Producto</label>
+                <select id="cmbProductoResena" class="pc-input" required>
+                    <option value="">Cargando productos...</option>
+                </select>
+                <small>Selecciona un producto del catálogo registrado en la base de datos.</small>
             </div>
 
             <div class="pc-form-group">
                 <label>Calificación</label>
                 <div class="pc-rating-input" id="ratingInput">
-                    <button type="button" data-rating="1"><i class="bi bi-star-fill"></i></button>
-                    <button type="button" data-rating="2"><i class="bi bi-star-fill"></i></button>
-                    <button type="button" data-rating="3"><i class="bi bi-star-fill"></i></button>
-                    <button type="button" data-rating="4"><i class="bi bi-star-fill"></i></button>
-                    <button type="button" data-rating="5"><i class="bi bi-star-fill"></i></button>
+                    <button type="button" class="pc-rating-btn" data-rating="1">
+                        <i class="bi bi-star-fill"></i>
+                    </button>
+
+                    <button type="button" class="pc-rating-btn" data-rating="2">
+                        <i class="bi bi-star-fill"></i>
+                    </button>
+
+                    <button type="button" class="pc-rating-btn" data-rating="3">
+                        <i class="bi bi-star-fill"></i>
+                    </button>
+
+                    <button type="button" class="pc-rating-btn" data-rating="4">
+                        <i class="bi bi-star-fill"></i>
+                    </button>
+
+                    <button type="button" class="pc-rating-btn" data-rating="5">
+                        <i class="bi bi-star-fill"></i>
+                    </button>
                 </div>
                 <input type="hidden" id="txtCalificacionResena" value="5" />
             </div>
@@ -116,5 +180,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-resenas.js?v=16")"></script>
+    <script src="@Url.Content("~/Scripts/portal-resenas.js?v=26")"></script>
 End Section
