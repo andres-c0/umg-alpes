@@ -79,7 +79,7 @@ End Code
                     <span>Compras</span>
                     <h2>Mis órdenes recientes</h2>
                 </div>
-                <a href="#">Ver todos →</a>
+                <a href="@Url.Action("MisOrdenes", "PortalCliente")">Ver todos →</a>
             </div>
       
             <div id="mhomeOrdenesRecientes" class="mhome-orders-list">
@@ -145,7 +145,7 @@ End Code
                 <span>Para ti</span>
             </div>
 
-            <a href="#">Ver todo</a>
+            <a href="@Url.Action("Busqueda", "PortalCliente")">Ver todo</a>
         </div>
 
         <div id="homeParaTi" class="mhome-product-row">
@@ -161,7 +161,7 @@ End Code
                 <span>Productos</span>
             </div>
 
-            <a href="#">Catálogo completo</a>
+            <a href="@Url.Action("Busqueda", "PortalCliente")">Catálogo completo</a>
         </div>
 
         <div id="homeProductosGrandes" class="mhome-large-grid">
@@ -257,13 +257,13 @@ End Code
                         return `
                         <div class="mhome-order-item">
                             <div>
-                                <strong>Orden ${o.NumOrden || o.NumeroOrden || o.Codigo || ""}</strong>
+                               <strong>${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Order" : "Orden"} ${o.NumOrden || o.NumeroOrden || o.Codigo || ""}</strong>
                                 <span>Mueble Alpes</span>
                             </div>
                             <b>${money(o.Total || o.TotalOrden || 0)}</b>
                         </div>`;
                     }).join("")
-                    : '<div class="mhome-mini-empty">Sin órdenes recientes.</div>';
+                    : `<div class="mhome-mini-empty">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "No recent orders." : "Sin órdenes recientes."}</div>`;
             });
 
         fetch("/PortalCliente/ObtenerCatalogoData")
@@ -285,7 +285,7 @@ End Code
                             <img src="${imagen(p)}" />
                             <h4>${nombre(p)}</h4>
                             <strong>${money(precio(p))}</strong>
-                            <button type="button" data-add-cart="${productoId(p)}">Agregar</button>
+                            <button type="button" data-add-cart="${productoId(p)}">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Add" : "Agregar"}</button>
                         </div>`;
                     }).join("");
                 }
@@ -306,7 +306,7 @@ End Code
                             <img src="${imagen(p)}" />
                             <h4>${nombre(p)}</h4>
                             <strong>${money(precio(p))}</strong>
-                            <button type="button" data-add-cart="${productoId(p)}">Agregar</button>
+                            <button type="button" data-add-cart="${productoId(p)}">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Add" : "Agregar"}</button>
                         </div>`;
                     }).join("");
                 }
@@ -335,7 +335,7 @@ End Code
             })
                 .then(function (r) { return r.json(); })
                 .then(function () {
-                    mostrarToast("Producto agregado al carrito.", "success");
+                    mostrarToast(window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Product added to cart." : "Producto agregado al carrito.", "success");
                     actualizarBadgeCarritoInicio();
 
                     if (window.PortalClienteActualizarBadges) {
@@ -343,7 +343,7 @@ End Code
                     }
                 })
                 .catch(function () {
-                    mostrarToast("No se pudo agregar al carrito.", "error");
+                    mostrarToast(window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Could not add to cart." : "No se pudo agregar al carrito.", "error");
                 })
                 .finally(function () {
                     btn.disabled = false;
