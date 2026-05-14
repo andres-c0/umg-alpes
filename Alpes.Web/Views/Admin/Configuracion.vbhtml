@@ -67,75 +67,6 @@ End Code
         </div>
     </div>
 
-    <div class="config-section">
-        <div class="config-section__title">Módulos del sistema</div>
-
-        <div class="admin-card config-card">
-
-            <div class="config-setting">
-                <div class="config-setting__icon">
-                    <i class="bi bi-translate"></i>
-                </div>
-
-                <div class="config-setting__body">
-                    <div class="config-setting__name">Idioma</div>
-                    <div class="config-setting__desc">Cambiar el sistema entre español e inglés</div>
-                </div>
-
-                <div class="lang-switcher" id="adminConfigLangSwitcher">
-                    <button type="button" class="lang-switcher-btn">
-                        <i class="bi bi-globe2"></i>
-                        <span>Language</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </button>
-
-                    <div class="lang-switcher-menu">
-                        <button type="button" data-lang-option="Español">Español</button>
-                        <button type="button" data-lang-option="Inglés">English</button>
-                    </div>
-                </div>
-            </div>
-
-            <a href="javascript:void(0)" class="config-link-row">
-                <div class="config-link-row__left">
-                    <div class="config-link-row__icon"><i class="bi bi-people"></i></div>
-                    <span>Gestión de roles</span>
-                </div>
-                <i class="bi bi-chevron-right"></i>
-            </a>
-            <a href="javascript:void(0)" class="config-link-row">
-                <div class="config-link-row__left">
-                    <div class="config-link-row__icon"><i class="bi bi-people"></i></div>
-                    <span>Gestión de roles</span>
-                </div>
-                <i class="bi bi-chevron-right"></i>
-            </a>
-
-            <a href="javascript:void(0)" class="config-link-row">
-                <div class="config-link-row__left">
-                    <div class="config-link-row__icon"><i class="bi bi-truck"></i></div>
-                    <span>Zonas de envío</span>
-                </div>
-                <i class="bi bi-chevron-right"></i>
-            </a>
-
-            <a href="@Url.Action("Reportes", "Admin")" class="config-link-row">
-                <div class="config-link-row__left">
-                    <div class="config-link-row__icon"><i class="bi bi-bar-chart"></i></div>
-                    <span>Ver reportes</span>
-                </div>
-                <i class="bi bi-chevron-right"></i>
-            </a>
-
-            <a href="@Url.Action("Marketing", "Admin")" class="config-link-row config-link-row--last">
-                <div class="config-link-row__left">
-                    <div class="config-link-row__icon"><i class="bi bi-megaphone"></i></div>
-                    <span>Campañas de marketing</span>
-                </div>
-                <i class="bi bi-chevron-right"></i>
-            </a>
-        </div>
-    </div>
 
     <div class="config-section">
         <div class="config-section__header">
@@ -152,7 +83,7 @@ End Code
         </div>
     </div>
 
-    <a href="@Url.Action("Logout", "Home")" class="config-logout">
+    <a href="@Url.Action("Login", "Home")" class="config-logout">
         <i class="bi bi-box-arrow-right"></i>
         <span>Cerrar sesión</span>
     </a>
@@ -200,5 +131,5 @@ End Code
 </div>
 
 @section scripts
-    <script src="~/Scripts/admin-configuracion.js?v=1"></script>
+    <script src="~/Scripts/admin-configuracion.js?v=3"></script>
 End Section

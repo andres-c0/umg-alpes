@@ -338,6 +338,7 @@
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
     <Content Include="Content\home-publico.css" />
+    <Content Include="Scripts\admin-cupones.js" />
     <Content Include="Scripts\carrito-invitado.js" />
     <Content Include="Scripts\catalogo-publico.js" />
     <Content Include="Scripts\fusion-carrito-invitado.js" />
@@ -352,6 +353,8 @@
     <Content Include="Views\Home\DetalleProducto.vbhtml" />
     <Content Include="Views\Home\CarritoInvitado.vbhtml" />
     <Content Include="Views\Home\CatalogoPublico.vbhtml" />
+    <Content Include="Views\Admin\Perfil.vbhtml" />
+    <Content Include="Views\Admin\Cupones.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
