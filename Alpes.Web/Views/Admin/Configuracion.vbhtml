@@ -71,6 +71,38 @@ End Code
         <div class="config-section__title">Módulos del sistema</div>
 
         <div class="admin-card config-card">
+
+            <div class="config-setting">
+                <div class="config-setting__icon">
+                    <i class="bi bi-translate"></i>
+                </div>
+
+                <div class="config-setting__body">
+                    <div class="config-setting__name">Idioma</div>
+                    <div class="config-setting__desc">Cambiar el sistema entre español e inglés</div>
+                </div>
+
+                <div class="lang-switcher" id="adminConfigLangSwitcher">
+                    <button type="button" class="lang-switcher-btn">
+                        <i class="bi bi-globe2"></i>
+                        <span>Language</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+
+                    <div class="lang-switcher-menu">
+                        <button type="button" data-lang-option="Español">Español</button>
+                        <button type="button" data-lang-option="Inglés">English</button>
+                    </div>
+                </div>
+            </div>
+
+            <a href="javascript:void(0)" class="config-link-row">
+                <div class="config-link-row__left">
+                    <div class="config-link-row__icon"><i class="bi bi-people"></i></div>
+                    <span>Gestión de roles</span>
+                </div>
+                <i class="bi bi-chevron-right"></i>
+            </a>
             <a href="javascript:void(0)" class="config-link-row">
                 <div class="config-link-row__left">
                     <div class="config-link-row__icon"><i class="bi bi-people"></i></div>

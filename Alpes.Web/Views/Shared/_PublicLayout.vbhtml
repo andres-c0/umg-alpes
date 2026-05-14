@@ -115,6 +115,24 @@ End Code
                 </nav>
 
                 <div class="public-actions">
+
+                    <div class="lang-switcher" id="publicLangSwitcher">
+                        <button type="button" class="lang-switcher-btn" id="publicLangBtn">
+                            <i class="bi bi-globe2"></i>
+                            <span>Language</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+
+                        <div class="lang-switcher-menu" id="publicLangMenu">
+                            <button type="button" data-lang-option="Español">
+                                Español
+                            </button>
+                            <button type="button" data-lang-option="Inglés">
+                                English
+                            </button>
+                        </div>
+                    </div>
+
                     <a href="@Url.Action("CarritoInvitado", "Home")" class="public-cart-link @(If(esCarrito, "active", ""))" aria-label="Ver carrito">
                         <i class="bi bi-cart3"></i>
                         <span id="publicCartCount" class="public-cart-badge">0</span>
@@ -232,6 +250,7 @@ End Code
     @Scripts.Render("~/bundles/bootstrap")
 
     <script src="@Url.Content("~/Scripts/home-publico.js?v=1")"></script>
+    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
 
     @RenderSection("scripts", required:=False)
 </body>

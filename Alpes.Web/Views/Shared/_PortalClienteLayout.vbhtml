@@ -200,16 +200,36 @@ End Code
         <a href="@Url.Action("Soporte", "PortalCliente")" class="mapp-bot" aria-label="Soporte"><i class="bi bi-chat-heart"></i></a>
 
         <nav class="pc-bottom-nav mapp-bottom-nav" aria-label="Navegación móvil del cliente">
-            <a href="@Url.Action("Index", "PortalCliente")" class="pc-bottom-item @(If(esInicio, "active", ""))"><i class="bi bi-house"></i><span>Inicio</span></a>
-            <a href="@Url.Action("Busqueda", "PortalCliente")" class="pc-bottom-item @(If(esCatalogo, "active", ""))"><i class="bi bi-grid"></i><span>Catálogo</span></a>
-            <a href="@Url.Action("MisFavoritos", "PortalCliente")" class="pc-bottom-item @(If(esFavoritos, "active", ""))"><i class="bi bi-heart"></i><span>Favoritos</span></a>
-            <a href="@Url.Action("MisOrdenes", "PortalCliente")" class="pc-bottom-item @(If(esOrdenes, "active", ""))"><i class="bi bi-receipt"></i><span>Órdenes</span></a>
-            <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-bottom-item @(If(esPerfil, "active", ""))"><i class="bi bi-person"></i><span>Perfil</span></a>
+            <a href="/PortalCliente/Index" class="pc-bottom-item @(If(esInicio, "active", ""))">
+                <i class="bi bi-house"></i>
+                <span>Inicio</span>
+            </a>
+
+            <a href="/PortalCliente/Busqueda" class="pc-bottom-item @(If(esCatalogo, "active", ""))">
+                <i class="bi bi-grid"></i>
+                <span>Catálogo</span>
+            </a>
+
+            <a href="/PortalCliente/MisFavoritos" class="pc-bottom-item @(If(esFavoritos, "active", ""))">
+                <i class="bi bi-heart"></i>
+                <span>Favoritos</span>
+            </a>
+
+            <a href="/PortalCliente/MisOrdenes" class="pc-bottom-item @(If(esOrdenes, "active", ""))">
+                <i class="bi bi-receipt"></i>
+                <span>Órdenes</span>
+            </a>
+
+            <a href="/PortalCliente/MiPerfil" class="pc-bottom-item"@(If(esPerfil, "active", "")) >
+                <i class="bi bi-person"></i>
+                <span>Perfil</span>
+            </a>
         </nav>
     </div>
 
     @Scripts.Render("~/bundles/jquery")
-    <script src="@Url.Content("~/Scripts/portal-cliente.js?v=18")"></script>
+    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
+    <script src="@Url.Content("~/Scripts/portal-cliente.js?v=19")"></script>
 
     @RenderSection("scripts", required:=False)
 

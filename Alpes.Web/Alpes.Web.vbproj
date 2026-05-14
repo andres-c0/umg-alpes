@@ -347,6 +347,7 @@
     <Content Include="Scripts\producto-publico-detalle.js" />
     <Content Include="Views\PortalCliente\Busqueda.vbhtml" />
     <Content Include="Views\PortalCliente\MisResenas.vbhtml" />
+    <Content Include="Scripts\portal-idioma.js" />
     <Content Include="Views\Shared\_PublicLayout.vbhtml" />
     <Content Include="Views\Home\DetalleProducto.vbhtml" />
     <Content Include="Views\Home\CarritoInvitado.vbhtml" />

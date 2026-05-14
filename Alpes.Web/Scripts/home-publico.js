@@ -320,11 +320,19 @@
                     empty.style.display = "block";
                 }
 
+                if (window.PortalIdioma && window.PortalIdioma.apply) {
+                    window.PortalIdioma.apply(document.body);
+                }
+
                 return;
             }
 
             contenedor.innerHTML = productos.map(construirCardProducto).join("");
             inicializarBotonesAgregarProducto();
+
+            if (window.PortalIdioma && window.PortalIdioma.apply) {
+                window.PortalIdioma.apply(document.body);
+            }
 
         } catch (error) {
             console.error("Error al cargar productos públicos:", error);
@@ -342,6 +350,9 @@
 
                 if (texto) {
                     texto.textContent = error.message || "Verifica la conexión con el servidor.";
+                }
+                if (window.PortalIdioma && window.PortalIdioma.apply) {
+                    window.PortalIdioma.apply(document.body);
                 }
             }
         } finally {

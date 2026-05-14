@@ -14,13 +14,13 @@ End Code
             <div class="home-hero-content">
                 <span class="home-hero-eyebrow">COLECCIÓN ARTESANAL 2025</span>
 
-                <h1 class="home-hero-title-balanced">
+                <h1 class="home-hero-title-balanced" data-i18n="home.hero1.title">
                     <span>Muebles que</span>
                     <span>cuentan una</span>
                     <span>historia</span>
                 </h1>
 
-                <p>
+                <p data-i18n="home.hero1.text">
                     Fabricados a mano con madera guatemalteca seleccionada,
                     acabados elegantes y presencia cálida para cada espacio.
                 </p>
@@ -47,13 +47,13 @@ End Code
             <div class="home-hero-content">
                 <span class="home-hero-eyebrow">LÍNEA COLONIAL</span>
 
-                <h1>
+                <h1 data-i18n="home.hero2.title">
                     Herencia<br />
                     que se<br />
                     siente
                 </h1>
 
-                <p>
+                <p data-i18n="home.hero2.text">
                     Diseño colonial con acabados artesanales, materiales resistentes
                     y estilo pensado para hogares con carácter.
                 </p>
@@ -80,13 +80,13 @@ End Code
             <div class="home-hero-content">
                 <span class="home-hero-eyebrow">ENVÍO SIN COSTO</span>
 
-                <h1>
+                <h1 data-i18n="home.hero3.title">
                     A toda<br />
                     Guatemala<br />
                     sin cargo
                 </h1>
 
-                <p>
+                <p data-i18n="home.hero3.text">
                     Entregamos en los 22 departamentos con una experiencia de compra
                     sencilla, segura y pensada para el cliente.
                 </p>
