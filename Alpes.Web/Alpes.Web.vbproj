@@ -269,6 +269,14 @@
     <Compile Include="Controllers\MantenimientoHerramientaController.vb" />
     <Compile Include="Controllers\Materia_PrimaController.vb" />
     <Compile Include="Controllers\MetadataController.vb" />
+    <Compile Include="Seguridad\EnvLoader.vb" />
+    <Compile Include="Seguridad\JsonAntiForgeryFilter.vb" />
+    <Compile Include="Seguridad\PasswordHasher.vb" />
+    <Compile Include="Seguridad\RateLimitFilter.vb" />
+    <Compile Include="Seguridad\SecurityAuthorizeAttribute.vb" />
+    <Compile Include="Seguridad\SecurityHeadersFilter.vb" />
+    <Compile Include="Seguridad\SecurityLog.vb" />
+    <Content Include=".env.local" />
     <None Include="Controllers\MetadataController_angelito_copia.no_compilar.txt" />
     <Compile Include="Controllers\Metodo_PagoController.vb" />
     <Compile Include="Controllers\Movimiento_InventarioController.vb" />
@@ -338,6 +346,7 @@
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
     <Content Include="Content\home-publico.css" />
+    <Content Include="Scripts\alpes-security.js" />
     <Content Include="Scripts\carrito-invitado.js" />
     <Content Include="Scripts\catalogo-publico.js" />
     <Content Include="Scripts\fusion-carrito-invitado.js" />

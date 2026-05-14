@@ -21,3 +21,15 @@ packages/
 # Local database files
 *.mdf
 *.ldf
+
+# Security / secrets
+.env
+.env.*
+*.pfx
+*.p12
+*.key
+*.pem
+Web.Local.config
+appsettings.*.json
+secrets.json
+App_Data/security.log

@@ -2,7 +2,6 @@
     Dim username As String = ""
     Dim avatarLetter As String = "A"
     Dim displayName As String = "Administrador"
-    Dim userHandle As String = "Administrador"
 
     If Session("Username") IsNot Nothing Then
         username = Session("Username").ToString()
@@ -11,10 +10,8 @@
     If Not String.IsNullOrWhiteSpace(username) Then
         displayName = username
         avatarLetter = username.Substring(0, 1).ToUpper()
-        userHandle = "@" & username
     End If
 End Code
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -23,9 +20,10 @@ End Code
     <title>@ViewData("Title") - Muebles de los Alpes</title>
     <link rel="stylesheet" href="@Url.Content("~/Content/alpes.css")?v=@DateTime.Now.Ticks" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-</head>
 
+</head>
 <body>
+    @Html.AntiForgeryToken()
     <div class="admin-shell">
         <aside class="admin-sidebar">
             <div class="admin-sidebar__bg admin-sidebar__bg--top"></div>
@@ -47,7 +45,6 @@ End Code
                     <div class="admin-sidebar__divider"></div>
 
                     <div class="admin-sidebar__section">Comercial</div>
-
                     <nav class="admin-sidebar__nav">
                         <a href="@Url.Action("Index", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Dashboard", "active", ""))">
                             <div class="admin-nav__left">
@@ -70,7 +67,7 @@ End Code
                                 <i class="bi bi-receipt"></i>
                                 <span>Órdenes</span>
                             </div>
-                            <span class="admin-nav__badge" id="adminOrdenesBadge">0</span>
+                            <span class="admin-nav__badge">9</span>
                         </a>
 
                         <a href="@Url.Action("Clientes", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Clientes", "active", ""))">
@@ -91,7 +88,6 @@ End Code
                     </nav>
 
                     <div class="admin-sidebar__section admin-sidebar__section--space">Operativa</div>
-
                     <nav class="admin-sidebar__nav">
                         <a href="@Url.Action("Inventario", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Inventario", "active", ""))">
                             <div class="admin-nav__left">
@@ -132,7 +128,6 @@ End Code
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
-
                         <a href="@Url.Action("Marketing", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Marketing", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-megaphone"></i>
@@ -145,6 +140,16 @@ End Code
                             <div class="admin-nav__left">
                                 <i class="bi bi-hammer"></i>
                                 <span>Producción</span>
+                            </div>
+                            <i class="bi bi-chevron-right admin-nav__arrow"></i>
+                        </a>
+
+
+
+                        <a href="@Url.Action("Configuracion", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Configuración", "active", ""))">
+                            <div class="admin-nav__left">
+                                <i class="bi bi-gear"></i>
+                                <span>Config.</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -171,58 +176,6 @@ End Code
         <main class="admin-main">
             <header class="admin-topbar">
                 <div class="admin-topbar__title">@ViewData("Title")</div>
-
-                <div class="admin-topbar__actions">
-                    <div class="lang-switcher admin-lang-switcher" id="adminLangSwitcher">
-                        <button type="button" class="lang-switcher-btn" id="btnAdminLang">
-                            <i class="bi bi-translate"></i>
-                            <span id="adminLangLabel">ES</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-
-                        <div class="lang-switcher-menu" id="adminLangMenu">
-                            <button type="button" data-lang="es">Español</button>
-                            <button type="button" data-lang="en">English</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-user-dropdown">
-                        <button type="button" class="admin-user-trigger" id="btnAdminUserMenu">
-                            <div class="admin-user__avatar">@avatarLetter</div>
-                            <span>@displayName</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </button>
-
-                        <div class="admin-user-menu" id="adminUserMenu">
-                            <div class="admin-user-menu__header">
-                                <div class="admin-user__avatar">@avatarLetter</div>
-                                <div>
-                                    <strong>@displayName</strong>
-                                    <small>@userHandle</small>
-                                </div>
-                            </div>
-
-                            <div class="admin-user-menu__divider"></div>
-
-                            <a href="@Url.Action("Perfil", "Admin")" class="admin-user-menu__item">
-                                <span><i class="bi bi-person"></i></span>
-                                Mi perfil
-                            </a>
-
-                            <a href="@Url.Action("Configuracion", "Admin")" class="admin-user-menu__item">
-                                <span><i class="bi bi-gear"></i></span>
-                                Configuración
-                            </a>
-
-                            <div class="admin-user-menu__divider"></div>
-
-                            <a href="@Url.Action("Logout", "Home")" class="admin-user-menu__item admin-user-menu__item--logout">
-                                <span><i class="bi bi-box-arrow-left"></i></span>
-                                Cerrar sesión
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </header>
 
             <section class="admin-content">
@@ -232,52 +185,9 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
-
-    <script>
-        $(function () {
-            $.getJSON('/Admin/DashboardData')
-                .done(function (res) {
-                    if (res && res.success !== false) {
-                        $('#adminOrdenesBadge').text(res.ordenesActivas || 0);
-                    }
-                })
-                .fail(function () {
-                    console.warn('No se pudo cargar el contador de órdenes.');
-                });
-        });
-    </script>
-
-    <script>
-        $(function () {
-            $('#btnAdminUserMenu').on('click', function (e) {
-                e.stopPropagation();
-                $('#adminUserMenu').toggleClass('show');
-                $('#adminLangSwitcher').removeClass('open');
-            });
-
-            $('#adminUserMenu').on('click', function (e) {
-                e.stopPropagation();
-            });
-
-            $('#btnAdminLang').on('click', function (e) {
-                e.stopPropagation();
-                $('#adminLangSwitcher').toggleClass('open');
-                $('#adminUserMenu').removeClass('show');
-            });
-
-            $('#adminLangMenu').on('click', function (e) {
-                e.stopPropagation();
-            });
-
-            $(document).on('click', function () {
-                $('#adminUserMenu').removeClass('show');
-                $('#adminLangSwitcher').removeClass('open');
-            });
-        });
-    </script>
-
+    <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
     <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
-
     @RenderSection("scripts", required:=False)
+
 </body>
 </html>

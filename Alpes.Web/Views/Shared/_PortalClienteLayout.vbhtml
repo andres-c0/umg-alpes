@@ -57,6 +57,7 @@ End Code
     <link rel="stylesheet" href="@Url.Content("~/Content/portal-cliente.css?v=18")" />
 </head>
 <body>
+    @Html.AntiForgeryToken()
     <div class="pc-layout mapp-shell" data-cli-id="@cliIdTexto">
         <aside class="pc-sidebar mapp-sidebar" id="pcSidebar">
             <div class="mapp-sidebar-bg mapp-sidebar-bg-a"></div>
@@ -220,7 +221,7 @@ End Code
                 <span>Órdenes</span>
             </a>
 
-            <a href="/PortalCliente/MiPerfil" class="pc-bottom-item"@(If(esPerfil, "active", "")) >
+            <a href="/PortalCliente/MiPerfil" class="pc-bottom-item" @(If(esPerfil, "active", ""))>
                 <i class="bi bi-person"></i>
                 <span>Perfil</span>
             </a>
@@ -228,6 +229,7 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
+    <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
     <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
     <script src="@Url.Content("~/Scripts/portal-cliente.js?v=19")"></script>
 

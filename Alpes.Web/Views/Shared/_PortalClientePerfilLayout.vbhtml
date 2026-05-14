@@ -26,9 +26,11 @@ End Code
     <link rel="stylesheet" href="@Url.Content("~/Content/portal-cliente.css")" />
 </head>
 <body class="pp-body" data-cli-id="@cliIdTexto" data-username="@username">
+    @Html.AntiForgeryToken()
     @RenderBody()
 
     @Scripts.Render("~/bundles/jquery")
+    <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
     @RenderSection("scripts", required:=False)
 </body>
 </html>
