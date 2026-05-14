@@ -118,5 +118,5 @@ End Code
 </div>
 
 @section scripts
-    <script src="~/Scripts/admin-nomina.js"></script>
+    <script src="@Url.Content("~/Scripts/admin-nomina.js?v=2")"></script>
 End Section

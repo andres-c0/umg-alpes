@@ -138,15 +138,12 @@ End Code
                 <div class="dashboard-shortcut__label">Producción</div>
             </a>
 
-            <a href="@Url.Action("Configuracion", "Admin")" class="dashboard-shortcut">
-                <div class="dashboard-shortcut__icon"><i class="bi bi-gear"></i></div>
-                <div class="dashboard-shortcut__label">Configuración</div>
-            </a>
+            
         </div>
     </div>
 </div>
 
 @section scripts
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="~/Scripts/admin-dashboard.js"></script>
+    <script src="@Url.Content("~/Scripts/admin-dashboard.js?v=2")"></script>
 End Section

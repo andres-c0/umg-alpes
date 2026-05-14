@@ -8873,6 +8873,54 @@ textarea.a-input {
     }
 }
 
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.admin-notification {
+    position: relative;
+    color: #fff;
+    font-size: 22px;
+}
+
+    .admin-notification span {
+        position: absolute;
+        top: -10px;
+        right: -12px;
+        background: #b83333;
+        color: #fff;
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 2px 6px;
+        font-weight: 800;
+    }
+
+.admin-user-dropdown {
+    position: relative;
+}
+
+.admin-user-trigger {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border-radius: 14px;
+    padding: 8px 14px;
+    font-family: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
 /* ═══════════════════════════════════════════════════════
    BOTONES IDIOMA
 ═══════════════════════════════════════════════════════ */
@@ -8942,3 +8990,65 @@ textarea.a-input {
     margin-left: auto;
 }
 
+.admin-user-menu {
+    position: absolute;
+    top: 62px;
+    right: 0;
+    width: 240px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 16px 36px rgba(0,0,0,.22);
+    padding: 14px;
+    display: none;
+    z-index: 999;
+}
+
+    .admin-user-menu.show {
+        display: block;
+    }
+
+.admin-user-menu__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+    .admin-user-menu__header small {
+        display: block;
+        color: #9a754e;
+        margin-top: 3px;
+    }
+
+.admin-user-menu__divider {
+    height: 1px;
+    background: #eadcc9;
+    margin: 12px 0;
+}
+
+.admin-user-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    color: #32170f;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+    .admin-user-menu__item:hover {
+        background: #f5f1ec;
+    }
+
+    .admin-user-menu__item span {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #f1eeee;
+        display: grid;
+        place-items: center;
+    }
+
+.admin-user-menu__item--logout {
+    color: #a83232;
+}

@@ -89,11 +89,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var tarjetaEl = getTarjetaSeleccionada();
         var metodoEl = getMetodoSeleccionado();
         if (tabPagoActual === 'tarjetas' && tarjetaEl) {
-            paymentPreview.innerHTML = '<span class="material-icons">credit_card</span><div><strong>' + escapeHtml(tarjetaEl.getAttribute('data-label') || 'Tarjeta seleccionada') + '</strong><small>' + escapeHtml(tarjetaEl.getAttribute('data-subtitle') || 'Se usará esta tarjeta guardada.') + '</small></div><span class="material-icons co-preview-check">check_circle</span>';
+            paymentPreview.innerHTML = '<div><strong>' + escapeHtml(tarjetaEl.getAttribute('data-label') || 'Tarjeta seleccionada') + '</strong><small>' + escapeHtml(tarjetaEl.getAttribute('data-subtitle') || 'Se usará esta tarjeta guardada.') + '</small></div>';
             return;
         }
         if (tabPagoActual === 'metodos' && metodoEl) {
-            paymentPreview.innerHTML = '<span class="material-icons">payments</span><div><strong>' + escapeHtml(metodoEl.getAttribute('data-label') || 'Método seleccionado') + '</strong><small>Se registrará el pago con este método.</small></div><span class="material-icons co-preview-check">check_circle</span>';
+            paymentPreview.innerHTML = '<div><strong>' + escapeHtml(metodoEl.getAttribute('data-label') || 'Método seleccionado') + '</strong><small>Se registrará el pago con este método.</small></div>';
             return;
         }
         paymentPreview.innerHTML = '<span class="material-icons">credit_card</span><div><strong>Selecciona cómo deseas pagar</strong><small>Puedes usar una tarjeta guardada o elegir otro método disponible.</small></div>';
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var htmlMetodos = '';
         for (var i = 0; i < metodos.length; i += 1) {
             var metodo = metodos[i];
-            htmlMetodos += '<label class="co-method-option co-selectable-row"><input type="radio" name="coMetodoPago" value="' + escapeHtml(metodo.MetodoPagoId) + '" data-label="' + escapeHtml(metodo.Nombre || 'Método de pago') + '"' + (i === 0 ? ' checked' : '') + ' /><span class="material-icons co-method-icon">payments</span><span class="co-method-text"><strong>' + escapeHtml(metodo.Nombre || 'Método de pago') + '</strong><small>Seleccionar este método para registrar el pago.</small></span><span class="material-icons co-selected-icon">check_circle</span></label>';
+            htmlMetodos += '<label class="co-method-option co-selectable-row"><input type="radio" name="coMetodoPago" value="' + escapeHtml(metodo.MetodoPagoId) + '" data-label="' + escapeHtml(metodo.Nombre || 'Método de pago') + '"' + (i === 0 ? ' checked' : '') + ' /><span class="co-method-text"><strong>' + escapeHtml(metodo.Nombre || 'Método de pago') + '</strong></span></label>';
         }
         metodosContainer.innerHTML = htmlMetodos || '<div class="co-empty-inline co-empty-payment"><span class="material-icons">payments</span><strong>Sin métodos disponibles</strong><small>No hay métodos de pago activos en este momento.</small></div>';
         actualizarPreviewPago();
@@ -138,7 +138,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tarjeta.EsPredeterminada === true && !algunaMarcada) { checked = ' checked'; algunaMarcada = true; }
             htmlTarjetas += '<label class="co-card-option co-selectable-row ' + marcaClase + '"><input type="radio" name="coTarjeta" value="' + escapeHtml(tarjeta.TarjetaClienteId) + '" data-label="' + escapeHtml(marca + ' ' + (tarjeta.NumeroMascarado || '****')) + '" data-subtitle="' + escapeHtml(subtitulo) + '"' + checked + ' /><span class="material-icons co-card-icon">credit_card</span><div class="co-card-option-body"><strong>' + escapeHtml(marca + ' ' + (tarjeta.NumeroMascarado || '****')) + '</strong><span>' + escapeHtml(subtitulo) + '</span>' + (tarjeta.EsPredeterminada === true ? '<small>Predeterminada</small>' : '<small>Toca para seleccionar</small>') + '</div><span class="material-icons co-selected-icon">check_circle</span></label>';
         }
-        tarjetasContainer.innerHTML = htmlTarjetas || '<div class="co-empty-inline co-empty-payment"><span class="material-icons">credit_card_off</span><strong>No tienes tarjetas guardadas</strong><small>Agrega una tarjeta o usa la pestaña Otros métodos.</small></div>';
+        tarjetasContainer.innerHTML = htmlTarjetas =
+            '<div>' +
+            '<strong>No tienes tarjetas guardadas</strong>' +
+            '<small style="display:block; margin-top:8px;">' +
+            'Puedes continuar usando cheque, transferencia bancaria, tarjeta de crédito o efectivo.' +
+            '</small>' +
+            '</div>';
         if (tarjetas.length && !algunaMarcada) {
             var primera = tarjetasContainer.querySelector('input[name="coTarjeta"]');
             if (primera) primera.checked = true;

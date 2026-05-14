@@ -30,12 +30,42 @@
                 $(this).removeClass('input-error');
                 actualizarDisponibleEdit();
             });
+
+        $('#ddlProductoInventario').on('change', function () {
+            var productoId = entero($(this).val());
+            $('#txtProductoIdInventario').val(productoId);
+
+            var producto = obtenerProducto(productoId);
+
+            if (!producto) {
+                limpiarResumenProducto();
+                return;
+            }
+
+            $('#invEditNombre').text(producto.Nombre || producto.NOMBRE || 'Producto');
+            $('#invEditReferencia').text('Ref: ' + (producto.Referencia || producto.REFERENCIA || '--'));
+            $('#invEditTipo').text((producto.CategoriaNombre || producto.CATEGORIA_NOMBRE || producto.Categoria || 'GENERAL').toUpperCase());
+            $('#invEditColor').text(producto.Color || producto.COLOR || 'Sin color');
+            $('#invEditDescripcion').text(producto.Descripcion || producto.DESCRIPCION || 'Sin descripción disponible.');
+        });
+
+
     }
 
+    function limpiarResumenProducto() {
+        $('#txtProductoIdInventario').val(0);
+        $('#invEditNombre').text('Producto');
+        $('#invEditReferencia').text('Ref: --');
+        $('#invEditTipo').text('GENERAL');
+        $('#invEditColor').text('Sin color');
+        $('#invEditDisponible').text('Disponible 0');
+        $('#invEditDescripcion').text('Sin descripción disponible.');
+    }
     function cargarProductos() {
         $.getJSON('/Producto/Index')
             .done(function (res) {
                 productos = $.isArray(res) ? res : (res.data || []);
+                llenarComboProductos();
                 cargarInventario();
             })
             .fail(function () {
@@ -45,6 +75,22 @@
             });
     }
 
+
+    function llenarComboProductos() {
+        var html = '<option value="">Seleccione un producto</option>';
+
+        productos.forEach(function (p) {
+            var id = entero(p.ProductoId || p.PRODUCTO_ID);
+            var nombre = valor(p.Nombre || p.NOMBRE || 'Producto sin nombre');
+            var referencia = valor(p.Referencia || p.REFERENCIA || '--');
+
+            html += '<option value="' + id + '">' +
+                escapeHtml(nombre + ' - Ref: ' + referencia) +
+                '</option>';
+        });
+
+        $('#ddlProductoInventario').html(html);
+    }
     function cargarInventario() {
         $('#inventarioListado').html('<div class="table-empty">Cargando inventario...</div>');
 
@@ -164,7 +210,7 @@
 
             html += '       <div class="inventario-stat inventario-stat--danger">';
             html += '           <div class="inventario-stat__icon"><i class="bi bi-exclamation-triangle"></i></div>';
-            html += '           <div class="inventario-stat__label">Bajo mínimo</div>';
+            html += '           <div class="inventario-stat__label">Stock mínimo</div>';
             html += '           <div class="inventario-stat__value">' + stockMinimo + '</div>';
             html += '       </div>';
             html += '   </div>';
@@ -200,7 +246,7 @@
             stock += s;
             reservado += r;
 
-            if (d <= m) {
+            if (d < m) {
                 bajoMinimo++;
             }
         });
@@ -215,6 +261,9 @@
     function nuevoInventario() {
         limpiarFormulario();
         $('#modalInventarioTitulo').text('Nuevo inventario');
+        $('#grupoProductoInventario').show();
+        $('#ddlProductoInventario').val('');
+        limpiarResumenProducto();
         abrirModal();
     }
 
@@ -262,6 +311,7 @@
                 $('#txtStockMinimoInventario').val(stockMinimo);
 
                 actualizarDisponibleEdit();
+                $('#grupoProductoInventario').hide();
                 abrirModal();
             })
             .fail(function () {
@@ -409,7 +459,7 @@
     }
 
     function obtenerEstadoInventario(disponible, minimo) {
-        if (disponible <= minimo) {
+        if (disponible < minimo) {
             return { texto: 'En alerta', clase: 'inventario-card__status--alert' };
         }
 
