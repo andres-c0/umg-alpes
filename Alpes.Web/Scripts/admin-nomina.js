@@ -116,8 +116,8 @@
             neto += decimal(n.MontoNeto);
         });
 
-        $('#kpiNominaBruta').text('Q ' + formatearMonto(bruto));
-        $('#kpiNominaNeta').text('Q ' + formatearMonto(neto));
+        $('#kpiNominaBruta').text(formatearMonto(bruto));
+        $('#kpiNominaNeta').text(formatearMonto(neto));
     }
 
     function editar(id) {
@@ -282,9 +282,16 @@
 
     function formatearMonto(v) {
         var n = parseFloat(v);
-        return isNaN(n) ? '0.00' : n.toFixed(2);
-    }
 
+        if (isNaN(n)) {
+            n = 0;
+        }
+
+        return 'Q ' + n.toLocaleString('es-GT', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
     function formatearFecha(valorFecha) {
         if (!valorFecha) return '';
 

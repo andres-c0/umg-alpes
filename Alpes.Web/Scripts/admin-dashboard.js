@@ -18,6 +18,7 @@
                 $('#kpiCompras').text('Q ' + formatearMonto(res.comprasMes));
                 $('#kpiClientes').text(res.clientes || 0);
                 $('#kpiOrdenes').text(res.ordenesActivas || 0);
+                $('#adminOrdenesBadge').text(res.ordenesActivas || 0);
                 $('#kpiStock').text(res.stockBajo || 0);
                 $('#kpiNomina').text(res.nominasPendientes || 0);
 
@@ -98,6 +99,14 @@
 
     function formatearMonto(v) {
         var n = parseFloat(v);
-        return isNaN(n) ? '0.00' : n.toFixed(2);
+
+        if (isNaN(n)) {
+            n = 0;
+        }
+
+        return n.toLocaleString('es-GT', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 })();

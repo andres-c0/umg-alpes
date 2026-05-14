@@ -66,7 +66,7 @@ End Code
                                 <i class="bi bi-receipt"></i>
                                 <span>Órdenes</span>
                             </div>
-                            <span class="admin-nav__badge">9</span>
+                            <span class="admin-nav__badge" id="adminOrdenesBadge">0</span>
                         </a>
 
                         <a href="@Url.Action("Clientes", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Clientes", "active", ""))">
@@ -143,15 +143,9 @@ End Code
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
 
-                     
 
-                        <a href="@Url.Action("Configuracion", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Configuración", "active", ""))">
-                            <div class="admin-nav__left">
-                                <i class="bi bi-gear"></i>
-                                <span>Config.</span>
-                            </div>
-                            <i class="bi bi-chevron-right admin-nav__arrow"></i>
-                        </a>
+
+
                     </nav>
                 </div>
 
@@ -175,6 +169,47 @@ End Code
         <main class="admin-main">
             <header class="admin-topbar">
                 <div class="admin-topbar__title">@ViewData("Title")</div>
+
+                <div class="admin-topbar__actions">
+                    
+
+                    <div class="admin-user-dropdown">
+                        <button type="button" class="admin-user-trigger" id="btnAdminUserMenu">
+                            <div class="admin-user__avatar">@avatarLetter</div>
+                            <span>@displayName</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+
+                        <div class="admin-user-menu" id="adminUserMenu">
+                            <div class="admin-user-menu__header">
+                                <div class="admin-user__avatar">@avatarLetter</div>
+                                <div>
+                                    <strong>@displayName</strong>
+                                    <small>@@@username</small>
+                                </div>
+                            </div>
+
+                            <div class="admin-user-menu__divider"></div>
+
+                            <a href="@Url.Action("Perfil", "Admin")" class="admin-user-menu__item">
+                                <span><i class="bi bi-person"></i></span>
+                                Mi perfil
+                            </a>
+
+                            <a href="@Url.Action("Configuracion", "Admin")" class="admin-user-menu__item">
+                                <span><i class="bi bi-gear"></i></span>
+                                Configuración
+                            </a>
+
+                            <div class="admin-user-menu__divider"></div>
+
+                            <a href="@Url.Action("Logout", "Home")" class="admin-user-menu__item admin-user-menu__item--logout">
+                                <span><i class="bi bi-box-arrow-left"></i></span>
+                                Cerrar sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <section class="admin-content">
@@ -184,6 +219,32 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
+
+    <script>
+    $(function () {
+            $.getJSON('/Admin/DashboardData')
+                .done(function (res) {
+                    if (res && res.success !== false) {
+                        $('#adminOrdenesBadge').text(res.ordenesActivas || 0);
+                    }
+                })
+                .fail(function () {
+                    console.warn('No se pudo cargar el contador de órdenes.');
+                });
+        });</script>
+
+    <script>
+        $(function () {
+            $('#btnAdminUserMenu').on('click', function (e) {
+                e.stopPropagation();
+                $('#adminUserMenu').toggleClass('show');
+            });
+
+            $(document).on('click', function () {
+                $('#adminUserMenu').removeClass('show');
+            });
+        });
+    </script>
     @RenderSection("scripts", required:=False)
 </body>
 </html>
