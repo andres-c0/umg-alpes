@@ -228,8 +228,8 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
-    <script src="@Url.Content("~/Scripts/portal-cliente.js?v=18")"></script>
     <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
+    <script src="@Url.Content("~/Scripts/portal-cliente.js?v=19")"></script>
 
     @RenderSection("scripts", required:=False)
 

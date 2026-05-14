@@ -4,6 +4,15 @@
     var overlay = document.getElementById('pcOverlay');
     var endpointResumen = '/PortalCliente/ObtenerResumenNavegacionData?_=';
 
+    function setBadge(id, valor) {
+        var badge = document.getElementById(id);
+        if (!badge) return;
+
+        var total = Number(valor || 0);
+        badge.textContent = total;
+        badge.style.display = total > 0 ? '' : 'none';
+    }
+
     function abrirSidebar() {
         if (sidebar && overlay) {
             sidebar.classList.add('open');
@@ -32,26 +41,15 @@
         if (!payload) return { ok: false, data: null };
 
         if (payload.ok !== undefined) {
-            return {
-                ok: payload.ok === true,
-                data: payload.data || null
-            };
+            return { ok: payload.ok === true, data: payload.data || null };
         }
 
         if (payload.success !== undefined) {
-            return {
-                ok: payload.success === true,
-                data: payload.data || null
-            };
+            return { ok: payload.success === true, data: payload.data || null };
         }
 
-        return {
-            ok: true,
-            data: payload
-        };
+        return { ok: true, data: payload };
     }
-
-    setBadge('pcBadgeOrders', r.data.totalOrdenes || 0);
 
     function cargarResumen() {
         fetch(endpointResumen + Date.now(), {
@@ -67,11 +65,25 @@
                 var r = normalizar(p);
                 if (!r.ok || !r.data) return;
 
-                
+                var totalCarrito =
+                    r.data.carritoItems ||
+                    r.data.CarritoItems ||
+                    r.data.totalCarrito ||
+                    r.data.TotalCarrito ||
+                    r.data.itemsCarrito ||
+                    r.data.ItemsCarrito ||
+                    0;
 
-                
-                setBadge('pcBadgeCart', r.data.carritoItems || 0);
-                setBadge('pcTopbarCartBadge', r.data.carritoItems || 0);
+                var totalOrdenes =
+                    r.data.totalOrdenes ||
+                    r.data.TotalOrdenes ||
+                    r.data.ordenes ||
+                    r.data.Ordenes ||
+                    0;
+
+                setBadge('pcBadgeCart', totalCarrito);
+                setBadge('pcTopbarCartBadge', totalCarrito);
+                setBadge('pcBadgeOrders', totalOrdenes);
             })
             .catch(function () {
             });
@@ -108,6 +120,7 @@
         });
     });
 
+    document.addEventListener('pc:cart-updated', cargarResumen);
     window.PortalClienteActualizarBadges = cargarResumen;
 
     cargarResumen();
