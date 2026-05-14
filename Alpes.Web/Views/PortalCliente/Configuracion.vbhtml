@@ -17,6 +17,41 @@ End Code
     .pc-hero .pc-eyebrow {
         color: #431406 !important;
     }
+
+    .pc-modal-overlay.show {
+        display: flex !important;
+    }
+
+    .pc-modal-overlay .pc-config-modal {
+        display: block !important;
+        position: relative !important;
+        width: min(420px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+        background: #fff;
+        border-radius: 22px;
+        padding: 28px;
+        box-shadow: 0 18px 45px rgba(0,0,0,.30);
+        color: #2C1810;
+    }
+
+        .pc-modal-overlay .pc-config-modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 30px;
+            margin: 0 0 10px;
+            color: #2C1810;
+        }
+
+        .pc-modal-overlay .pc-config-modal p {
+            color: #6f5a4c;
+            margin-bottom: 18px;
+        }
+
+        .pc-modal-overlay .pc-config-modal .pc-modal-close {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+        }
 </style>
 
 <section class="pc-section pc-config-page" id="configuracionCliente">
@@ -150,7 +185,7 @@ End Code
     </div>
 
     <div class="pc-modal-overlay" id="cfgOverlayIdioma">
-        <div class="pc-modal pc-small-modal">
+        <div class="pc-config-modal pc-small-modal">
             <button type="button" class="pc-modal-close" id="cfgCerrarIdioma">
                 <i class="bi bi-x-lg"></i>
             </button>
@@ -169,7 +204,7 @@ End Code
     </div>
 
     <div class="pc-modal-overlay" id="cfgOverlayPrivacidad">
-        <div class="pc-modal pc-small-modal">
+        <div class="pc-config-modal pc-small-modal">
             <button type="button" class="pc-modal-close" id="cfgCerrarPrivacidad">
                 <i class="bi bi-x-lg"></i>
             </button>

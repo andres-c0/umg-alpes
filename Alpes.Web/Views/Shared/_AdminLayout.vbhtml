@@ -143,7 +143,7 @@ End Code
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
 
-                     
+
 
                         <a href="@Url.Action("Configuracion", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Configuración", "active", ""))">
                             <div class="admin-nav__left">
@@ -184,6 +184,8 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
+    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
     @RenderSection("scripts", required:=False)
+
 </body>
 </html>

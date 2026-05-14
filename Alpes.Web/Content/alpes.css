@@ -8872,3 +8872,73 @@ textarea.a-input {
         grid-template-columns: 1fr;
     }
 }
+
+/* ═══════════════════════════════════════════════════════
+   BOTONES IDIOMA
+═══════════════════════════════════════════════════════ */
+
+.lang-switcher {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    z-index: 999;
+}
+
+.lang-switcher-btn {
+    height: 46px;
+    border: 2px solid #1f1f1f;
+    background: #ffffff;
+    border-radius: 999px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #1f1f1f;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(0,0,0,.08);
+}
+
+    .lang-switcher-btn i {
+        font-size: 18px;
+    }
+
+.lang-switcher-menu {
+    position: absolute;
+    top: 54px;
+    right: 0;
+    width: 160px;
+    background: #ffffff;
+    border: 1px solid rgba(68,36,20,.16);
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(0,0,0,.18);
+    padding: 8px;
+    display: none;
+    z-index: 9999;
+}
+
+.lang-switcher.open .lang-switcher-menu {
+    display: block;
+}
+
+.lang-switcher-menu button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 11px 12px;
+    border-radius: 12px;
+    text-align: left;
+    color: #3b1b0f;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+    .lang-switcher-menu button:hover {
+        background: #f6ead7;
+    }
+
+.admin-lang-switcher {
+    margin-left: auto;
+}
+
