@@ -252,7 +252,7 @@ End Code
     @Scripts.Render("~/bundles/bootstrap")
 
     <script src="@Url.Content("~/Scripts/home-publico.js?v=1")"></script>
-    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
+    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=20")"></script>
 
     @RenderSection("scripts", required:=False)
 </body>

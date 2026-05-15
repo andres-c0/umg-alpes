@@ -187,6 +187,17 @@ End Code
                     <div class="mapp-topbar-sub">Muebles de los Alpes</div>
                 </div>
                 <div class="pc-topbar-actions mapp-topbar-actions">
+                    <div class="lang-switcher pc-lang-switcher">
+                        <button type="button" class="lang-switcher-btn" aria-label="Cambiar idioma">
+                            <i class="bi bi-translate"></i>
+                            <span id="pcLangLabel" data-current-lang>Español</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <div class="lang-switcher-menu" style="display:none;">
+                            <button type="button" data-lang-option="Español">Español</button>
+                            <button type="button" data-lang-option="Inglés">English</button>
+                        </div>
+                    </div>
                     <a href="@Url.Action("Carrito", "PortalCliente")" class="pc-topbar-icon pc-topbar-icon--cart"><i class="bi bi-cart3"></i><span class="pc-topbar-badge" id="pcTopbarCartBadge">0</span></a>
                     <a href="@Url.Action("Notificaciones", "PortalCliente")" class="pc-topbar-icon"><i class="bi bi-bell"></i></a>
                     <a href="@Url.Action("MiPerfil", "PortalCliente")" class="pc-avatar mapp-avatar">@initial</a>
@@ -230,7 +241,7 @@ End Code
 
     @Scripts.Render("~/bundles/jquery")
     <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
-    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
+    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=20")"></script>
     <script src="@Url.Content("~/Scripts/portal-cliente.js?v=19")"></script>
 
     @RenderSection("scripts", required:=False)
