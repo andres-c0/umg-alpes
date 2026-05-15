@@ -270,7 +270,7 @@ End Code
             <span>Órdenes</span>
         </a>
 
-        <a href="#">
+        <a href="@Url.Action("MiPerfil", "PortalCliente")">
             <i class="bi bi-person"></i>
             <span>Perfil</span>
         </a>
