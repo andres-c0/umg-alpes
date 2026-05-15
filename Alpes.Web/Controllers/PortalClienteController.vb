@@ -14,12 +14,15 @@ Imports Alpes.Entidades.Clientes
 Imports Alpes.Entidades.Ventas
 Imports Alpes.Entidades.Inventario
 Imports Alpes.Entidades.Marketing
+Imports Alpes.Entidades.Seguridad
+Imports Alpes.Web.Seguridad
 
 Namespace Controllers
     Public Class PortalClienteController
         Inherits Controller
 
         Private ReadOnly _clienteServicio As ClienteServicio
+        Private ReadOnly _usuarioServicio As UsuarioServicio
         Private ReadOnly _listaDeseosServicio As ListaDeseosServicio
         Private ReadOnly _productoServicio As ProductoServicio
         Private ReadOnly _tarjetaClienteServicio As TarjetaClienteServicio
@@ -38,6 +41,7 @@ Namespace Controllers
 
         Public Sub New()
             _clienteServicio = New ClienteServicio()
+            _usuarioServicio = New UsuarioServicio()
             _listaDeseosServicio = New ListaDeseosServicio()
             _productoServicio = New ProductoServicio()
             _tarjetaClienteServicio = New TarjetaClienteServicio()
@@ -290,6 +294,21 @@ Namespace Controllers
                 clienteActual.Pais = If(String.IsNullOrWhiteSpace(pais), "Guatemala", pais.Trim())
 
                 _clienteServicio.Actualizar(clienteActual)
+
+                Dim usuarioId As Integer = ObtenerUsuarioIdDesdeSesion()
+                If usuarioId > 0 Then
+                    Try
+                        Dim usuarioActual As Usuario = _usuarioServicio.ObtenerPorId(usuarioId)
+                        If usuarioActual IsNot Nothing Then
+                            usuarioActual.Email = clienteActual.Email
+                            usuarioActual.Telefono = If(Not String.IsNullOrWhiteSpace(clienteActual.TelCelular), clienteActual.TelCelular, clienteActual.TelResidencia)
+                            _usuarioServicio.Actualizar(usuarioActual)
+                            Session("Email") = usuarioActual.Email
+                        End If
+                    Catch
+                    End Try
+                End If
+
                 Session("NombreCliente") = (clienteActual.Nombres & " " & clienteActual.Apellidos).Trim()
                 ViewData("NombreCliente") = Session("NombreCliente")
 
@@ -314,6 +333,64 @@ Namespace Controllers
                 })
             Catch ex As Exception
                 Return JsonError("No se pudo actualizar el perfil: " & LimpiarMensaje(ex.Message), 500)
+            End Try
+        End Function
+
+
+        <HttpPost>
+        Function CambiarContrasena() As ActionResult
+            Dim usuarioId As Integer = ObtenerUsuarioIdDesdeSesion()
+
+            If usuarioId <= 0 Then
+                Return JsonError("Sesion no valida.", 401)
+            End If
+
+            Try
+                Dim body As JObject = LeerBodyComoJObject()
+                Dim passwordActual As String = ObtenerString(body, "passwordActual", "PasswordActual", "actual", "Actual")
+                Dim passwordNueva As String = ObtenerString(body, "passwordNueva", "PasswordNueva", "nueva", "Nueva")
+                Dim confirmarPassword As String = ObtenerString(body, "confirmarPassword", "ConfirmarPassword", "confirmacion", "Confirmacion")
+
+                If String.IsNullOrWhiteSpace(passwordActual) Then
+                    Return JsonError("Debe ingresar su contraseña actual.")
+                End If
+
+                If String.IsNullOrWhiteSpace(passwordNueva) Then
+                    Return JsonError("Debe ingresar la contraseña nueva.")
+                End If
+
+                If Not PasswordHasher.CumplePolitica(passwordNueva) Then
+                    Return JsonError("La contraseña nueva debe tener mínimo 10 caracteres, mayúscula, minúscula, número y símbolo.")
+                End If
+
+                If Not String.Equals(passwordNueva, confirmarPassword, StringComparison.Ordinal) Then
+                    Return JsonError("La confirmación de la contraseña nueva no coincide.")
+                End If
+
+                If String.Equals(passwordActual, passwordNueva, StringComparison.Ordinal) Then
+                    Return JsonError("La contraseña nueva debe ser diferente a la actual.")
+                End If
+
+                Dim usuarioActual As Usuario = _usuarioServicio.ObtenerPorId(usuarioId)
+
+                If usuarioActual Is Nothing Then
+                    Return JsonError("No se encontró el usuario autenticado.", 404)
+                End If
+
+                If Not PasswordHasher.VerifyPassword(passwordActual, If(usuarioActual.PasswordHash, String.Empty)) Then
+                    Return JsonError("La contraseña actual no es correcta.")
+                End If
+
+                usuarioActual.PasswordHash = PasswordHasher.HashPassword(passwordNueva)
+                _usuarioServicio.Actualizar(usuarioActual)
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .message = "Contraseña actualizada correctamente."
+                })
+            Catch ex As Exception
+                Return JsonError("No se pudo cambiar la contraseña: " & LimpiarMensaje(ex.Message), 500)
             End Try
         End Function
 
@@ -2075,6 +2152,21 @@ Namespace Controllers
 
             cliId = cliIdSesion.Value
             Return True
+        End Function
+
+
+        <NonAction>
+        Private Function ObtenerUsuarioIdDesdeSesion() As Integer
+            If Session("UsuarioId") Is Nothing Then
+                Return 0
+            End If
+
+            Dim usuarioId As Integer = 0
+            If Integer.TryParse(Session("UsuarioId").ToString(), usuarioId) AndAlso usuarioId > 0 Then
+                Return usuarioId
+            End If
+
+            Return 0
         End Function
 
         <NonAction>

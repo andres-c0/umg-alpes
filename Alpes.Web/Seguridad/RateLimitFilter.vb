@@ -38,6 +38,11 @@ Namespace Seguridad
                 maximo = 8
                 ventana = TimeSpan.FromMinutes(5)
             ElseIf String.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase) AndAlso
+                   String.Equals(action, "RecuperarContrasena", StringComparison.OrdinalIgnoreCase) AndAlso
+                   String.Equals(request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase) Then
+                maximo = 4
+                ventana = TimeSpan.FromMinutes(10)
+            ElseIf String.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase) AndAlso
                    String.Equals(action, "Registro", StringComparison.OrdinalIgnoreCase) AndAlso
                    String.Equals(request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase) Then
                 maximo = 5

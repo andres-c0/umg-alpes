@@ -21,12 +21,14 @@ Namespace Controllers
         Private ReadOnly _productoServicio As ProductoServicio
         Private ReadOnly _precioHistoricoServicio As Precio_HistoricoServicio
         Private ReadOnly _clienteServicio As ClienteServicio
+        Private ReadOnly _correoServicio As CorreoServicio
 
         Public Sub New()
             _usuarioServicio = New UsuarioServicio()
             _productoServicio = New ProductoServicio()
             _precioHistoricoServicio = New Precio_HistoricoServicio()
             _clienteServicio = New ClienteServicio()
+            _correoServicio = New CorreoServicio()
         End Sub
 
         Function Index() As ActionResult
@@ -279,6 +281,75 @@ Namespace Controllers
             Catch ex As Exception
                 SecurityLog.Warn("LOGIN_ERROR", "Error al iniciar sesión para usuario=" & If(model.Username, String.Empty))
                 ViewData("Error") = "Ocurrió un error al iniciar sesión. Intenta nuevamente."
+                Return View(model)
+            End Try
+        End Function
+
+
+        <HttpGet>
+        Function RecuperarContrasena() As ActionResult
+            Return View(New RecuperarContrasenaViewModel())
+        End Function
+
+        <HttpPost>
+        <ValidateAntiForgeryToken>
+        Function RecuperarContrasena(ByVal model As RecuperarContrasenaViewModel) As ActionResult
+            If model Is Nothing Then
+                model = New RecuperarContrasenaViewModel()
+            End If
+
+            If String.IsNullOrWhiteSpace(model.Email) Then
+                ModelState.AddModelError("Email", "El correo electrónico es requerido.")
+                Return View(model)
+            End If
+
+            Dim emailIngresado As String = model.Email.Trim()
+
+            If Not Regex.IsMatch(emailIngresado, "^[^@\s]+@[^@\s]+\.[^@\s]+$") Then
+                ModelState.AddModelError("Email", "Ingresa un correo electrónico válido.")
+                Return View(model)
+            End If
+
+            Try
+                Dim usuario As Usuario = ObtenerUsuarioPorEmailSeguro(emailIngresado)
+
+                If usuario Is Nothing Then
+                    TempData("Success") = "Si el correo está registrado, recibirás una contraseña temporal en unos momentos."
+                    Return RedirectToAction("Login")
+                End If
+
+                If usuario.Estado IsNot Nothing AndAlso
+                   Not String.Equals(usuario.Estado.Trim(), "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                    TempData("Success") = "Si el correo está registrado, recibirás una contraseña temporal en unos momentos."
+                    Return RedirectToAction("Login")
+                End If
+
+                Dim passwordAnteriorHash As String = usuario.PasswordHash
+                Dim passwordTemporal As String = PasswordHasher.GenerarPasswordTemporal(14)
+                usuario.PasswordHash = PasswordHasher.HashPassword(passwordTemporal)
+
+                Try
+                    _usuarioServicio.Actualizar(usuario)
+                    _correoServicio.EnviarPasswordTemporal(usuario.Email, usuario.Username, passwordTemporal)
+                Catch exEnvio As Exception
+                    Try
+                        usuario.PasswordHash = passwordAnteriorHash
+                        _usuarioServicio.Actualizar(usuario)
+                    Catch
+                    End Try
+
+                    SecurityLog.Warn("PASSWORD_RESET_EMAIL_ERROR", "No se pudo enviar correo de recuperación para usuario=" & usuario.Username)
+                    ViewData("Error") = "No se pudo enviar el correo de recuperación. Revisa la configuración SMTP."
+                    Return View(model)
+                End Try
+
+                SecurityLog.Warn("PASSWORD_RESET", "Contraseña temporal generada para usuario=" & usuario.Username)
+                TempData("Success") = "Se envió una contraseña temporal al correo registrado."
+                Return RedirectToAction("Login")
+
+            Catch ex As Exception
+                SecurityLog.Warn("PASSWORD_RESET_ERROR", "Error general al recuperar contraseña para email=" & emailIngresado)
+                ViewData("Error") = "Ocurrió un error al recuperar la contraseña. Intenta nuevamente."
                 Return View(model)
             End Try
         End Function
@@ -889,18 +960,33 @@ Namespace Controllers
             )
         End Function
 
-        <NonAction>
-        Private Function ExisteUsuarioPorEmail(ByVal email As String) As Boolean
-            Dim usuarios As List(Of Usuario) = _usuarioServicio.Buscar(email)
 
-            If usuarios Is Nothing Then
-                usuarios = New List(Of Usuario)()
+        <NonAction>
+        Private Function ObtenerUsuarioPorEmailSeguro(ByVal email As String) As Usuario
+            If String.IsNullOrWhiteSpace(email) Then
+                Return Nothing
             End If
 
-            Return usuarios.Any(
-                Function(u) u.Email IsNot Nothing AndAlso
-                            String.Equals(u.Email.Trim(), email.Trim(), StringComparison.OrdinalIgnoreCase)
-            )
+            Try
+                Dim usuarios As List(Of Usuario) = _usuarioServicio.Listar()
+
+                If usuarios Is Nothing Then
+                    Return Nothing
+                End If
+
+                Return usuarios.FirstOrDefault(
+                    Function(u) u IsNot Nothing AndAlso
+                                u.Email IsNot Nothing AndAlso
+                                String.Equals(u.Email.Trim(), email.Trim(), StringComparison.OrdinalIgnoreCase)
+                )
+            Catch
+                Return Nothing
+            End Try
+        End Function
+
+        <NonAction>
+        Private Function ExisteUsuarioPorEmail(ByVal email As String) As Boolean
+            Return ObtenerUsuarioPorEmailSeguro(email) IsNot Nothing
         End Function
 
         <NonAction>

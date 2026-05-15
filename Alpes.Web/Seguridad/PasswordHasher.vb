@@ -2,6 +2,7 @@ Option Strict On
 Option Explicit On
 
 Imports System
+Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Security.Cryptography
 Imports System.Text.RegularExpressions
@@ -17,6 +18,31 @@ Namespace Seguridad
         Private Const IteracionesDefecto As Integer = 100000
         Private Const BytesSalt As Integer = 16
         Private Const BytesHash As Integer = 32
+
+
+        Public Shared Function GenerarPasswordTemporal(Optional ByVal longitud As Integer = 14) As String
+            If longitud < 12 Then
+                longitud = 12
+            End If
+
+            Const minusculas As String = "abcdefghijkmnopqrstuvwxyz"
+            Const mayusculas As String = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+            Const numeros As String = "23456789"
+            Const especiales As String = "!#$%&*?"
+            Dim todos As String = minusculas & mayusculas & numeros & especiales
+            Dim caracteres As New List(Of Char) From {
+                ObtenerCaracterAleatorio(minusculas),
+                ObtenerCaracterAleatorio(mayusculas),
+                ObtenerCaracterAleatorio(numeros),
+                ObtenerCaracterAleatorio(especiales)
+            }
+
+            While caracteres.Count < longitud
+                caracteres.Add(ObtenerCaracterAleatorio(todos))
+            End While
+
+            Return New String(caracteres.OrderBy(Function(c) ObtenerEnteroAleatorio()).ToArray())
+        End Function
 
         Public Shared Function HashPassword(ByVal password As String) As String
             If password Is Nothing Then
@@ -108,6 +134,27 @@ Namespace Seguridad
             Dim tieneEspecial As Boolean = Regex.IsMatch(password, "[^A-Za-z0-9]")
 
             Return tieneMinuscula AndAlso tieneMayuscula AndAlso tieneNumero AndAlso tieneEspecial
+        End Function
+
+
+        Private Shared Function ObtenerCaracterAleatorio(ByVal valores As String) As Char
+            Dim indice As Integer = ObtenerEnteroAleatorio(0, valores.Length)
+            Return valores(indice)
+        End Function
+
+        Private Shared Function ObtenerEnteroAleatorio(Optional ByVal minimo As Integer = 0, Optional ByVal maximoExclusivo As Integer = Integer.MaxValue) As Integer
+            If maximoExclusivo <= minimo Then
+                Return minimo
+            End If
+
+            Dim bytes(3) As Byte
+
+            Using rng As RandomNumberGenerator = RandomNumberGenerator.Create()
+                rng.GetBytes(bytes)
+            End Using
+
+            Dim valor As Integer = BitConverter.ToInt32(bytes, 0) And Integer.MaxValue
+            Return minimo + (valor Mod (maximoExclusivo - minimo))
         End Function
 
         Private Shared Function EncodingBytes(ByVal valor As String) As Byte()

@@ -22,6 +22,7 @@ Namespace Seguridad
             "ObtenerProductosPublicosData",
             "ObtenerProductoPublicoData",
             "Login",
+            "RecuperarContrasena",
             "Registro",
             "Logout"
         }

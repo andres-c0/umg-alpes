@@ -47,6 +47,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.ValueTuple" />
     <Reference Include="System.Xml" />
@@ -94,6 +95,7 @@
     <Compile Include="Servicios\ConsumoMateriaPrimaServicio.vb" />
     <Compile Include="Servicios\ContratoProveedorServicio.vb" />
     <Compile Include="Servicios\Control_CalidadServicio.vb" />
+    <Compile Include="Servicios\CorreoServicio.vb" />
     <Compile Include="Servicios\CuentaPagarProveedorServicio.vb" />
     <Compile Include="Servicios\Cuotas_PagoServicio.vb" />
     <Compile Include="Servicios\CuponServicio .vb" />

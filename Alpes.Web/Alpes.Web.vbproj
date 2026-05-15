@@ -264,6 +264,7 @@
     <Compile Include="Controllers\MantenimientoHerramientaController.vb" />
     <Compile Include="Controllers\Materia_PrimaController.vb" />
     <Compile Include="Controllers\MetadataController.vb" />
+    <Compile Include="Models\RecuperarContrasenaViewModel.vb" />
     <Compile Include="Seguridad\EnvLoader.vb" />
     <Compile Include="Seguridad\JsonAntiForgeryFilter.vb" />
     <Compile Include="Seguridad\PasswordHasher.vb" />
@@ -410,6 +411,7 @@
     <Content Include="Scripts\jquery-3.7.1.min.map" />
     <Content Include="Views\Admin\Perfil.vbhtml" />
     <Content Include="Views\Admin\Cupones.vbhtml" />
+    <Content Include="Views\Home\RecuperarContrasena.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

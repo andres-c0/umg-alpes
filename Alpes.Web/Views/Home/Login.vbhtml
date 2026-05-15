@@ -117,7 +117,12 @@ End Code
                         @Html.ValidationMessageFor(Function(m) m.Password, "", New With {.style = "color:#b3261e;font-size:12px;"})
                     </div>
 
-                    @<div style="height:14px"></div>
+                    @<div style="text-align:right;margin-top:-4px;margin-bottom:14px;font-size:13px">
+                        <a href="@Url.Action("RecuperarContrasena", "Home")"
+                           style="color:var(--cafe-oscuro);font-weight:700;text-decoration:none">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
 
                     @<button type="submit" class="btn-a btn-a-primary btn-a-full"
                              style="height:50px;border-radius:12px;font-size:14px">

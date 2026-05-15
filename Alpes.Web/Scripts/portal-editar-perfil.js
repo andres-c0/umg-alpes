@@ -49,6 +49,11 @@
         if (el) el.value = value || '';
     }
 
+    function getAntiForgeryToken() {
+        var token = document.querySelector('input[name="__RequestVerificationToken"]');
+        return token ? token.value : '';
+    }
+
     var currentProfile = null;
 
     function renderProfile(perfil) {
@@ -91,6 +96,14 @@
         options.headers = options.headers || {};
         options.headers['X-Requested-With'] = 'XMLHttpRequest';
 
+        var method = String(options.method || 'GET').toUpperCase();
+        if (method !== 'GET' && method !== 'HEAD') {
+            var token = getAntiForgeryToken();
+            if (token) {
+                options.headers['RequestVerificationToken'] = token;
+            }
+        }
+
         return fetch(url, options)
             .then(function (res) {
                 return res.json().catch(function () { return null; }).then(function (payload) {
@@ -101,6 +114,12 @@
                     return normalized;
                 });
             });
+    }
+
+    function clearPasswordForm() {
+        value('passwordActual', '');
+        value('passwordNueva', '');
+        value('confirmarPassword', '');
     }
 
     function loadProfile() {
@@ -143,6 +162,7 @@
         var btnClose = $('btnCerrarPerfil');
         var modal = $('perfilModal');
         var form = $('perfilForm');
+        var passwordForm = $('passwordForm');
 
         if (btnEdit) btnEdit.addEventListener('click', openModal);
         if (btnClose) btnClose.addEventListener('click', closeModal);
@@ -192,6 +212,43 @@
             });
         }
 
+
+
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var btnPassword = $('btnGuardarPassword');
+                if (btnPassword) {
+                    btnPassword.disabled = true;
+                    btnPassword.textContent = 'Actualizando...';
+                }
+
+                var payload = {
+                    passwordActual: $('passwordActual').value,
+                    passwordNueva: $('passwordNueva').value,
+                    confirmarPassword: $('confirmarPassword').value
+                };
+
+                requestJson('/PortalCliente/CambiarContrasena', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify(payload)
+                })
+                    .then(function (res) {
+                        clearPasswordForm();
+                        showToast(res.message || 'Contraseña actualizada correctamente.', 'success');
+                    })
+                    .catch(function (err) {
+                        showToast(err.message || 'No se pudo cambiar la contraseña.', 'error');
+                    })
+                    .finally(function () {
+                        if (btnPassword) {
+                            btnPassword.disabled = false;
+                            btnPassword.textContent = 'Actualizar contraseña';
+                        }
+                    });
+            });
+        }
         loadProfile();
     });
 }());
