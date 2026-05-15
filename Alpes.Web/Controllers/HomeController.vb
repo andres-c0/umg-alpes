@@ -409,7 +409,8 @@ Namespace Controllers
         Function Logout() As ActionResult
             Session.Clear()
             Session.Abandon()
-            Return RedirectToAction("Index", "Home")
+
+            Return RedirectToAction("Login", "Home")
         End Function
 
         Private Sub GuardarSesionUsuario(ByVal usuario As Usuario)

@@ -139,6 +139,9 @@
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -338,6 +341,7 @@
     </Compile>
     <Compile Include="Controllers\HomeController.vb" />
     <Content Include="Content\home-publico.css" />
+    <Content Include="Scripts\admin-cupones.js" />
     <Content Include="Scripts\carrito-invitado.js" />
     <Content Include="Scripts\catalogo-publico.js" />
     <Content Include="Scripts\fusion-carrito-invitado.js" />
@@ -352,6 +356,8 @@
     <Content Include="Views\Home\DetalleProducto.vbhtml" />
     <Content Include="Views\Home\CarritoInvitado.vbhtml" />
     <Content Include="Views\Home\CatalogoPublico.vbhtml" />
+    <Content Include="Views\Admin\Perfil.vbhtml" />
+    <Content Include="Views\Admin\Cupones.vbhtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

@@ -203,7 +203,7 @@ End Code
             <span>Órdenes</span>
         </a>
 
-        <a href="#">
+        <a href="@Url.Action("MiPerfil", "PortalCliente")">
             <i class="bi bi-person"></i>
             <span>Perfil</span>
         </a>
@@ -212,5 +212,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-favoritos.js?v=31")"></script>
+    <script src="@Url.Content("~/Scripts/portal-favoritos.js?v=32")"></script>
 End Section

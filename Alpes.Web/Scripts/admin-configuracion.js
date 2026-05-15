@@ -1,13 +1,9 @@
 (function () {
-    var usuarios = [
-        { UsuarioId: 1, Username: 'cliente1', Email: 'cliente@alpes.com', Rol: 'Cliente' },
-        { UsuarioId: 2, Username: 'admin1', Email: 'admin@alpes.com', Rol: 'Administrador' }
-    ];
+    var usuarios = [];
 
     $(document).ready(function () {
-        cargarPerfil();
-        renderUsuarios();
         enlazarEventos();
+        cargarConfiguracion();
     });
 
     function enlazarEventos() {
@@ -24,21 +20,48 @@
         $('#btnGuardarUsuarioConfig').on('click', function () {
             guardarUsuario();
         });
-
-        $('#cfgVentas, #cfgStock, #cfgPedidos').on('change', function () {
-            // aquí luego conectas persistencia real si quieres
-        });
     }
 
-    function cargarPerfil() {
-        var username = 'admin1';
-        var email = 'admin@alpes.com';
-        var rol = 'Administrador';
+    function cargarConfiguracion() {
+        $('#configUsuariosListado').html('<div class="table-empty">Cargando usuarios...</div>');
+
+        $.getJSON('/Admin/ConfiguracionData')
+            .done(function (res) {
+                if (res && res.success === false) {
+                    $('#configUsuariosListado').html('<div class="table-empty">' + escapeHtml(res.message || 'No se pudo cargar configuración.') + '</div>');
+                    return;
+                }
+
+                usuarios = normalizarUsuarios(res.usuarios || []);
+                cargarPerfil(res.perfil);
+                renderUsuarios();
+            })
+            .fail(function (xhr) {
+                console.error(xhr);
+                $('#configUsuariosListado').html('<div class="table-empty">Error al cargar la configuración.</div>');
+            });
+    }
+
+    function cargarPerfil(perfil) {
+        var username = perfil && (perfil.username || perfil.Username) ? (perfil.username || perfil.Username) : 'admin';
+        var email = perfil && (perfil.email || perfil.Email) ? (perfil.email || perfil.Email) : '';
+        var rol = perfil && (perfil.rol || perfil.Rol) ? (perfil.rol || perfil.Rol) : 'Administrador';
 
         $('#configProfileName').text(username);
         $('#configProfileEmail').text(email);
         $('#configProfileRole').text(rol);
-        $('#configProfileAvatar').text((username || 'A').charAt(0).toUpperCase());
+        $('#configProfileAvatar').text(obtenerInicial(username));
+    }
+
+    function normalizarUsuarios(lista) {
+        return lista.map(function (u) {
+            return {
+                UsuarioId: u.UsuarioId || u.usuarioId || u.USU_ID || u.UsuId || u.usuId || u.Id || u.id || 0,
+                Username: u.Username || u.username || u.USERNAME || u.Usuario || u.usuario || '',
+                Email: u.Email || u.email || u.EMAIL || '',
+                Rol: u.Rol || u.rol || u.ROL || u.RolNombre || u.rolNombre || u.ROL_NOMBRE || 'Usuario'
+            };
+        });
     }
 
     function renderUsuarios() {
@@ -50,7 +73,9 @@
         var html = '';
 
         usuarios.forEach(function (u, index) {
-            html += '<div class="config-user-row ' + (index === usuarios.length - 1 ? 'config-user-row--last' : '') + '">';
+            var esUltimo = index === usuarios.length - 1;
+
+            html += '<div class="config-user-row ' + (esUltimo ? 'config-user-row--last' : '') + '">';
             html += '   <div class="config-user-row__left">';
             html += '       <div class="config-user-row__avatar">' + obtenerInicial(u.Username) + '</div>';
             html += '       <div class="config-user-row__body">';
@@ -59,6 +84,7 @@
             html += '       </div>';
             html += '   </div>';
             html += '   <div class="config-user-row__actions">';
+            html += '       <span class="config-profile__role">' + escapeHtml(valor(u.Rol || 'Usuario')) + '</span>';
             html += '       <button type="button" class="btn-icon" onclick="AdminConfiguracion.editarUsuario(' + entero(u.UsuarioId) + ')"><i class="bi bi-pencil"></i></button>';
             html += '       <button type="button" class="btn-icon btn-icon-danger" onclick="AdminConfiguracion.eliminarUsuario(' + entero(u.UsuarioId) + ')"><i class="bi bi-trash"></i></button>';
             html += '   </div>';
@@ -69,7 +95,9 @@
     }
 
     function editarUsuario(id) {
-        var u = usuarios.find(function (x) { return entero(x.UsuarioId) === entero(id); });
+        var u = usuarios.find(function (x) {
+            return entero(x.UsuarioId) === entero(id);
+        });
 
         if (!u) {
             alert('No se encontró el usuario.');
@@ -101,25 +129,31 @@
             return;
         }
 
-        if (id > 0) {
-            var existente = usuarios.find(function (x) { return entero(x.UsuarioId) === id; });
-            if (existente) {
-                existente.Username = username;
-                existente.Email = email;
-                existente.Rol = rol;
-            }
-        } else {
-            var nuevoId = usuarios.length ? Math.max.apply(null, usuarios.map(function (x) { return entero(x.UsuarioId); })) + 1 : 1;
-            usuarios.push({
-                UsuarioId: nuevoId,
-                Username: username,
-                Email: email,
-                Rol: rol
-            });
-        }
+        var payload = {
+            UsuarioId: id,
+            Username: username,
+            Email: email,
+            Rol: rol
+        };
 
-        cerrarModalUsuario();
-        renderUsuarios();
+        $.ajax({
+            url: '/Admin/GuardarUsuarioConfig',
+            method: 'POST',
+            data: payload
+        })
+            .done(function (res) {
+                if (res && res.success === false) {
+                    alert(res.message || 'No se pudo guardar el usuario.');
+                    return;
+                }
+
+                cerrarModalUsuario();
+                cargarConfiguracion();
+            })
+            .fail(function (xhr) {
+                console.error(xhr);
+                alert('Error al guardar el usuario.');
+            });
     }
 
     function eliminarUsuario(id) {
@@ -127,11 +161,23 @@
             return;
         }
 
-        usuarios = usuarios.filter(function (x) {
-            return entero(x.UsuarioId) !== entero(id);
-        });
+        $.ajax({
+            url: '/Admin/EliminarUsuarioConfig',
+            method: 'POST',
+            data: { id: id }
+        })
+            .done(function (res) {
+                if (res && res.success === false) {
+                    alert(res.message || 'No se pudo eliminar el usuario.');
+                    return;
+                }
 
-        renderUsuarios();
+                cargarConfiguracion();
+            })
+            .fail(function (xhr) {
+                console.error(xhr);
+                alert('Error al eliminar el usuario.');
+            });
     }
 
     function abrirModalUsuario() {
@@ -147,7 +193,7 @@
         $('#hidUsuarioConfigId').val(0);
         $('#txtUsuarioConfigUsername').val('');
         $('#txtUsuarioConfigEmail').val('');
-        $('#selUsuarioConfigRol').val('Administrador');
+        $('#selUsuarioConfigRol').val('Usuario');
     }
 
     function obtenerInicial(texto) {

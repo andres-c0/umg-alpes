@@ -2,9 +2,11 @@ Option Strict On
 Option Explicit On
 
 Imports System
-Imports System.Web.Mvc
 Imports System.Linq
+Imports System.Web.Mvc
+Imports Alpes.Entidades.Marketing
 Imports Alpes.Servicios.Servicios
+Imports Alpes.Entidades
 
 Namespace Controllers
     Public Class AdminController
@@ -144,6 +146,9 @@ Namespace Controllers
             Return View()
         End Function
 
+
+
+
         Function Configuracion() As ActionResult
             If Not EsAdmin() Then
                 Return RedirectToAction("Login", "Home")
@@ -152,6 +157,17 @@ Namespace Controllers
             Return View()
         End Function
 
+
+
+
+        Function Perfil() As ActionResult
+            If Not EsAdmin() Then
+                Return RedirectToAction("Login", "Home")
+            End If
+
+            ViewData("Title") = "Mi perfil"
+            Return View()
+        End Function
 
 
         ' =========================
@@ -215,7 +231,53 @@ Namespace Controllers
             Return String.Empty
         End Function
 
+
         <HttpGet>
+        Function ConfiguracionData() As JsonResult
+            Try
+                If Not EsAdmin() Then
+                    Response.StatusCode = 401
+                    Return Json(New With {
+                .success = False,
+                .message = "No autorizado."
+            }, JsonRequestBehavior.AllowGet)
+                End If
+
+                Dim usuarioSrv As New UsuarioServicio()
+                Dim usuarios = usuarioSrv.Listar()
+
+                Dim usuarioSesionId As Integer = 0
+                If Session("UsuarioId") IsNot Nothing Then
+                    Integer.TryParse(Session("UsuarioId").ToString(), usuarioSesionId)
+                End If
+
+                Dim perfil = usuarios.FirstOrDefault(Function(x) x.UsuId = usuarioSesionId)
+
+                Return Json(New With {
+            .success = True,
+            .perfil = If(perfil Is Nothing, Nothing, New With {
+                .usuarioId = perfil.UsuId,
+                .username = perfil.Username,
+                .email = perfil.Email,
+                .rolId = perfil.RolId
+            }),
+            .usuarios = usuarios.Select(Function(x) New With {
+                .usuarioId = x.UsuId,
+                .username = x.Username,
+                .email = x.Email,
+                .rolId = x.RolId
+            }).ToList()
+        }, JsonRequestBehavior.AllowGet)
+
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {
+            .success = False,
+            .message = ex.Message
+        }, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
         Function DashboardData() As JsonResult
             Try
                 If Not EsAdmin() Then
@@ -301,6 +363,112 @@ Namespace Controllers
                     .success = False,
                     .message = ex.Message
                 }, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+        ' =========================
+        ' CUPONES
+        ' =========================
+        Function Cupones() As ActionResult
+            If Not EsAdmin() Then
+                Return RedirectToAction("Login", "Home")
+            End If
+
+            Return View()
+        End Function
+
+        <HttpGet>
+        Function CuponesData() As JsonResult
+            Try
+                If Not EsAdmin() Then
+                    Response.StatusCode = 401
+                    Return Json(New With {.success = False, .message = "No autorizado."}, JsonRequestBehavior.AllowGet)
+                End If
+
+                Dim srv As New CuponServicio()
+                Dim cupones = srv.Listar()
+
+                Dim data = cupones.Select(Function(c) New With {
+                    .cuponId = c.CuponId,
+                    .codigo = c.Codigo,
+                    .descripcion = c.Descripcion,
+                    .vigenciaInicio = c.VigenciaInicio,
+                    .vigenciaFin = c.VigenciaFin,
+                    .limiteUsoTotal = c.LimiteUsoTotal,
+                    .limiteUsoPorCliente = c.LimiteUsoPorCliente,
+                    .usosActuales = c.UsosActuales,
+                    .estado = c.Estado
+                }).ToList()
+
+                Return Json(data, JsonRequestBehavior.AllowGet)
+
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {.success = False, .message = ex.Message}, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+        <HttpPost>
+        Function GuardarCupon() As JsonResult
+            Try
+                If Not EsAdmin() Then
+                    Response.StatusCode = 401
+                    Return Json(New With {.success = False, .message = "No autorizado."})
+                End If
+
+                Dim cuponId As Integer = 0
+                Integer.TryParse(Request.Form("CuponId"), cuponId)
+
+                Dim cupon As New Cupon()
+                cupon.CuponId = cuponId
+                cupon.Codigo = Request.Form("Codigo")
+                cupon.Descripcion = Request.Form("Descripcion")
+                cupon.Estado = Request.Form("Estado")
+
+                cupon.VigenciaInicio = DateTime.Parse(Request.Form("VigenciaInicio"))
+                cupon.VigenciaFin = DateTime.Parse(Request.Form("VigenciaFin"))
+
+                Dim limiteTotal As Integer = 0
+                Integer.TryParse(Request.Form("LimiteUsoTotal"), limiteTotal)
+                cupon.LimiteUsoTotal = limiteTotal
+
+                Dim limiteCliente As Integer = 0
+                Integer.TryParse(Request.Form("LimiteUsoPorCliente"), limiteCliente)
+                cupon.LimiteUsoPorCliente = limiteCliente
+
+                Dim srv As New CuponServicio()
+
+                If cuponId > 0 Then
+                    srv.Actualizar(cupon)
+                Else
+                    cupon.UsosActuales = 0
+                    srv.Insertar(cupon)
+                End If
+
+                Return Json(New With {.success = True})
+
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {.success = False, .message = ex.Message})
+            End Try
+        End Function
+
+        <HttpPost>
+        Function EliminarCupon(ByVal id As Integer) As JsonResult
+            Try
+                If Not EsAdmin() Then
+                    Response.StatusCode = 401
+                    Return Json(New With {.success = False, .message = "No autorizado."})
+                End If
+
+                Dim srv As New CuponServicio()
+                srv.Eliminar(id)
+
+                Return Json(New With {.success = True})
+
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {.success = False, .message = ex.Message})
             End Try
         End Function
 
