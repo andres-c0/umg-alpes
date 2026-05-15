@@ -2,6 +2,7 @@
     Dim username As String = ""
     Dim avatarLetter As String = "A"
     Dim displayName As String = "Administrador"
+    Dim userHandle As String = "Administrador"
 
     If Session("Username") IsNot Nothing Then
         username = Session("Username").ToString()
@@ -10,8 +11,10 @@
     If Not String.IsNullOrWhiteSpace(username) Then
         displayName = username
         avatarLetter = username.Substring(0, 1).ToUpper()
+        userHandle = "@" & username
     End If
 End Code
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,8 +23,8 @@ End Code
     <title>@ViewData("Title") - Muebles de los Alpes</title>
     <link rel="stylesheet" href="@Url.Content("~/Content/alpes.css")?v=@DateTime.Now.Ticks" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  
 </head>
+
 <body>
     <div class="admin-shell">
         <aside class="admin-sidebar">
@@ -44,11 +47,12 @@ End Code
                     <div class="admin-sidebar__divider"></div>
 
                     <div class="admin-sidebar__section">Comercial</div>
+
                     <nav class="admin-sidebar__nav">
                         <a href="@Url.Action("Index", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Dashboard", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-speedometer2"></i>
-                                <span>Dashboard</span>
+                                <span data-i18n="dashboard">Dashboard</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -56,7 +60,7 @@ End Code
                         <a href="@Url.Action("Productos", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Productos", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-box-seam"></i>
-                                <span>Productos</span>
+                                <span data-i18n="productos">Productos</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -64,15 +68,15 @@ End Code
                         <a href="@Url.Action("Ordenes", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Órdenes", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-receipt"></i>
-                                <span>Órdenes</span>
+                                <span data-i18n="ordenes">Órdenes</span>
                             </div>
-                            <span class="admin-nav__badge">9</span>
+                            <span class="admin-nav__badge" id="adminOrdenesBadge">0</span>
                         </a>
 
                         <a href="@Url.Action("Clientes", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Clientes", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-people"></i>
-                                <span>Clientes</span>
+                                <span data-i18n="clientes">Clientes</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -80,18 +84,19 @@ End Code
                         <a href="@Url.Action("Reportes", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Reportes", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-bar-chart"></i>
-                                <span>Reportes</span>
+                                <span data-i18n="reportes">Reportes</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
                     </nav>
 
                     <div class="admin-sidebar__section admin-sidebar__section--space">Operativa</div>
+
                     <nav class="admin-sidebar__nav">
                         <a href="@Url.Action("Inventario", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Inventario", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-boxes"></i>
-                                <span>Inventario</span>
+                                <span data-i18n="inventario">Inventario</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -99,7 +104,7 @@ End Code
                         <a href="@Url.Action("Proveedores", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Proveedores", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-truck"></i>
-                                <span>Proveedores</span>
+                                <span data-i18n="proveedores">Proveedores</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -107,7 +112,7 @@ End Code
                         <a href="@Url.Action("Compras", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Compras", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-bag"></i>
-                                <span>Compras</span>
+                                <span data-i18n="compras">Compras</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -115,7 +120,7 @@ End Code
                         <a href="@Url.Action("Empleados", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Empleados", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-person-badge"></i>
-                                <span>Empleados</span>
+                                <span data-i18n="empleados">Empleados</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -123,14 +128,15 @@ End Code
                         <a href="@Url.Action("Nomina", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Nómina", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-cash-stack"></i>
-                                <span>Nómina</span>
+                                <span data-i18n="nomina">Nómina</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
+
                         <a href="@Url.Action("Marketing", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Marketing", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-megaphone"></i>
-                                <span>Marketing</span>
+                                <span data-i18n="marketing">Marketing</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -138,17 +144,7 @@ End Code
                         <a href="@Url.Action("Produccion", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Producción", "active", ""))">
                             <div class="admin-nav__left">
                                 <i class="bi bi-hammer"></i>
-                                <span>Producción</span>
-                            </div>
-                            <i class="bi bi-chevron-right admin-nav__arrow"></i>
-                        </a>
-
-
-
-                        <a href="@Url.Action("Configuracion", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Configuración", "active", ""))">
-                            <div class="admin-nav__left">
-                                <i class="bi bi-gear"></i>
-                                <span>Config.</span>
+                                <span data-i18n="produccion">Producción</span>
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
@@ -175,6 +171,58 @@ End Code
         <main class="admin-main">
             <header class="admin-topbar">
                 <div class="admin-topbar__title">@ViewData("Title")</div>
+
+                <div class="admin-topbar__actions">
+                    <div class="lang-switcher admin-lang-switcher" id="adminLangSwitcher">
+                        <button type="button" class="lang-switcher-btn" id="btnAdminLang">
+                            <i class="bi bi-translate"></i>
+                            <span id="adminLangLabel">ES</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+
+                        <div class="lang-switcher-menu" id="adminLangMenu" style="display:none;">
+                            <button type="button" data-lang="es">Español</button>
+                            <button type="button" data-lang="en">English</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-user-dropdown">
+                        <button type="button" class="admin-user-trigger" id="btnAdminUserMenu">
+                            <div class="admin-user-trigger__avatar">@avatarLetter</div>
+                            <span class="admin-user-trigger__name">@displayName</span>
+                            <i class="bi bi-chevron-down admin-user-trigger__icon"></i>
+                        </button>
+
+                        <div class="admin-user-menu" id="adminUserMenu">
+                            <div class="admin-user-menu__header">
+                                <div class="admin-user__avatar">@avatarLetter</div>
+                                <div>
+                                    <strong>@displayName</strong>
+                                    <small>@userHandle</small>
+                                </div>
+                            </div>
+
+                            <div class="admin-user-menu__divider"></div>
+
+                            <a href="@Url.Action("Perfil", "Admin")" class="admin-user-menu__item">
+                                <span><i class="bi bi-person"></i></span>
+                                Mi perfil
+                            </a>
+
+                            <a href="@Url.Action("Configuracion", "Admin")" class="admin-user-menu__item">
+                                <span data-i18n="configuracion"><i class="bi bi-gear"></i></span>
+                                Configuración
+                            </a>
+
+                            <div class="admin-user-menu__divider"></div>
+
+                            <a href="@Url.Action("Logout", "Home")" class="admin-user-menu__item admin-user-menu__item--logout">
+                                <span data-i18n="cerrarSesion"><i class="bi bi-box-arrow-left"></i></span>
+                                Cerrar sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <section class="admin-content">
@@ -184,8 +232,98 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
-    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
-    @RenderSection("scripts", required:=False)
 
+    <script>
+        $(function () {
+            $.getJSON('/Admin/DashboardData')
+                .done(function (res) {
+                    if (res && res.success !== false) {
+                        $('#adminOrdenesBadge').text(res.ordenesActivas || 0);
+                    }
+                })
+                .fail(function () {
+                    console.warn('No se pudo cargar el contador de órdenes.');
+                });
+        });
+    </script>
+
+    <script>
+        const adminTranslations = {
+            es: {
+                dashboard: "Dashboard",
+                productos: "Productos",
+                ordenes: "Órdenes",
+                clientes: "Clientes",
+                reportes: "Reportes",
+                inventario: "Inventario",
+                proveedores: "Proveedores",
+                compras: "Compras",
+                empleados: "Empleados",
+                nomina: "Nómina",
+                marketing: "Marketing",
+                produccion: "Producción",
+                perfil: "Mi perfil",
+                configuracion: "Configuración",
+                cerrarSesion: "Cerrar sesión"
+
+            },
+            en: {
+                dashboard: "Dashboard",
+                productos: "Products",
+                ordenes: "Orders",
+                clientes: "Customers",
+                reportes: "Reports",
+                inventario: "Inventory",
+                proveedores: "Suppliers",
+                compras: "Purchases",
+                empleados: "Employees",
+                nomina: "Payroll",
+                marketing: "Marketing",
+                produccion: "Production",
+                perfil: "My profile",
+                configuracion: "Settings",
+                cerrarSesion: "Log out"
+            }
+        };
+
+        function aplicarIdiomaAdmin(lang) {
+            $('[data-i18n]').each(function () {
+                const key = $(this).data('i18n');
+                if (adminTranslations[lang] && adminTranslations[lang][key]) {
+                    $(this).text(adminTranslations[lang][key]);
+                }
+            });
+
+            $('#adminLangLabel').text(lang.toUpperCase());
+            localStorage.setItem('adminLang', lang);
+        }
+
+        $(document).ready(function () {
+            $('#btnAdminLang').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $('#adminLangMenu').toggle();
+            });
+
+            $('#adminLangMenu button').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const lang = $(this).data('lang');
+                $('#adminLangMenu').hide();
+                aplicarIdiomaAdmin(lang);
+            });
+
+            $(document).on('click', function () {
+                $('#adminLangMenu').hide();
+            });
+
+            aplicarIdiomaAdmin(localStorage.getItem('adminLang') || 'es');
+        });
+    </script>
+
+    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=61")"></script>
+
+    @RenderSection("scripts", required:=False)
 </body>
 </html>

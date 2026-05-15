@@ -130,10 +130,22 @@ Namespace Repositorios
             Dim lista As New List(Of Cupon)()
 
             Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
-                Using cmd As New OracleCommand("PKG_CUPON.SP_LISTAR_CUPONES", cn)
-                    cmd.CommandType = CommandType.StoredProcedure
+                Using cmd As New OracleCommand("
+            SELECT CUPON_ID,
+                   CODIGO,
+                   DESCRIPCION,
+                   VIGENCIA_INICIO,
+                   VIGENCIA_FIN,
+                   LIMITE_USO_TOTAL,
+                   LIMITE_USO_POR_CLIENTE,
+                   USOS_ACTUALES,
+                   CREATED_AT,
+                   UPDATED_AT,
+                   ESTADO
+            FROM CUPON
+            ORDER BY CUPON_ID DESC", cn)
 
-                    cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
+                    cmd.CommandType = CommandType.Text
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
                         While dr.Read()

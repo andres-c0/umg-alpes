@@ -165,6 +165,7 @@
         $('#ordenTotalTexto').text(lista.length + ' orden' + (lista.length === 1 ? '' : 'es'));
 
         $('#countTodos').text(ordenes.length);
+        $('#adminOrdenesBadge').text(ordenes.length);
         $('#countPendiente').text(ordenes.filter(function (x) { return entero(x.EstadoOrdenId) === 30; }).length);
         $('#countProceso').text(ordenes.filter(function (x) { return entero(x.EstadoOrdenId) === 32; }).length);
         $('#countEntregado').text(ordenes.filter(function (x) { return entero(x.EstadoOrdenId) === 34; }).length);

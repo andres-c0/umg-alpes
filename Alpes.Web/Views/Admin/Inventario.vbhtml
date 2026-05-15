@@ -66,13 +66,13 @@ End Code
                 <i class="bi bi-exclamation-triangle"></i>
             </div>
             <div class="inventario-kpi__body">
-                <div class="inventario-kpi__label">Bajo mínimo</div>
+                <div class="inventario-kpi__label">Productos en alerta</div>
                 <div class="inventario-kpi__value" id="kpiInventarioBajoMinimo">0</div>
             </div>
         </div>
     </div>
 
-    <div id="inventarioListado" class="inventario-listado">
+    <div id="inventarioListado" class="inventario-listado"> 
         <div class="table-empty">Cargando inventario...</div>
     </div>
 
@@ -96,6 +96,13 @@ End Code
         <div class="modal-a__body modal-a__body--inventory">
             <input type="hidden" id="hidInventarioId" value="0" />
             <input type="hidden" id="txtProductoIdInventario" value="0" />
+
+            <div class="inventario-form__group" id="grupoProductoInventario">
+                <label for="ddlProductoInventario">Producto</label>
+                <select id="ddlProductoInventario" class="a-input no-icon">
+                    <option value="">Seleccione un producto</option>
+                </select>
+            </div>
 
             <div class="inventario-edit-summary">
                 <div class="inventario-edit-summary__title" id="invEditNombre">Producto</div>
@@ -142,5 +149,5 @@ End Code
 
 
 @section scripts
-    <script src="~/Scripts/admin-inventario.js?v=14"></script>
+    <script src="~/Scripts/admin-inventario.js?v=17"></script>
 End Section

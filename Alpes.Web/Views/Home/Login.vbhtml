@@ -22,6 +22,29 @@ End Code
 </head>
 <body>
 
+    <a href="@Url.Action("Index", "Home")"
+       class="login-back-btn"
+       style="
+        position: fixed;
+        top: 24px;
+        left: 24px;
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,255,255,.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #d8ab49;
+        font-size: 28px;
+        text-decoration: none;
+        z-index: 9999;
+        box-shadow: 0 8px 24px rgba(0,0,0,.25);
+   ">
+        <i class="bi bi-chevron-left"></i>
+    </a>
+
     <div class="auth-bg">
         <div class="auth-box">
 
