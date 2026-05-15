@@ -11,6 +11,7 @@ Imports Alpes.Servicios.Servicios
 Imports Alpes.Web.Models
 Imports Alpes.Entidades.Seguridad
 Imports System.Text.RegularExpressions
+Imports Alpes.Web.Seguridad
 
 Namespace Controllers
     Public Class HomeController
@@ -227,7 +228,7 @@ Namespace Controllers
 
             Try
                 Dim usernameIngresado As String = model.Username.Trim()
-                Dim passwordIngresado As String = model.Password.Trim()
+                Dim passwordIngresado As String = If(model.Password, String.Empty)
 
                 Dim usuarios As List(Of Usuario) = _usuarioServicio.Buscar(usernameIngresado)
 
@@ -247,9 +248,18 @@ Namespace Controllers
 
                 Dim passwordBd As String = If(usuario.PasswordHash, String.Empty).Trim()
 
-                If Not String.Equals(passwordBd, passwordIngresado, StringComparison.Ordinal) Then
+                If Not PasswordHasher.VerifyPassword(passwordIngresado, passwordBd) Then
                     ViewData("Error") = "Usuario o contraseña incorrectos."
                     Return View(model)
+                End If
+
+                If PasswordHasher.NecesitaRehash(passwordBd) Then
+                    Try
+                        usuario.PasswordHash = PasswordHasher.HashPassword(passwordIngresado)
+                        _usuarioServicio.Actualizar(usuario)
+                    Catch exHash As Exception
+                        SecurityLog.Warn("PASSWORD_REHASH", "No se pudo actualizar el hash del usuario " & usernameIngresado)
+                    End Try
                 End If
 
                 If usuario.Estado IsNot Nothing AndAlso
@@ -267,7 +277,8 @@ Namespace Controllers
                 Return RedirigirSegunRolUsuario(usuario)
 
             Catch ex As Exception
-                ViewData("Error") = "Ocurrió un error al iniciar sesión: " & ex.Message
+                SecurityLog.Warn("LOGIN_ERROR", "Error al iniciar sesión para usuario=" & If(model.Username, String.Empty))
+                ViewData("Error") = "Ocurrió un error al iniciar sesión. Intenta nuevamente."
                 Return View(model)
             End Try
         End Function
@@ -375,7 +386,7 @@ Namespace Controllers
 
                 Dim nuevoUsuario As New Usuario With {
             .Username = model.Username.Trim(),
-            .PasswordHash = model.Password.Trim(),
+            .PasswordHash = PasswordHasher.HashPassword(model.Password),
             .Email = model.Email.Trim(),
             .Telefono = model.TelefonoPrincipal,
             .RolId = rolClienteId,
@@ -401,7 +412,8 @@ Namespace Controllers
                 Return RedirectToAction("Index", "PortalCliente")
 
             Catch ex As Exception
-                ViewData("Error") = "Ocurrió un error al crear la cuenta: " & LimpiarMensaje(ex.Message)
+                SecurityLog.Warn("REGISTRO_ERROR", "Error al crear cuenta para usuario=" & If(model.Username, String.Empty))
+                ViewData("Error") = "Ocurrió un error al crear la cuenta. Revisa los datos e intenta nuevamente."
                 Return View(model)
             End Try
         End Function
@@ -414,6 +426,7 @@ Namespace Controllers
         End Function
 
         Private Sub GuardarSesionUsuario(ByVal usuario As Usuario)
+            Session.Clear()
             Session("UsuarioId") = usuario.UsuId
             Session("Username") = If(usuario.Username, String.Empty)
             Session("RolId") = usuario.RolId
@@ -480,7 +493,15 @@ Namespace Controllers
                 Return False
             End If
 
-            Return Not EsNombreRolCliente(nombreRol)
+            Dim normalizado As String = nombreRol.Trim().ToUpperInvariant()
+
+            If EsNombreRolCliente(normalizado) Then
+                Return False
+            End If
+
+            Return normalizado.Contains("ADMIN") OrElse
+                   normalizado.Contains("GERENTE") OrElse
+                   normalizado.Contains("SUPERVISOR")
         End Function
 
         Private Function EsNombreRolCliente(ByVal nombreRol As String) As Boolean
@@ -799,8 +820,8 @@ Namespace Controllers
 
             If String.IsNullOrWhiteSpace(model.Password) Then
                 ModelState.AddModelError("Password", "La contraseña es requerida.")
-            ElseIf model.Password.Length < 6 Then
-                ModelState.AddModelError("Password", "La contraseña debe tener al menos 6 caracteres.")
+            ElseIf Not PasswordHasher.CumplePolitica(model.Password) Then
+                ModelState.AddModelError("Password", "La contraseña debe tener al menos 10 caracteres e incluir mayúscula, minúscula, número y símbolo.")
             End If
 
             If String.IsNullOrWhiteSpace(model.ConfirmPassword) Then

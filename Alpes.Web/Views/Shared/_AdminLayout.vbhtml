@@ -10,8 +10,8 @@
 
     If Not String.IsNullOrWhiteSpace(username) Then
         displayName = username
+        userHandle = username
         avatarLetter = username.Substring(0, 1).ToUpper()
-        userHandle = "@" & username
     End If
 End Code
 
@@ -21,11 +21,14 @@ End Code
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData("Title") - Muebles de los Alpes</title>
+
     <link rel="stylesheet" href="@Url.Content("~/Content/alpes.css")?v=@DateTime.Now.Ticks" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 </head>
 
 <body>
+    @Html.AntiForgeryToken()
+
     <div class="admin-shell">
         <aside class="admin-sidebar">
             <div class="admin-sidebar__bg admin-sidebar__bg--top"></div>
@@ -70,7 +73,7 @@ End Code
                                 <i class="bi bi-receipt"></i>
                                 <span data-i18n="ordenes">Órdenes</span>
                             </div>
-                            <span class="admin-nav__badge" id="adminOrdenesBadge">0</span>
+                            <span class="admin-nav__badge" id="adminOrdenesBadge">9</span>
                         </a>
 
                         <a href="@Url.Action("Clientes", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Clientes", "active", ""))">
@@ -148,6 +151,14 @@ End Code
                             </div>
                             <i class="bi bi-chevron-right admin-nav__arrow"></i>
                         </a>
+
+                        <a href="@Url.Action("Configuracion", "Admin")" class="admin-nav__item @(If(ViewData("Title")?.ToString() = "Configuración", "active", ""))">
+                            <div class="admin-nav__left">
+                                <i class="bi bi-gear"></i>
+                                <span data-i18n="configuracion">Configuración</span>
+                            </div>
+                            <i class="bi bi-chevron-right admin-nav__arrow"></i>
+                        </a>
                     </nav>
                 </div>
 
@@ -162,7 +173,7 @@ End Code
 
                     <a href="@Url.Action("Logout", "Home")" class="admin-logout">
                         <i class="bi bi-box-arrow-left"></i>
-                        <span>Cerrar sesión</span>
+                        <span data-i18n="cerrarSesion">Cerrar sesión</span>
                     </a>
                 </div>
             </div>
@@ -206,19 +217,19 @@ End Code
 
                             <a href="@Url.Action("Perfil", "Admin")" class="admin-user-menu__item">
                                 <span><i class="bi bi-person"></i></span>
-                                Mi perfil
+                                <span data-i18n="perfil">Mi perfil</span>
                             </a>
 
                             <a href="@Url.Action("Configuracion", "Admin")" class="admin-user-menu__item">
-                                <span data-i18n="configuracion"><i class="bi bi-gear"></i></span>
-                                Configuración
+                                <span><i class="bi bi-gear"></i></span>
+                                <span data-i18n="configuracion">Configuración</span>
                             </a>
 
                             <div class="admin-user-menu__divider"></div>
 
                             <a href="@Url.Action("Logout", "Home")" class="admin-user-menu__item admin-user-menu__item--logout">
-                                <span data-i18n="cerrarSesion"><i class="bi bi-box-arrow-left"></i></span>
-                                Cerrar sesión
+                                <span><i class="bi bi-box-arrow-left"></i></span>
+                                <span data-i18n="cerrarSesion">Cerrar sesión</span>
                             </a>
                         </div>
                     </div>
@@ -232,6 +243,8 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
+
+    <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
 
     <script>
         $(function () {
@@ -265,7 +278,6 @@ End Code
                 perfil: "Mi perfil",
                 configuracion: "Configuración",
                 cerrarSesion: "Cerrar sesión"
-
             },
             en: {
                 dashboard: "Dashboard",
@@ -289,6 +301,7 @@ End Code
         function aplicarIdiomaAdmin(lang) {
             $('[data-i18n]').each(function () {
                 const key = $(this).data('i18n');
+
                 if (adminTranslations[lang] && adminTranslations[lang][key]) {
                     $(this).text(adminTranslations[lang][key]);
                 }
@@ -310,12 +323,24 @@ End Code
                 e.stopPropagation();
 
                 const lang = $(this).data('lang');
+
                 $('#adminLangMenu').hide();
                 aplicarIdiomaAdmin(lang);
             });
 
+            $('#btnAdminUserMenu').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $('#adminUserMenu').toggleClass('is-open');
+            });
+
+            $('#adminUserMenu').on('click', function (e) {
+                e.stopPropagation();
+            });
+
             $(document).on('click', function () {
                 $('#adminLangMenu').hide();
+                $('#adminUserMenu').removeClass('is-open');
             });
 
             aplicarIdiomaAdmin(localStorage.getItem('adminLang') || 'es');

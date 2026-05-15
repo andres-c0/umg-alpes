@@ -24,6 +24,7 @@ End Code
     <link rel="stylesheet" href="@Url.Content("~/Content/cliente-panel.css")" />
 </head>
 <body>
+    @Html.AntiForgeryToken()
     <div class="c-shell">
         <aside class="c-sidebar" id="clienteSidebar">
             <div>
@@ -122,6 +123,7 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
+    <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
     <script src="@Url.Content("~/Scripts/cliente-panel.js")"></script>
     @RenderSection("scripts", required:=False)
 </body>

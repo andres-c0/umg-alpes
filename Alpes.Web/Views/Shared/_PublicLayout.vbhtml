@@ -71,6 +71,7 @@ End Code
 </head>
 
 <body class="public-body">
+    @Html.AntiForgeryToken()
     <div class="public-shell">
         <header class="public-header">
             <div class="public-header-inner">
@@ -247,6 +248,7 @@ End Code
     </div>
 
     @Scripts.Render("~/bundles/jquery")
+    <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
     @Scripts.Render("~/bundles/bootstrap")
 
     <script src="@Url.Content("~/Scripts/home-publico.js?v=1")"></script>
