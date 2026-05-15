@@ -102,9 +102,9 @@ End Code
                 <div class="dashboard-shortcut__label">Marketing</div>
             </a>
 
-            <a href="@Url.Action("Reportes", "Admin")" class="dashboard-shortcut">
-                <div class="dashboard-shortcut__icon"><i class="bi bi-bar-chart"></i></div>
-                <div class="dashboard-shortcut__label">Reportes</div>
+            <a href="@Url.Action("Cupones", "Admin")" class="dashboard-shortcut">
+                <div class="dashboard-shortcut__icon"><i class="bi bi-tag-fill"></i></div>
+                <div class="dashboard-shortcut__label">Cupones</div>
             </a>
         </div>
     </div>
@@ -137,8 +137,12 @@ End Code
                 <div class="dashboard-shortcut__icon"><i class="bi bi-hammer"></i></div>
                 <div class="dashboard-shortcut__label">Producción</div>
             </a>
+            <a href="@Url.Action("Reportes", "Admin")" class="dashboard-shortcut">
+                <div class="dashboard-shortcut__icon"><i class="bi bi-bar-chart"></i></div>
+                <div class="dashboard-shortcut__label">Reportes</div>
+            </a>
 
-            
+
         </div>
     </div>
 </div>

@@ -48,19 +48,19 @@ End Code
         <div class="mhome-kpis">
             <article class="mhome-kpi">
                 <div class="mhome-kpi-icon brown"><i class="bi bi-bag-check"></i></div>
-                <strong>2</strong>
+                <strong id="ciPedidosTotal">0</strong>
                 <span>ORDENES<br />TOTALES</span>
             </article>
 
             <article class="mhome-kpi">
                 <div class="mhome-kpi-icon green"><i class="bi bi-truck"></i></div>
-                <strong>0</strong>
+                <strong id="ciPedidosActivos">0</strong>
                 <span>EN<br />CAMINO</span>
             </article>
 
             <article class="mhome-kpi">
                 <div class="mhome-kpi-icon gold"><i class="bi bi-check-circle"></i></div>
-                <strong>0</strong>
+                <strong id="ciPedidosEntregados">0</strong>
                 <span>ENTREGADOS</span>
             </article>
 
@@ -81,7 +81,7 @@ End Code
                 </div>
                 <a href="@Url.Action("MisOrdenes", "PortalCliente")">Ver todos →</a>
             </div>
-      
+
             <div id="mhomeOrdenesRecientes" class="mhome-orders-list">
                 <div class="mhome-mini-empty">Cargando órdenes...</div>
             </div>
@@ -95,14 +95,8 @@ End Code
                 </div>
             </div>
 
-            <div class="mhome-track-card">
-                <strong>Orden #ORD-2026-0001</strong>
-                <span>Sofá Alpino — estimado</span>
-                <br />
-                <span>✅ Orden confirmado</span>
-                <span>🟡 En producción</span>
-                <span>○ En camino</span>
-                <span>○ Entregado</span>
+            <div class="mhome-track-card" id="mhomeTrackingActual">
+                <div class="mhome-mini-empty">Cargando seguimiento...</div>
             </div>
         </article>
     </section>
@@ -244,26 +238,75 @@ End Code
             return p.PrecioActual || p.precioActual || p.Precio || p.precio || p.PrecioUnitario || p.precioUnitario || 0;
         }
 
-        fetch("/PortalCliente/ObtenerMisOrdenesData")
+        fetch("/PortalCliente/ObtenerMisOrdenesData", {
+            method: "GET",
+            credentials: "same-origin",
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 var ordenes = res.data || res.Data || [];
                 var cont = document.getElementById("mhomeOrdenesRecientes");
+                var tracking = document.getElementById("mhomeTrackingActual");
+                var totalGastado = 0;
+                var activas = 0;
+                var entregadas = 0;
 
-                if (!cont) return;
+                ordenes.forEach(function (o) {
+                    var estado = String(o.EstadoUi || o.Estado || "").toUpperCase();
+                    totalGastado += Number(o.Total || o.TotalOrden || 0);
 
-                cont.innerHTML = ordenes.length
-                    ? ordenes.slice(0, 2).map(function (o) {
-                        return `
-                        <div class="mhome-order-item">
-                            <div>
-                               <strong>${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Order" : "Orden"} ${o.NumOrden || o.NumeroOrden || o.Codigo || ""}</strong>
-                                <span>Mueble Alpes</span>
-                            </div>
-                            <b>${money(o.Total || o.TotalOrden || 0)}</b>
-                        </div>`;
-                    }).join("")
-                    : `<div class="mhome-mini-empty">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "No recent orders." : "Sin órdenes recientes."}</div>`;
+                    if (estado.indexOf("ENTREG") >= 0) {
+                        entregadas++;
+                    } else if (estado.indexOf("CANCEL") < 0) {
+                        activas++;
+                    }
+                });
+
+                var totalPedidos = document.getElementById("ciPedidosTotal");
+                var pedidosActivos = document.getElementById("ciPedidosActivos");
+                var pedidosEntregados = document.getElementById("ciPedidosEntregados");
+                var totalComprado = document.getElementById("ciTotalComprado");
+
+                if (totalPedidos) totalPedidos.textContent = ordenes.length;
+                if (pedidosActivos) pedidosActivos.textContent = activas;
+                if (pedidosEntregados) pedidosEntregados.textContent = entregadas;
+                if (totalComprado) totalComprado.textContent = money(totalGastado);
+
+                if (cont) {
+                    cont.innerHTML = ordenes.length
+                        ? ordenes.slice(0, 2).map(function (o) {
+                            return `
+                            <a class="mhome-order-item" href="/PortalCliente/DetalleOrden/${o.OrdenVentaId || ""}">
+                                <div>
+                                   <strong>${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Order" : "Orden"} ${o.NumOrden || o.NumeroOrden || o.Codigo || ""}</strong>
+                                    <span>${o.FechaOrdenTexto || o.FechaOrden || o.Fecha || ""}</span>
+                                </div>
+                                <b>${money(o.Total || o.TotalOrden || 0)}</b>
+                            </a>`;
+                        }).join("")
+                        : `<div class="mhome-mini-empty">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "No recent orders." : "Sin órdenes recientes."}</div>`;
+                }
+
+                if (tracking) {
+                    var activa = ordenes.filter(function (o) {
+                        var estado = String(o.EstadoUi || o.Estado || "").toUpperCase();
+                        return estado.indexOf("ENTREG") < 0 && estado.indexOf("CANCEL") < 0;
+                    })[0];
+
+                    tracking.innerHTML = activa
+                        ? `<strong>Orden ${activa.NumOrden || activa.NumeroOrden || ""}</strong>
+                           <span>${activa.Resumen || "Pedido en proceso"}</span>
+                           <br />
+                           <span>✅ Orden confirmada</span>
+                           <span>${String(activa.EstadoUi || "").toUpperCase().indexOf("CAMINO") >= 0 ? "✅" : "🟡"} ${activa.EstadoUi || "En proceso"}</span>
+                           <a href="/PortalCliente/Tracking?ordenVentaId=${activa.OrdenVentaId || ""}">Ver tracking →</a>`
+                        : `<div class="mhome-mini-empty">No tienes envíos activos.</div>`;
+                }
+
+                if (window.PortalClienteActualizarBadges) {
+                    window.PortalClienteActualizarBadges();
+                }
             });
 
         fetch("/PortalCliente/ObtenerCatalogoData")
