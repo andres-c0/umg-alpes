@@ -1103,14 +1103,21 @@ Namespace Controllers
                     End If
                 Next
 
+                Dim totalOrdenesCliente As Integer = 0
+                For Each orden As Orden_Venta In ordenes
+                    If orden IsNot Nothing AndAlso orden.CliId = cliId Then
+                        totalOrdenesCliente += 1
+                    End If
+                Next
+
                 Return Json(New With {
-    .ok = True,
-    .data = New With {
-        .totalOrdenes = ordenes.Count,
-        .carritoItems = carritoItems,
-        .ordenesActivas = ordenesActivas
-    }
-}, JsonRequestBehavior.AllowGet)
+                    .ok = True,
+                    .data = New With {
+                        .totalOrdenes = totalOrdenesCliente,
+                        .carritoItems = carritoItems,
+                        .ordenesActivas = ordenesActivas
+                    }
+                }, JsonRequestBehavior.AllowGet)
 
             Catch ex As Exception
                 Return Json(New With {
