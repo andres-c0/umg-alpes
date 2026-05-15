@@ -125,6 +125,7 @@ End Code
     @Scripts.Render("~/bundles/jquery")
     <script src="@Url.Content("~/Scripts/alpes-security.js")"></script>
     <script src="@Url.Content("~/Scripts/cliente-panel.js")"></script>
+    <script src="@Url.Content("~/Scripts/portal-idioma.js?v=10")"></script>
     @RenderSection("scripts", required:=False)
 </body>
 </html>
