@@ -9484,3 +9484,18 @@ textarea.a-input {
         #adminLangMenu button:hover {
             background: #f7f2eb !important;
         }
+
+/* Ajuste final - Select de tipo de documento en registro */
+.auth-card--register .a-input-wrap select.a-input {
+    padding-left: 44px !important;
+    padding-right: 42px !important;
+    background-color: var(--crema-fondo);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23947452' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.8' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 14px 14px;
+}
+
+    .auth-card--register .a-input-wrap select.a-input option {
+        color: var(--cafe-oscuro);
+    }
