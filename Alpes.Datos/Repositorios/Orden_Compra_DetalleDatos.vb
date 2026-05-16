@@ -73,7 +73,7 @@ Namespace Repositorios
         Public Function ObtenerPorId(ByVal id As Integer) As Orden_Compra_Detalle
             Dim entidad As Orden_Compra_Detalle = Nothing
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_ORDEN_COMPRA_DETALLE.SP_OBTENER_ORDEN_COMPRA_DETALLE", cn)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.BindByName = True
@@ -95,7 +95,7 @@ Namespace Repositorios
         Public Function Listar() As List(Of Orden_Compra_Detalle)
             Dim lista As New List(Of Orden_Compra_Detalle)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_ORDEN_COMPRA_DETALLE.SP_LISTAR_ORDEN_COMPRA_DETALLE", cn)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.BindByName = True
@@ -116,7 +116,7 @@ Namespace Repositorios
         Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of Orden_Compra_Detalle)
             Dim lista As New List(Of Orden_Compra_Detalle)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_ORDEN_COMPRA_DETALLE.SP_BUSCAR_ORDEN_COMPRA_DETALLE", cn)
                     cmd.CommandType = CommandType.StoredProcedure
                     cmd.BindByName = True

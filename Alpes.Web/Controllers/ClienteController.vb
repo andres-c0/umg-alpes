@@ -1,125 +1,263 @@
 ﻿Option Strict On
 Option Explicit On
 
-Imports System.IO
+Imports System.Linq
 Imports System.Web.Mvc
-Imports Newtonsoft.Json
-Imports Alpes.Servicios.Servicios
+Imports Alpes.Entidades
 Imports Alpes.Entidades.Clientes
+Imports Alpes.Servicios.Servicios
 
-Public Class ClienteController
-    Inherits Controller
+Namespace Controllers
+    Public Class ClienteController
+        Inherits Controller
 
-    Private ReadOnly _servicio As ClienteServicio
+        Private ReadOnly _servicio As ClienteServicio
 
-    Public Sub New()
-        _servicio = New ClienteServicio()
-    End Sub
+        Public Sub New()
+            _servicio = New ClienteServicio()
+        End Sub
 
-    Function Index() As ActionResult
-        Dim lista As List(Of Cliente) = _servicio.Listar()
-        Return Json(lista, JsonRequestBehavior.AllowGet)
-    End Function
+        ' =========================
+        ' VISTAS
+        ' =========================
+        Function Index() As ActionResult
+            Return View("~/Views/PortalCliente/Index.vbhtml")
+        End Function
 
-    Function Obtener(ByVal id As Integer) As ActionResult
-        Try
-            Dim entidad As Cliente = _servicio.ObtenerPorId(id)
+        Function Catalogo() As ActionResult
+            Return View()
+        End Function
 
-            If entidad Is Nothing Then
+        Function Carrito() As ActionResult
+            Return View()
+        End Function
+
+        Function Favoritos() As ActionResult
+            Return View()
+        End Function
+
+        Function Perfil() As ActionResult
+            Return View()
+        End Function
+
+        Function Pedidos() As ActionResult
+            Return View()
+        End Function
+
+        ' =========================
+        ' JSON PARA ADMIN
+        ' =========================
+        <HttpGet>
+        Public Function ListarJson() As ActionResult
+            Try
+                Dim lista = _servicio.Listar()
+
+                Dim resultado = lista.Select(Function(c) New With {
+                    .CliId = c.CliId,
+                    .TipoDocumento = c.TipoDocumento,
+                    .NumDocumento = c.NumDocumento,
+                    .Nombres = c.Nombres,
+                    .Apellidos = c.Apellidos,
+                    .NombreCompleto = ((If(c.Nombres, "") & " " & If(c.Apellidos, "")).Trim()),
+                    .Email = c.Email,
+                    .TelResidencia = c.TelResidencia,
+                    .TelCelular = c.TelCelular,
+                    .Direccion = c.Direccion,
+                    .Ciudad = c.Ciudad,
+                    .Departamento = c.Departamento,
+                    .Pais = c.Pais,
+                    .Estado = c.Estado
+                }).ToList()
+
+                Return Json(resultado, JsonRequestBehavior.AllowGet)
+            Catch ex As Exception
+                Response.StatusCode = 500
                 Return Json(New With {
                     .success = False,
-                    .message = "No se encontró el registro."
+                    .message = ex.Message
                 }, JsonRequestBehavior.AllowGet)
-            End If
+            End Try
+        End Function
 
-            Return Json(New With {
-                .success = True,
-                .data = entidad
-            }, JsonRequestBehavior.AllowGet)
-        Catch ex As Exception
-            Return Json(New With {
-                .success = False,
-                .message = ex.Message
-            }, JsonRequestBehavior.AllowGet)
-        End Try
-    End Function
+        <HttpGet>
+        Public Function Obtener(ByVal id As Integer) As ActionResult
+            Try
+                Dim c = _servicio.ObtenerPorId(id)
 
-    Function Buscar(ByVal criterio As String, ByVal valor As String) As ActionResult
-        Try
-            Dim lista As List(Of Cliente) = _servicio.Buscar(criterio, valor)
+                If c Is Nothing OrElse c.CliId <= 0 Then
+                    Response.StatusCode = 404
+                    Return Json(New With {
+                        .success = False,
+                        .message = "Cliente no encontrado."
+                    }, JsonRequestBehavior.AllowGet)
+                End If
 
-            Return Json(New With {
-                .success = True,
-                .data = lista
-            }, JsonRequestBehavior.AllowGet)
-        Catch ex As Exception
-            Return Json(New With {
-                .success = False,
-                .message = ex.Message
-            }, JsonRequestBehavior.AllowGet)
-        End Try
-    End Function
+                Return Json(New With {
+                    .CliId = c.CliId,
+                    .TipoDocumento = c.TipoDocumento,
+                    .NumDocumento = c.NumDocumento,
+                    .Nombres = c.Nombres,
+                    .Apellidos = c.Apellidos,
+                    .Email = c.Email,
+                    .TelResidencia = c.TelResidencia,
+                    .TelCelular = c.TelCelular,
+                    .Direccion = c.Direccion,
+                    .Ciudad = c.Ciudad,
+                    .Departamento = c.Departamento,
+                    .Pais = c.Pais,
+                    .Estado = c.Estado
+                }, JsonRequestBehavior.AllowGet)
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {
+                    .success = False,
+                    .message = ex.Message
+                }, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
 
-    <HttpPost>
-    Function Insertar() As ActionResult
-        Try
-            Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim entidad As Cliente = JsonConvert.DeserializeObject(Of Cliente)(jsonBody)
+        <HttpPost>
+        Public Function Insertar(ByVal entidad As Cliente) As ActionResult
+            Try
+                If entidad Is Nothing Then
+                    Response.StatusCode = 400
+                    Return Json(New With {
+                        .success = False,
+                        .message = "Datos inválidos."
+                    })
+                End If
 
-            Dim idGenerado As Integer = _servicio.Insertar(entidad)
+                If String.IsNullOrWhiteSpace(entidad.Nombres) OrElse String.IsNullOrWhiteSpace(entidad.Apellidos) Then
+                    Response.StatusCode = 400
+                    Return Json(New With {
+                        .success = False,
+                        .message = "Nombres y apellidos son obligatorios."
+                    })
+                End If
 
-            Return Json(New With {
-                .success = True,
-                .message = "Cliente insertado correctamente.",
-                .id = idGenerado
-            })
-        Catch ex As Exception
-            Return Json(New With {
-                .success = False,
-                .message = ex.Message
-            })
-        End Try
-    End Function
+                If String.IsNullOrWhiteSpace(entidad.Email) Then
+                    Response.StatusCode = 400
+                    Return Json(New With {
+                        .success = False,
+                        .message = "El email es obligatorio."
+                    })
+                End If
 
-    <HttpPost>
-    Function Actualizar() As ActionResult
-        Try
-            Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim entidad As Cliente = JsonConvert.DeserializeObject(Of Cliente)(jsonBody)
+                Dim nuevoId As Integer = _servicio.Insertar(entidad)
 
-            _servicio.Actualizar(entidad)
+                Return Json(New With {
+                    .success = True,
+                    .message = "Cliente creado correctamente.",
+                    .CliId = nuevoId
+                })
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {
+                    .success = False,
+                    .message = ex.Message
+                })
+            End Try
+        End Function
 
-            Return Json(New With {
-                .success = True,
-                .message = "Cliente actualizado correctamente."
-            })
-        Catch ex As Exception
-            Return Json(New With {
-                .success = False,
-                .message = ex.Message
-            })
-        End Try
-    End Function
+        <HttpPost>
+        Public Function Actualizar(ByVal entidad As Cliente) As ActionResult
+            Try
+                If entidad Is Nothing OrElse entidad.CliId <= 0 Then
+                    Response.StatusCode = 400
+                    Return Json(New With {
+                        .success = False,
+                        .message = "Cliente inválido."
+                    })
+                End If
 
-    <HttpPost>
-    Function Eliminar() As ActionResult
-        Try
-            Dim jsonBody As String = New StreamReader(Request.InputStream).ReadToEnd()
-            Dim datos = JsonConvert.DeserializeObject(Of Dictionary(Of String, Integer))(jsonBody)
+                If String.IsNullOrWhiteSpace(entidad.Nombres) OrElse String.IsNullOrWhiteSpace(entidad.Apellidos) Then
+                    Response.StatusCode = 400
+                    Return Json(New With {
+                        .success = False,
+                        .message = "Nombres y apellidos son obligatorios."
+                    })
+                End If
 
-            Dim id As Integer = datos("id")
-            _servicio.Eliminar(id)
+                If String.IsNullOrWhiteSpace(entidad.Email) Then
+                    Response.StatusCode = 400
+                    Return Json(New With {
+                        .success = False,
+                        .message = "El email es obligatorio."
+                    })
+                End If
 
-            Return Json(New With {
-                .success = True,
-                .message = "Cliente eliminado correctamente."
-            })
-        Catch ex As Exception
-            Return Json(New With {
-                .success = False,
-                .message = ex.Message
-            })
-        End Try
-    End Function
+                _servicio.Actualizar(entidad)
 
-End Class
+                Return Json(New With {
+                    .success = True,
+                    .message = "Cliente actualizado correctamente."
+                })
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {
+                    .success = False,
+                    .message = ex.Message
+                })
+            End Try
+        End Function
+
+        <HttpPost>
+        Public Function Eliminar(ByVal CliId As Integer) As ActionResult
+            Try
+                If CliId <= 0 Then
+                    Response.StatusCode = 400
+                    Return Json(New With {
+                        .success = False,
+                        .message = "Id inválido."
+                    })
+                End If
+
+                _servicio.Eliminar(CliId)
+
+                Return Json(New With {
+                    .success = True,
+                    .message = "Cliente eliminado correctamente."
+                })
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {
+                    .success = False,
+                    .message = ex.Message
+                })
+            End Try
+        End Function
+
+        <HttpGet>
+        Public Function Buscar(ByVal valor As String) As ActionResult
+            Try
+                Dim lista = _servicio.Buscar("GENERAL", valor)
+
+                Dim resultado = lista.Select(Function(c) New With {
+                    .CliId = c.CliId,
+                    .TipoDocumento = c.TipoDocumento,
+                    .NumDocumento = c.NumDocumento,
+                    .Nombres = c.Nombres,
+                    .Apellidos = c.Apellidos,
+                    .NombreCompleto = ((If(c.Nombres, "") & " " & If(c.Apellidos, "")).Trim()),
+                    .Email = c.Email,
+                    .TelResidencia = c.TelResidencia,
+                    .TelCelular = c.TelCelular,
+                    .Direccion = c.Direccion,
+                    .Ciudad = c.Ciudad,
+                    .Departamento = c.Departamento,
+                    .Pais = c.Pais,
+                    .Estado = c.Estado
+                }).ToList()
+
+                Return Json(resultado, JsonRequestBehavior.AllowGet)
+            Catch ex As Exception
+                Response.StatusCode = 500
+                Return Json(New With {
+                    .success = False,
+                    .message = ex.Message
+                }, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+    End Class
+End Namespace

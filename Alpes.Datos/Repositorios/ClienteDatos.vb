@@ -131,7 +131,7 @@ Namespace Repositorios
         Public Function ObtenerPorId(ByVal id As Integer) As Cliente
             Dim entidad As Cliente = Nothing
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_CLIENTE.SP_OBTENER_CLIENTE", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -152,7 +152,7 @@ Namespace Repositorios
         Public Function Listar() As List(Of Cliente)
             Dim lista As New List(Of Cliente)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_CLIENTE.SP_LISTAR_CLIENTES", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -172,7 +172,7 @@ Namespace Repositorios
         Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of Cliente)
             Dim lista As New List(Of Cliente)()
 
-            Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
+            Using cn As OracleConnection = _conexionOracle.ObtenerConexionReplica()
                 Using cmd As New OracleCommand("PKG_CLIENTE.SP_BUSCAR_CLIENTES", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
@@ -220,10 +220,20 @@ Namespace Repositorios
             Dim entidad As New Cliente()
 
             entidad.CliId = Convert.ToInt32(dr("CLI_ID"))
-            entidad.NumDocumento = dr("NUM_DOCUMENTO").ToString()
-            entidad.NombreCompleto = dr("NOMBRE_COMPLETO").ToString()
-            entidad.Email = dr("EMAIL").ToString()
-            entidad.Ciudad = dr("CIUDAD").ToString()
+            entidad.TipoDocumento = If(IsDBNull(dr("TIPO_DOCUMENTO")), Nothing, dr("TIPO_DOCUMENTO").ToString())
+            entidad.NumDocumento = If(IsDBNull(dr("NUM_DOCUMENTO")), Nothing, dr("NUM_DOCUMENTO").ToString())
+            entidad.Nit = If(IsDBNull(dr("NIT")), Nothing, dr("NIT").ToString())
+            entidad.Nombres = If(IsDBNull(dr("NOMBRES")), Nothing, dr("NOMBRES").ToString())
+            entidad.Apellidos = If(IsDBNull(dr("APELLIDOS")), Nothing, dr("APELLIDOS").ToString())
+            entidad.NombreCompleto = If(IsDBNull(dr("NOMBRE_COMPLETO")), (entidad.Nombres & " " & entidad.Apellidos).Trim(), dr("NOMBRE_COMPLETO").ToString())
+            entidad.Email = If(IsDBNull(dr("EMAIL")), Nothing, dr("EMAIL").ToString())
+            entidad.TelResidencia = If(IsDBNull(dr("TEL_RESIDENCIA")), Nothing, dr("TEL_RESIDENCIA").ToString())
+            entidad.TelCelular = If(IsDBNull(dr("TEL_CELULAR")), Nothing, dr("TEL_CELULAR").ToString())
+            entidad.Direccion = If(IsDBNull(dr("DIRECCION")), Nothing, dr("DIRECCION").ToString())
+            entidad.Ciudad = If(IsDBNull(dr("CIUDAD")), Nothing, dr("CIUDAD").ToString())
+            entidad.Departamento = If(IsDBNull(dr("DEPARTAMENTO")), Nothing, dr("DEPARTAMENTO").ToString())
+            entidad.Pais = If(IsDBNull(dr("PAIS")), Nothing, dr("PAIS").ToString())
+            entidad.Profesion = If(IsDBNull(dr("PROFESION")), Nothing, dr("PROFESION").ToString())
             entidad.Estado = If(IsDBNull(dr("ESTADO")), Nothing, dr("ESTADO").ToString())
 
             Return entidad

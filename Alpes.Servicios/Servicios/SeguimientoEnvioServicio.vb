@@ -1,8 +1,9 @@
 ﻿Option Strict On
 Option Explicit On
 
+Imports System.Collections.Generic
 Imports Alpes.Datos.Repositorios
-Imports Alpes.Entidades.Envios
+Imports Alpes.Entidades.Ventas
 
 Namespace Servicios
     Public Class SeguimientoEnvioServicio
@@ -17,16 +18,16 @@ Namespace Servicios
             Return _datos.Insertar(entidad)
         End Function
 
-        Public Sub Actualizar(ByVal entidad As SeguimientoEnvio)
-            _datos.Actualizar(entidad)
-        End Sub
+        Public Function Actualizar(ByVal entidad As SeguimientoEnvio) As Boolean
+            Return _datos.Actualizar(entidad)
+        End Function
 
-        Public Sub Eliminar(ByVal id As Integer)
-            _datos.Eliminar(id)
-        End Sub
+        Public Function Eliminar(ByVal segEnvioId As Integer) As Boolean
+            Return _datos.Eliminar(segEnvioId)
+        End Function
 
-        Public Function ObtenerPorId(ByVal id As Integer) As SeguimientoEnvio
-            Return _datos.ObtenerPorId(id)
+        Public Function ObtenerPorId(ByVal segEnvioId As Integer) As SeguimientoEnvio
+            Return _datos.ObtenerPorId(segEnvioId)
         End Function
 
         Public Function Listar() As List(Of SeguimientoEnvio)

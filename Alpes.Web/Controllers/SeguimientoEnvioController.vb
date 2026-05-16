@@ -5,7 +5,7 @@ Imports System.IO
 Imports System.Web.Mvc
 Imports Newtonsoft.Json
 Imports Alpes.Servicios.Servicios
-Imports Alpes.Entidades.Envios
+Imports Alpes.Entidades.Ventas
 
 Public Class SeguimientoEnvioController
     Inherits Controller
@@ -41,7 +41,7 @@ Public Class SeguimientoEnvioController
 
             Return Json(New With {
                 .success = True,
-                .message = "Seguimiento de envío insertado correctamente.",
+                .message = "Seguimiento de envio insertado correctamente.",
                 .id = idGenerado
             })
         Catch ex As Exception
@@ -62,7 +62,7 @@ Public Class SeguimientoEnvioController
 
             Return Json(New With {
                 .success = True,
-                .message = "Seguimiento de envío actualizado correctamente."
+                .message = "Seguimiento de envio actualizado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {
@@ -83,7 +83,7 @@ Public Class SeguimientoEnvioController
 
             Return Json(New With {
                 .success = True,
-                .message = "Seguimiento de envío eliminado correctamente."
+                .message = "Seguimiento de envio eliminado correctamente."
             })
         Catch ex As Exception
             Return Json(New With {

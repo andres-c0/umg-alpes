@@ -37,5 +37,17 @@ Namespace Servicios
             Return _datos.Buscar(valor)
         End Function
 
+        Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of ResenaComentario)
+            Return _datos.Buscar(criterio, valor)
+        End Function
+
+        Public Function ObtenerPorCliente(ByVal cliId As Integer) As List(Of ResenaComentario)
+            Return _datos.Buscar("CLI_ID", cliId.ToString())
+        End Function
+
+        Public Function ObtenerPorProducto(ByVal productoId As Integer) As List(Of ResenaComentario)
+            Return _datos.Buscar("PRODUCTO_ID", productoId.ToString())
+        End Function
+
     End Class
 End Namespace
