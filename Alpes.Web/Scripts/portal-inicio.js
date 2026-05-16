@@ -48,10 +48,13 @@
     function money(valor) {
         var numero = Number(valor || 0);
 
-        return numero.toLocaleString('es-GT', {
-            style: 'currency',
-            currency: 'GTQ',
-            minimumFractionDigits: 2
+        if (Number.isNaN(numero)) {
+            numero = 0;
+        }
+
+        return 'Q' + numero.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
     }
     function toast(msg, ok) {

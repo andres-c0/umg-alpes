@@ -9326,3 +9326,24 @@ a { color: inherit; text-decoration: none !important; }
     .config-hero .fav-pill {
         color: #431406 !important;
     }
+.mhome-order-item {
+    align-items: flex-start !important;
+}
+
+.mhome-order-producto {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+}
+
+    .mhome-order-producto strong {
+        display: block !important;
+        margin-bottom: 4px !important;
+    }
+
+.mhome-product-name {
+    display: block !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+}

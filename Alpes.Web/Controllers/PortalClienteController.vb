@@ -2363,7 +2363,11 @@ Namespace Controllers
                     estadoPaso = "current"
                 End If
 
-                Dim titulo As String = ObtenerPrimerTexto(item.Observacion, item.UbicacionTexto, "Actualizacion " & (i + 1).ToString())
+                Dim titulo As String = If(Not String.IsNullOrWhiteSpace(item.Observacion),
+                          item.Observacion,
+                          If(Not String.IsNullOrWhiteSpace(item.UbicacionTexto),
+                             item.UbicacionTexto,
+                             "Actualizacion " & (i + 1).ToString()))
                 Dim subtitulo As String = String.Empty
 
                 If item.EventoAt.HasValue Then
@@ -2469,24 +2473,36 @@ Namespace Controllers
                 Return "Orden registrada"
             End If
 
+            Try
+                Dim todosDetalles As List(Of Orden_Venta_Detalle) = _ordenVentaDetalleServicio.Listar()
+                Dim detalles As New List(Of Orden_Venta_Detalle)()
+
+                For Each det As Orden_Venta_Detalle In todosDetalles
+                    If det IsNot Nothing AndAlso det.OrdenVentaId = orden.OrdenVentaId Then
+                        detalles.Add(det)
+                    End If
+                Next
+
+                If detalles.Count > 0 Then
+                    Dim primerDetalle As Orden_Venta_Detalle = detalles(0)
+                    Dim producto As Producto = _productoServicio.ObtenerPorId(CInt(primerDetalle.ProductoId))
+
+                    If producto IsNot Nothing Then
+                        If detalles.Count = 1 Then
+                            Return producto.Nombre & " x" & primerDetalle.Cantidad.ToString()
+                        End If
+
+                        Return producto.Nombre & " + " & (detalles.Count - 1).ToString() & " producto(s)"
+                    End If
+                End If
+            Catch
+            End Try
+
             If Not String.IsNullOrWhiteSpace(orden.Observaciones) Then
                 Return orden.Observaciones
             End If
 
             Return "Orden registrada en el sistema."
-        End Function
-
-        <NonAction>
-        Private Function ObtenerPrimerTexto(ByVal valor1 As String, ByVal valor2 As String, ByVal valor3 As String) As String
-            If Not String.IsNullOrWhiteSpace(valor1) Then
-                Return valor1
-            End If
-
-            If Not String.IsNullOrWhiteSpace(valor2) Then
-                Return valor2
-            End If
-
-            Return valor3
         End Function
 
         <NonAction>

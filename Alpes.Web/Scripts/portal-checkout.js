@@ -39,9 +39,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function formatearMoneda(valor, moneda) {
         var numero = Number(valor || 0);
-        var codigo = String(moneda || 'GTQ').trim();
-        try { return new Intl.NumberFormat('es-GT', { style: 'currency', currency: codigo }).format(numero); }
-        catch (error) { return 'Q' + numero.toFixed(2); }
+
+        if (Number.isNaN(numero)) {
+            numero = 0;
+        }
+
+        return 'Q' + numero.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
     function mostrarToast(mensaje, tipo) {
@@ -198,17 +204,20 @@ document.addEventListener('DOMContentLoaded', function () {
     summaryContainer.addEventListener('click', function (e) {
         var btn = e.target.closest('#coConfirmarBtn');
         if (!btn || confirmando) return;
-        var metodoEl = getMetodoSeleccionado(), tarjetaEl = getTarjetaSeleccionada(), direccion = direccionInput.value.trim();
-        var metodoPagoId = 0, tarjetaClienteId = 0;
+        var metodoEl = document.querySelector('#coMetodosPago input[type="radio"]:checked');
+        var tarjetaEl = getTarjetaSeleccionada();
+        var direccion = direccionInput.value.trim();        var metodoPagoId = 0, tarjetaClienteId = 0;
         if (!checkoutData || !(checkoutData.Items || []).length) { mostrarToast('Tu carrito está vacío.', 'error'); return; }
         if (direccion === '') { mostrarToast('Ingresa la dirección de entrega.', 'error'); direccionInput.focus(); return; }
-        if (tabPagoActual === 'tarjetas') {
-            if (!tarjetaEl) { mostrarToast('Selecciona una tarjeta o usa Otros métodos.', 'error'); return; }
+        if (metodoEl) {
+            metodoPagoId = Number(metodoEl.value || 0);
+            tarjetaClienteId = 0;
+        } else if (tarjetaEl) {
             tarjetaClienteId = Number(tarjetaEl.value || 0);
             metodoPagoId = inferirMetodoPagoTarjeta();
         } else {
-            if (!metodoEl) { mostrarToast('Selecciona un método de pago.', 'error'); return; }
-            metodoPagoId = Number(metodoEl.value || 0);
+            mostrarToast('Selecciona un método de pago.', 'error');
+            return;
         }
         if (metodoPagoId <= 0) { mostrarToast('No hay método de pago válido para confirmar.', 'error'); return; }
         confirmando = true; btn.disabled = true; btn.textContent = 'CONFIRMANDO...';
