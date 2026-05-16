@@ -54,7 +54,7 @@ End Code
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     @Styles.Render("~/Content/css")
-    <link rel="stylesheet" href="@Url.Content("~/Content/portal-cliente.css?v=18")" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/portal-cliente.css?v=20")" />
 </head>
 <body>
     @Html.AntiForgeryToken()

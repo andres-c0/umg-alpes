@@ -19,5 +19,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-detalle-producto.js?v=16")"></script>
+    <script src="@Url.Content("~/Scripts/portal-detalle-producto.js?v=18")"></script>
 End Section

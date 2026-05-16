@@ -87,6 +87,23 @@
         });
     }
 
+    function construirRatingCatalogo(item) {
+        var promedio = Number(item.PromedioCalificacion || item.promedioCalificacion || 0);
+        var total = Number(item.TotalResenas || item.totalResenas || 0);
+        var html = '';
+        var ratingRedondeado = Math.round(promedio);
+
+        for (var i = 1; i <= 5; i += 1) {
+            html += '<i class="bi ' + (i <= ratingRedondeado ? 'bi-star-fill' : 'bi-star') + '"></i>';
+        }
+
+        if (!total) {
+            return '<div class="pi-review-summary pi-review-summary--empty"><span>' + html + '</span><small>Sin reseñas</small></div>';
+        }
+
+        return '<div class="pi-review-summary"><span>' + html + '</span><small>' + promedio.toFixed(1) + ' · ' + total + ' reseña(s)</small></div>';
+    }
+
     function imagenValida(url) {
         var texto = String(url || '').trim();
         return texto !== '' && (texto.indexOf('http://') === 0 || texto.indexOf('https://') === 0 || texto.indexOf('/') === 0 || texto.indexOf('data:image') === 0);
@@ -121,6 +138,7 @@
             + '  <div class="pi-card-body">'
             + '      <div class="pi-category">' + escapeHtml(categoria) + '</div>'
             + '      <h3 class="pi-card-title">' + escapeHtml(producto.Nombre || 'Producto sin nombre') + '</h3>'
+            + construirRatingCatalogo(item)
             + '      <p class="pi-card-desc">' + escapeHtml(descripcion) + '</p>'
             + '      <div class="pi-card-meta">'
             + (producto.Referencia ? '<span><i class="bi bi-tag"></i>' + escapeHtml(producto.Referencia) + '</span>' : '')

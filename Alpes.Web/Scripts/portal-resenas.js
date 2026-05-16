@@ -148,7 +148,6 @@
             var contenido = [
                 producto.Nombre || producto.nombre || '',
                 producto.Referencia || producto.referencia || '',
-                r.Comentario || r.comentario || '',
                 estado
             ].join(' ').toLowerCase();
 
@@ -184,7 +183,10 @@
             var productoId = r.ProductoId || r.productoId || producto.ProductoId || producto.productoId || 0;
             var nombre = producto.Nombre || producto.nombre || ('Producto #' + productoId);
             var imagen = producto.ImagenUrl || producto.imagenUrl || '';
-            var comentario = r.Comentario || r.comentario || 'Sin comentario adicional.';
+            var comentarioDisponible = r.ComentarioTextoDisponible === true || r.comentarioTextoDisponible === true;
+            var comentario = comentarioDisponible && (r.Comentario || r.comentario)
+                ? (r.Comentario || r.comentario)
+                : 'Tu reseña está registrada.';
             var estado = r.Estado || r.estado || 'ACTIVO';
             var resenaId = r.ResenaId || r.resenaId || 0;
             var calificacion = r.Calificacion || r.calificacion || 0;
