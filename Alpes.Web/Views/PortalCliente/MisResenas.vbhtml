@@ -118,7 +118,7 @@ End Code
     <div id="resenasGrid" class="pc-review-grid"></div>
 </section>
 
-<div class="pc-modal" id="modalNuevaResena" aria-hidden="true">
+<div class="pc-modal" idgit ="modalNuevaResena" aria-hidden="true">
     <div class="pc-modal-backdrop" data-close-modal="modalNuevaResena"></div>
     <div class="pc-modal-dialog pc-review-modal">
         <div class="pc-modal-header">

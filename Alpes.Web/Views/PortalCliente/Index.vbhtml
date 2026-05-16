@@ -196,7 +196,7 @@ End Code
     document.addEventListener("DOMContentLoaded", function () {
         function money(valor) {
             var n = Number(valor || 0);
-            return 'Q' + n.toLocaleString('es-GT', {
+            return 'Q' + n.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
@@ -222,20 +222,28 @@ End Code
             }, 2500);
         }
 
+        function getProducto(p) {
+            return p.Producto || p.producto || p;
+        }
+
         function imagen(p) {
-            return p.ImagenUrl || p.imagenUrl || p.Imagen || p.UrlImagen || p.urlImagen || "";
+            var prod = getProducto(p);
+            return prod.ImagenUrl || prod.imagenUrl || prod.Imagen || prod.UrlImagen || prod.urlImagen || "";
         }
 
         function nombre(p) {
-            return p.Nombre || p.nombre || p.NombreProducto || p.nombreProducto || "Producto";
+            var prod = getProducto(p);
+            return prod.Nombre || prod.nombre || prod.NombreProducto || prod.nombreProducto || "Producto";
         }
 
         function productoId(p) {
-            return p.ProductoId || p.productoId || p.PRODUCTO_ID || 0;
+            var prod = getProducto(p);
+            return prod.ProductoId || prod.productoId || prod.PRODUCTO_ID || 0;
         }
 
         function precio(p) {
-            return p.PrecioActual || p.precioActual || p.Precio || p.precio || p.PrecioUnitario || p.precioUnitario || 0;
+            var prod = getProducto(p);
+            return prod.PrecioActual || prod.precioActual || prod.Precio || prod.precio || prod.PrecioUnitario || prod.precioUnitario || 0;
         }
 
         fetch("/PortalCliente/ObtenerMisOrdenesData", {
@@ -277,15 +285,15 @@ End Code
                     cont.innerHTML = ordenes.length
                         ? ordenes.slice(0, 2).map(function (o) {
                             return `
-                            <a class="mhome-order-item" href="/PortalCliente/DetalleOrden/${o.OrdenVentaId || ""}">
-                                <div>
-                                   <strong>${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Order" : "Orden"} ${o.NumOrden || o.NumeroOrden || o.Codigo || ""}</strong>
-                                    <span>${o.FechaOrdenTexto || o.FechaOrden || o.Fecha || ""}</span>
-                                </div>
-                                <b>${money(o.Total || o.TotalOrden || 0)}</b>
-                            </a>`;
+                    <a class="mhome-order-item" href="/PortalCliente/DetalleOrden/${o.OrdenVentaId || ""}">
+                        <div class="mhome-order-producto">
+                            <strong>${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Order" : "Orden"} ${o.NumOrden || o.NumeroOrden || o.Codigo || ""}</strong>
+                            <span class="mhome-product-name">${o.Resumen || "Producto no disponible"}</span>
+                        </div>
+                        <b>${money(o.Total || o.TotalOrden || 0)}</b>
+                    </a>`;
                         }).join("")
-                        : `<div class="mhome-mini-empty">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "No recent orders." : "Sin órdenes recientes."}</div>`;
+                        : `<div class="mhome-mini-empty">Sin órdenes recientes.</div>`;
                 }
 
                 if (tracking) {
@@ -295,12 +303,11 @@ End Code
                     })[0];
 
                     tracking.innerHTML = activa
-                        ? `<strong>Orden ${activa.NumOrden || activa.NumeroOrden || ""}</strong>
-                           <span>${activa.Resumen || "Pedido en proceso"}</span>
-                           <br />
-                           <span>✅ Orden confirmada</span>
-                           <span>${String(activa.EstadoUi || "").toUpperCase().indexOf("CAMINO") >= 0 ? "✅" : "🟡"} ${activa.EstadoUi || "En proceso"}</span>
-                           <a href="/PortalCliente/Tracking?ordenVentaId=${activa.OrdenVentaId || ""}">Ver tracking →</a>`
+                        ? `<strong>Orden ${activa.NumOrden || ""}</strong>
+               <span>${activa.Resumen || "Pedido en proceso"}</span>
+               <span>✅ Orden confirmada</span>
+               <span>${activa.EstadoUi || "En proceso"}</span>
+               <a href="/PortalCliente/Tracking?ordenVentaId=${activa.OrdenVentaId || ""}">Ver tracking →</a>`
                         : `<div class="mhome-mini-empty">No tienes envíos activos.</div>`;
                 }
 
@@ -308,14 +315,15 @@ End Code
                     window.PortalClienteActualizarBadges();
                 }
             });
-
-        fetch("/PortalCliente/ObtenerCatalogoData")
+            
+        fetch("/PortalCliente/ObtenerCatalogoData", {
+            method: "GET",
+            credentials: "same-origin",
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
             .then(function (r) { return r.json(); })
             .then(function (res) {
-                var data = res.data || res.Data || res || [];
-                var productos = data.map(function (x) {
-                    return x.Producto || x.producto || x;
-                });
+                var productos = res.data || res.Data || res || [];
 
                 var paraTi = document.getElementById("homeParaTi");
                 var grandes = document.getElementById("homeProductosGrandes");
@@ -324,33 +332,33 @@ End Code
                 if (paraTi) {
                     paraTi.innerHTML = productos.slice(0, 8).map(function (p) {
                         return `
-                        <div class="mhome-product-mini">
-                            <img src="${imagen(p)}" />
-                            <h4>${nombre(p)}</h4>
-                            <strong>${money(precio(p))}</strong>
-                            <button type="button" data-add-cart="${productoId(p)}">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Add" : "Agregar"}</button>
-                        </div>`;
+                <div class="mhome-product-mini">
+                    <img src="${imagen(p)}" />
+                    <h4>${nombre(p)}</h4>
+                    <strong>${money(precio(p))}</strong>
+                    <button type="button" data-add-cart="${productoId(p)}">Añadir</button>
+                </div>`;
                     }).join("");
                 }
 
                 if (grandes) {
                     grandes.innerHTML = productos.slice(0, 2).map(function (p) {
                         return `
-                        <div class="mhome-large-card">
-                            <img src="${imagen(p)}" />
-                        </div>`;
+                <div class="mhome-large-card">
+                    <img src="${imagen(p)}" />
+                </div>`;
                     }).join("");
                 }
 
                 if (catalogo) {
                     catalogo.innerHTML = productos.map(function (p) {
                         return `
-                        <div class="mhome-catalogo-card">
-                            <img src="${imagen(p)}" />
-                            <h4>${nombre(p)}</h4>
-                            <strong>${money(precio(p))}</strong>
-                            <button type="button" data-add-cart="${productoId(p)}">${window.PortalIdioma && window.PortalIdioma.get && window.PortalIdioma.get() === "en" ? "Add" : "Agregar"}</button>
-                        </div>`;
+                <div class="mhome-catalogo-card">
+                    <img src="${imagen(p)}" />
+                    <h4>${nombre(p)}</h4>
+                    <strong>${money(precio(p))}</strong>
+                    <button type="button" data-add-cart="${productoId(p)}">Agregar</button>
+                </div>`;
                     }).join("");
                 }
             });
