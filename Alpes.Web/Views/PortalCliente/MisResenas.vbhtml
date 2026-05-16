@@ -180,5 +180,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-resenas.js?v=26")"></script>
+    <script src="@Url.Content("~/Scripts/portal-resenas.js?v=27")"></script>
 End Section

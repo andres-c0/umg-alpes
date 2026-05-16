@@ -703,6 +703,7 @@ Namespace Controllers
             Try
                 Dim productos As List(Of Producto) = _productoServicio.Listar()
                 Dim favoritos As List(Of ListaDeseos) = _listaDeseosServicio.Buscar("CLI_ID", cliId.ToString())
+                Dim resenasActivas As List(Of ResenaComentario) = ObtenerResenasActivas()
                 Dim favoritosMap As New Dictionary(Of Integer, Integer)()
 
                 For Each favorito As ListaDeseos In favoritos
@@ -730,10 +731,14 @@ Namespace Controllers
                         esFavorito = True
                     End If
 
+                    Dim resumenResenas As ResumenResenasProducto = ObtenerResumenResenas(producto.ProductoId, resenasActivas)
+
                     resultado.Add(New With {
                         .ListaDeseosId = listaDeseosId,
                         .EsFavorito = esFavorito,
                         .Score = 0D,
+                        .TotalResenas = resumenResenas.Total,
+                        .PromedioCalificacion = resumenResenas.Promedio,
                         .Producto = New With {
                             .ProductoId = producto.ProductoId,
                             .Referencia = producto.Referencia,
@@ -780,6 +785,9 @@ Namespace Controllers
                 End If
 
                 Dim favoritos As List(Of ListaDeseos) = _listaDeseosServicio.Buscar("CLI_ID", cliId.ToString())
+                Dim resenasProducto As List(Of ResenaComentario) = _resenaComentarioServicio.ObtenerPorProducto(producto.ProductoId)
+                Dim resumenResenas As ResumenResenasProducto = ObtenerResumenResenas(producto.ProductoId, resenasProducto)
+
                 Dim listaDeseosId As Integer = 0
                 Dim esFavorito As Boolean = False
 
@@ -797,6 +805,9 @@ Namespace Controllers
                     .data = New With {
                         .ListaDeseosId = listaDeseosId,
                         .EsFavorito = esFavorito,
+                        .TotalResenas = resumenResenas.Total,
+                        .PromedioCalificacion = resumenResenas.Promedio,
+                        .ComentarioTextoDisponible = False,
                         .Producto = New With {
                             .ProductoId = producto.ProductoId,
                             .Referencia = producto.Referencia,
@@ -814,72 +825,6 @@ Namespace Controllers
                 }, JsonRequestBehavior.AllowGet)
             Catch ex As Exception
                 Return JsonError("No se pudo obtener el detalle del producto: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
-            End Try
-        End Function
-
-        <HttpGet>
-        Function ObtenerMisResenasData() As ActionResult
-            Dim cliId As Integer = 0
-
-            If Not TryObtenerCliIdAutenticado(cliId) Then
-                Return JsonError("Sesion no valida.", 401, JsonRequestBehavior.AllowGet)
-            End If
-
-            Try
-                Dim resenas As List(Of ResenaComentario) = _resenaComentarioServicio.Buscar(cliId.ToString())
-                Dim productos As New Dictionary(Of Integer, Producto)()
-
-                Try
-                    For Each producto As Producto In _productoServicio.Listar()
-                        If producto IsNot Nothing AndAlso Not productos.ContainsKey(producto.ProductoId) Then
-                            productos.Add(producto.ProductoId, producto)
-                        End If
-                    Next
-                Catch
-                    productos = New Dictionary(Of Integer, Producto)()
-                End Try
-
-                Dim resultado As New List(Of Object)()
-
-                For Each r As ResenaComentario In resenas
-                    If r Is Nothing OrElse r.CliId <> cliId Then
-                        Continue For
-                    End If
-
-                    Dim producto As Producto = Nothing
-                    If productos.ContainsKey(r.ProductoId) Then
-                        producto = productos(r.ProductoId)
-                    End If
-
-                    resultado.Add(New With {
-                        .ResenaId = r.ResenaId,
-                        .CliId = r.CliId,
-                        .ProductoId = r.ProductoId,
-                        .Calificacion = If(r.Calificacion.HasValue, r.Calificacion.Value, 0D),
-                        .Comentario = If(r.Comentario, String.Empty),
-                        .ResenaAt = r.ResenaAt,
-                        .Estado = r.Estado,
-                        .Producto = If(producto Is Nothing, Nothing, New With {
-                            .ProductoId = producto.ProductoId,
-                            .Nombre = producto.Nombre,
-                            .Referencia = producto.Referencia,
-                            .Descripcion = producto.Descripcion,
-                            .ImagenUrl = producto.ImagenUrl,
-                            .Tipo = producto.Tipo,
-                            .Material = producto.Material,
-                            .Color = producto.Color,
-                            .PrecioActual = ObtenerPrecioActualProducto(producto.ProductoId)
-                        })
-                    })
-                Next
-
-                Return Json(New With {
-                    .ok = True,
-                    .success = True,
-                    .data = resultado
-                }, JsonRequestBehavior.AllowGet)
-            Catch ex As Exception
-                Return JsonError("No se pudieron obtener las resenas: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
             End Try
         End Function
 
@@ -908,9 +853,43 @@ Namespace Controllers
                     Return JsonError("La calificacion debe estar entre 1 y 5 estrellas.")
                 End If
 
+                If Not String.IsNullOrWhiteSpace(comentario) AndAlso comentario.Length > 1000 Then
+                    Return JsonError("El comentario no puede superar los 1000 caracteres.")
+                End If
+
                 Dim producto As Producto = _productoServicio.ObtenerPorId(productoId)
+
                 If producto Is Nothing Then
                     Return JsonError("No se encontro el producto seleccionado.", 404)
+                End If
+
+                Dim resenasCliente As List(Of ResenaComentario) = _resenaComentarioServicio.ObtenerPorCliente(cliId)
+                Dim existente As ResenaComentario = Nothing
+
+                For Each r As ResenaComentario In resenasCliente
+                    If r IsNot Nothing AndAlso r.ProductoId = productoId AndAlso String.Equals(r.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                        existente = r
+                        Exit For
+                    End If
+                Next
+
+                If existente IsNot Nothing Then
+                    existente.Calificacion = calificacion
+                    existente.Comentario = comentario
+                    existente.ResenaAt = DateTime.Now
+                    existente.Estado = "ACTIVO"
+
+                    _resenaComentarioServicio.Actualizar(existente)
+
+                    Return Json(New With {
+                        .ok = True,
+                        .success = True,
+                        .message = "Resena actualizada correctamente.",
+                        .data = New With {
+                            .ResenaId = existente.ResenaId,
+                            .Actualizada = True
+                        }
+                    })
                 End If
 
                 Dim nueva As New ResenaComentario() With {
@@ -929,11 +908,164 @@ Namespace Controllers
                     .success = True,
                     .message = "Resena guardada correctamente.",
                     .data = New With {
-                        .ResenaId = idGenerado
+                        .ResenaId = idGenerado,
+                        .Actualizada = False
                     }
                 })
             Catch ex As Exception
                 Return JsonError("No se pudo guardar la resena: " & LimpiarMensaje(ex.Message), 500)
+            End Try
+        End Function
+
+        <HttpGet>
+        Function ObtenerResenasProductoData(ByVal productoId As Integer) As ActionResult
+            Dim cliId As Integer = 0
+
+            If Not TryObtenerCliIdAutenticado(cliId) Then
+                Return JsonError("Sesion no valida.", 401, JsonRequestBehavior.AllowGet)
+            End If
+
+            Try
+                If productoId <= 0 Then
+                    Return JsonError("Debe enviar un producto valido.", 400, JsonRequestBehavior.AllowGet)
+                End If
+
+                Dim producto As Producto = _productoServicio.ObtenerPorId(productoId)
+
+                If producto Is Nothing Then
+                    Return JsonError("No se encontro el producto.", 404, JsonRequestBehavior.AllowGet)
+                End If
+
+                Dim resenas As List(Of ResenaComentario) = _resenaComentarioServicio.ObtenerPorProducto(productoId)
+                Dim resumen As ResumenResenasProducto = ObtenerResumenResenas(productoId, resenas)
+                Dim resultado As New List(Of Object)()
+                Dim clientesCache As New Dictionary(Of Integer, String)()
+                Dim miResenaId As Integer = 0
+
+                For Each r As ResenaComentario In resenas
+                    If r Is Nothing Then
+                        Continue For
+                    End If
+
+                    If r.ProductoId <> productoId Then
+                        Continue For
+                    End If
+
+                    If Not String.Equals(r.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                        Continue For
+                    End If
+
+                    Dim esMia As Boolean = (r.CliId = cliId)
+
+                    If esMia Then
+                        miResenaId = r.ResenaId
+                    End If
+
+                    resultado.Add(New With {
+                        .ResenaId = r.ResenaId,
+                        .CliId = r.CliId,
+                        .ProductoId = r.ProductoId,
+                        .EsMia = esMia,
+                        .ClienteNombre = If(esMia, "Tú", ObtenerNombreClienteResena(r.CliId, clientesCache)),
+                        .Calificacion = If(r.Calificacion.HasValue, r.Calificacion.Value, 0D),
+                        .Comentario = String.Empty,
+                        .ComentarioTextoDisponible = False,
+                        .ResenaAt = r.ResenaAt,
+                        .Fecha = If(r.ResenaAt = DateTime.MinValue, "Fecha no disponible", r.ResenaAt.ToString("dd/MM/yyyy")),
+                        .Estado = r.Estado
+                    })
+                Next
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .data = New With {
+                        .ProductoId = productoId,
+                        .TotalResenas = resumen.Total,
+                        .PromedioCalificacion = resumen.Promedio,
+                        .ClienteYaEscribio = miResenaId > 0,
+                        .MiResenaId = miResenaId,
+                        .ComentarioTextoDisponible = False,
+                        .Resenas = resultado
+                    }
+                }, JsonRequestBehavior.AllowGet)
+            Catch ex As Exception
+                Return JsonError("No se pudieron obtener las resenas del producto: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
+            End Try
+        End Function
+
+        <HttpGet>
+        Function ObtenerMisResenasData() As ActionResult
+            Dim cliId As Integer = 0
+
+            If Not TryObtenerCliIdAutenticado(cliId) Then
+                Return JsonError("Sesion no valida.", 401, JsonRequestBehavior.AllowGet)
+            End If
+
+            Try
+                Dim resenas As List(Of ResenaComentario) = _resenaComentarioServicio.ObtenerPorCliente(cliId)
+                Dim productos As New Dictionary(Of Integer, Producto)()
+
+                Try
+                    For Each producto As Producto In _productoServicio.Listar()
+                        If producto IsNot Nothing AndAlso Not productos.ContainsKey(producto.ProductoId) Then
+                            productos.Add(producto.ProductoId, producto)
+                        End If
+                    Next
+                Catch
+                    productos = New Dictionary(Of Integer, Producto)()
+                End Try
+
+                Dim resultado As New List(Of Object)()
+
+                For Each r As ResenaComentario In resenas
+                    If r Is Nothing Then
+                        Continue For
+                    End If
+
+                    If r.CliId <> cliId Then
+                        Continue For
+                    End If
+
+                    Dim producto As Producto = Nothing
+
+                    If productos.ContainsKey(r.ProductoId) Then
+                        producto = productos(r.ProductoId)
+                    End If
+
+                    resultado.Add(New With {
+                        .ResenaId = r.ResenaId,
+                        .CliId = r.CliId,
+                        .ProductoId = r.ProductoId,
+                        .Calificacion = If(r.Calificacion.HasValue, r.Calificacion.Value, 0D),
+                        .Comentario = String.Empty,
+                        .ComentarioTextoDisponible = False,
+                        .ResenaAt = r.ResenaAt,
+                        .Fecha = If(r.ResenaAt = DateTime.MinValue, "Fecha no disponible", r.ResenaAt.ToString("dd/MM/yyyy")),
+                        .Estado = r.Estado,
+                        .Producto = If(producto Is Nothing, Nothing, New With {
+                            .ProductoId = producto.ProductoId,
+                            .Nombre = producto.Nombre,
+                            .Referencia = producto.Referencia,
+                            .Descripcion = producto.Descripcion,
+                            .ImagenUrl = producto.ImagenUrl,
+                            .Tipo = producto.Tipo,
+                            .Material = producto.Material,
+                            .Color = producto.Color,
+                            .PrecioActual = ObtenerPrecioActualProducto(producto.ProductoId)
+                        })
+                    })
+                Next
+
+                Return Json(New With {
+                    .ok = True,
+                    .success = True,
+                    .message = "Resenas del cliente obtenidas correctamente.",
+                    .comentarioTextoDisponible = False,
+                    .data = resultado
+                }, JsonRequestBehavior.AllowGet)
+            Catch ex As Exception
+                Return JsonError("No se pudieron obtener las resenas: " & LimpiarMensaje(ex.Message), 500, JsonRequestBehavior.AllowGet)
             End Try
         End Function
 
@@ -2614,6 +2746,93 @@ Namespace Controllers
 
             Return -1D
         End Function
+
+        <NonAction>
+        Private Function ObtenerResenasActivas() As List(Of ResenaComentario)
+            Try
+                Dim lista As List(Of ResenaComentario) = _resenaComentarioServicio.Listar()
+
+                If lista Is Nothing Then
+                    Return New List(Of ResenaComentario)()
+                End If
+
+                Return lista.
+                    Where(Function(r) r IsNot Nothing AndAlso String.Equals(r.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase)).
+                    ToList()
+            Catch
+                Return New List(Of ResenaComentario)()
+            End Try
+        End Function
+
+        <NonAction>
+        Private Function ObtenerResumenResenas(ByVal productoId As Integer, ByVal resenas As List(Of ResenaComentario)) As ResumenResenasProducto
+            Dim resumen As New ResumenResenasProducto()
+
+            If productoId <= 0 OrElse resenas Is Nothing Then
+                Return resumen
+            End If
+
+            Dim suma As Decimal = 0D
+
+            For Each r As ResenaComentario In resenas
+                If r Is Nothing Then
+                    Continue For
+                End If
+
+                If r.ProductoId <> productoId Then
+                    Continue For
+                End If
+
+                If Not String.Equals(r.Estado, "ACTIVO", StringComparison.OrdinalIgnoreCase) Then
+                    Continue For
+                End If
+
+                If r.Calificacion.HasValue Then
+                    resumen.Total += 1
+                    suma += r.Calificacion.Value
+                End If
+            Next
+
+            If resumen.Total > 0 Then
+                resumen.Promedio = Decimal.Round(suma / resumen.Total, 1)
+            End If
+
+            Return resumen
+        End Function
+
+        <NonAction>
+        Private Function ObtenerNombreClienteResena(ByVal cliId As Integer, ByVal cache As Dictionary(Of Integer, String)) As String
+            If cliId <= 0 Then
+                Return "Cliente"
+            End If
+
+            If cache IsNot Nothing AndAlso cache.ContainsKey(cliId) Then
+                Return cache(cliId)
+            End If
+
+            Dim nombre As String = "Cliente"
+
+            Try
+                Dim cliente As Cliente = _clienteServicio.ObtenerPorId(cliId)
+
+                If cliente IsNot Nothing Then
+                    Dim nombreCompleto As String = (If(cliente.Nombres, String.Empty) & " " & If(cliente.Apellidos, String.Empty)).Trim()
+
+                    If Not String.IsNullOrWhiteSpace(nombreCompleto) Then
+                        nombre = nombreCompleto
+                    End If
+                End If
+            Catch
+                nombre = "Cliente"
+            End Try
+
+            If cache IsNot Nothing AndAlso Not cache.ContainsKey(cliId) Then
+                cache.Add(cliId, nombre)
+            End If
+
+            Return nombre
+        End Function
+
         <NonAction>
         Private Function ObtenerEstadoOrdenInicialId() As Integer
             Dim estados As List(Of Estado_Orden) = _estadoOrdenServicio.Listar()
@@ -2669,6 +2888,11 @@ Namespace Controllers
             Dim partes() As String = message.Replace(vbCrLf, vbLf).Split(ControlChars.Lf)
             Return partes(0).Trim()
         End Function
+
+        Private Class ResumenResenasProducto
+            Public Property Total As Integer
+            Public Property Promedio As Decimal
+        End Class
 
         Private Class ProductoConScore
             Public Property Producto As Producto

@@ -203,5 +203,5 @@ End Code
 </div>
 
 @Section scripts
-    <script src="@Url.Content("~/Scripts/portal-busqueda.js?v=24")"></script>
+    <script src="@Url.Content("~/Scripts/portal-busqueda.js?v=25")"></script>
 End Section

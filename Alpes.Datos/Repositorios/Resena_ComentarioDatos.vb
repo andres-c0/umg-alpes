@@ -34,7 +34,7 @@ Namespace Repositorios
                     If String.IsNullOrWhiteSpace(entidad.Comentario) Then
                         cmd.Parameters.Add("P_COMENTARIO", OracleDbType.Varchar2).Value = DBNull.Value
                     Else
-                        cmd.Parameters.Add("P_COMENTARIO", OracleDbType.Varchar2).Value = entidad.Comentario
+                        cmd.Parameters.Add("P_COMENTARIO", OracleDbType.Varchar2).Value = entidad.Comentario.Trim()
                     End If
 
                     cmd.Parameters.Add("P_RESENA_AT", OracleDbType.TimeStamp).Value = entidad.ResenaAt
@@ -67,7 +67,7 @@ Namespace Repositorios
                     If String.IsNullOrWhiteSpace(entidad.Comentario) Then
                         cmd.Parameters.Add("P_COMENTARIO", OracleDbType.Varchar2).Value = DBNull.Value
                     Else
-                        cmd.Parameters.Add("P_COMENTARIO", OracleDbType.Varchar2).Value = entidad.Comentario
+                        cmd.Parameters.Add("P_COMENTARIO", OracleDbType.Varchar2).Value = entidad.Comentario.Trim()
                     End If
 
                     cmd.Parameters.Add("P_RESENA_AT", OracleDbType.TimeStamp).Value = entidad.ResenaAt
@@ -111,7 +111,7 @@ Namespace Repositorios
         End Function
 
         Public Function Listar() As List(Of ResenaComentario)
-            Dim lista As New List(Of ResenaComentario)
+            Dim lista As New List(Of ResenaComentario)()
 
             Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
                 Using cmd As New OracleCommand("PKG_RESENA_COMENTARIO.SP_LISTAR_RESENA_COMENTARIO", cn)
@@ -131,14 +131,18 @@ Namespace Repositorios
         End Function
 
         Public Function Buscar(ByVal valor As String) As List(Of ResenaComentario)
-            Dim lista As New List(Of ResenaComentario)
+            Return Buscar("CLI_ID", valor)
+        End Function
+
+        Public Function Buscar(ByVal criterio As String, ByVal valor As String) As List(Of ResenaComentario)
+            Dim lista As New List(Of ResenaComentario)()
 
             Using cn As OracleConnection = _conexionOracle.ObtenerConexion()
                 Using cmd As New OracleCommand("PKG_RESENA_COMENTARIO.SP_BUSCAR_RESENA_COMENTARIO", cn)
                     cmd.CommandType = CommandType.StoredProcedure
 
-                    cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = "CLI_ID"
-                    cmd.Parameters.Add("P_VALOR", OracleDbType.Varchar2).Value = valor
+                    cmd.Parameters.Add("P_CRITERIO", OracleDbType.Varchar2).Value = If(String.IsNullOrWhiteSpace(criterio), "CLI_ID", criterio.Trim().ToUpperInvariant())
+                    cmd.Parameters.Add("P_VALOR", OracleDbType.Varchar2).Value = If(valor, String.Empty).Trim()
                     cmd.Parameters.Add("P_CURSOR", OracleDbType.RefCursor).Direction = ParameterDirection.Output
 
                     Using dr As OracleDataReader = cmd.ExecuteReader()
@@ -153,39 +157,70 @@ Namespace Repositorios
         End Function
 
         Private Function Mapear(ByVal dr As OracleDataReader) As ResenaComentario
-            Dim entidad As New ResenaComentario With {
-                .ResenaId = Convert.ToInt32(dr("RESENA_ID")),
-                .CliId = Convert.ToInt32(dr("CLI_ID")),
-                .ProductoId = Convert.ToInt32(dr("PRODUCTO_ID")),
-                .ResenaAt = Convert.ToDateTime(dr("RESENA_AT")),
-                .Estado = dr("ESTADO").ToString()
-            }
+            Dim entidad As New ResenaComentario()
 
-            If Not IsDBNull(dr("CALIFICACION")) Then
-                entidad.Calificacion = Convert.ToDecimal(dr("CALIFICACION"))
-            Else
-                entidad.Calificacion = Nothing
-            End If
+            entidad.ResenaId = LeerEntero(dr, "RESENA_ID")
+            entidad.CliId = LeerEntero(dr, "CLI_ID")
+            entidad.ProductoId = LeerEntero(dr, "PRODUCTO_ID")
+            entidad.Calificacion = LeerDecimalNullable(dr, "CALIFICACION")
+            entidad.ResenaAt = LeerFecha(dr, "RESENA_AT", DateTime.MinValue)
+            entidad.Estado = LeerTexto(dr, "ESTADO")
 
-            If Not IsDBNull(dr("COMENTARIO")) Then
-                entidad.Comentario = dr("COMENTARIO").ToString()
-            Else
-                entidad.Comentario = Nothing
-            End If
-
-            If Not IsDBNull(dr("CREATED_AT")) Then
-                entidad.CreatedAt = Convert.ToDateTime(dr("CREATED_AT"))
-            Else
-                entidad.CreatedAt = Nothing
-            End If
-
-            If Not IsDBNull(dr("UPDATED_AT")) Then
-                entidad.UpdatedAt = Convert.ToDateTime(dr("UPDATED_AT"))
-            Else
-                entidad.UpdatedAt = Nothing
-            End If
+            entidad.Comentario = LeerTexto(dr, "COMENTARIO")
+            entidad.CreatedAt = LeerFechaNullable(dr, "CREATED_AT")
+            entidad.UpdatedAt = LeerFechaNullable(dr, "UPDATED_AT")
 
             Return entidad
+        End Function
+
+        Private Function TieneColumna(ByVal dr As OracleDataReader, ByVal nombreColumna As String) As Boolean
+            For i As Integer = 0 To dr.FieldCount - 1
+                If String.Equals(dr.GetName(i), nombreColumna, StringComparison.OrdinalIgnoreCase) Then
+                    Return True
+                End If
+            Next
+
+            Return False
+        End Function
+
+        Private Function LeerTexto(ByVal dr As OracleDataReader, ByVal columna As String) As String
+            If Not TieneColumna(dr, columna) OrElse IsDBNull(dr(columna)) Then
+                Return String.Empty
+            End If
+
+            Return dr(columna).ToString()
+        End Function
+
+        Private Function LeerEntero(ByVal dr As OracleDataReader, ByVal columna As String) As Integer
+            If Not TieneColumna(dr, columna) OrElse IsDBNull(dr(columna)) Then
+                Return 0
+            End If
+
+            Return Convert.ToInt32(dr(columna))
+        End Function
+
+        Private Function LeerDecimalNullable(ByVal dr As OracleDataReader, ByVal columna As String) As Decimal?
+            If Not TieneColumna(dr, columna) OrElse IsDBNull(dr(columna)) Then
+                Return Nothing
+            End If
+
+            Return Convert.ToDecimal(dr(columna))
+        End Function
+
+        Private Function LeerFecha(ByVal dr As OracleDataReader, ByVal columna As String, ByVal valorDefecto As DateTime) As DateTime
+            If Not TieneColumna(dr, columna) OrElse IsDBNull(dr(columna)) Then
+                Return valorDefecto
+            End If
+
+            Return Convert.ToDateTime(dr(columna))
+        End Function
+
+        Private Function LeerFechaNullable(ByVal dr As OracleDataReader, ByVal columna As String) As DateTime?
+            If Not TieneColumna(dr, columna) OrElse IsDBNull(dr(columna)) Then
+                Return Nothing
+            End If
+
+            Return Convert.ToDateTime(dr(columna))
         End Function
 
     End Class
